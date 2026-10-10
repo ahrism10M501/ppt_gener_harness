@@ -1,0 +1,35 @@
+# Task content is never part of the project knowledge graph, even the Git example.
+/tasks/
+# Vendored external skills keep their own sources; the graph shows RVLAB code and docs only.
+/skills/im-not-ai/
+/skills/office-hours/
+/skills/brainstorming/
+/skills/pdf/
+/skills/typst/
+/skills/minimax-docx/
+/skills/minimax-xlsx/
+/skills/pptx-generator/
+/.claude/agents/
+# Real lab decks and personal details are not project structure.
+/templates/
+/profile.yaml
+# Generated reports and images.
+/docs/*.json
+/docs/*.png
+/docs/design/*.json
+/graphify-out/
+/docs/architecture.md
+/docs/design/build/
+/docs/design/*.png
+/docs/design/*.pdf
+.git/
+.venv/
+venv/
+node_modules/
+__pycache__/
+.cache/
+dist/
+uv.lock
+package-lock.json
+.agents/skills/
+.claude/skills/

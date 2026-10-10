@@ -1,0 +1,52 @@
+# Python / Node dependencies and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+node_modules/
+.cache/
+dist/
+
+# Secrets, OS and editor scratch files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+~$*
+
+# Task outputs are rebuilt from slides.md; only the completed example's PPTX/PDF are tracked.
+# Researchers' own sources/ and figures/ (including draft PPTX/PDF) stay trackable.
+/tasks/*/*.pptx
+/tasks/*/*.pdf
+!/tasks/261011-example-il-progress/*.pptx
+!/tasks/261011-example-il-progress/*.pdf
+/tasks/*/.build/
+/tasks/*/.rvppt-*.tmp
+/tasks/*/plan/.rvppt-*.tmp
+_workspace/
+
+# Personal cover details; profile.example.yaml is the shared template.
+/profile.yaml
+
+# Template QA sources are reproducible; layout PNGs and manifests are tracked.
+/docs/design/build/
+/templates/examples/
+# The five published Graphify files are tracked; local extraction state is not.
+/graphify-out/.*
+/graphify-out/cost.json
+/graphify-out/manifest.json
+/graphify-out/cache/

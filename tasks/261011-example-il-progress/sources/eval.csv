@@ -1,0 +1,6 @@
+# 가상 예제의 합성 자료다. 실제 실험 결과가 아니다.
+condition,chunk_length,demonstrations,trials,successes
+BC,1,200,40,18
+ACT-4,4,200,40,25
+ACT-8,8,200,40,29
+ACT-16,16,200,40,24
