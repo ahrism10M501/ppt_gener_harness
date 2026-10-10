@@ -52,8 +52,10 @@ def load_profile(path=ROOT / "profile.yaml"):
 def new_project(slug, title, subtitle="", day=None, language="ko", profile_path=ROOT / "profile.yaml", tasks=ROOT / "tasks"):
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,40}", slug):
         raise StateError("slug uses lowercase letters, digits and hyphens")
-    day = day or date.today().isoformat()
-    date.fromisoformat(day)
+    try:
+        day = date.fromisoformat(day).isoformat() if day else date.today().isoformat()
+    except ValueError as error:
+        raise StateError("--date must be YYYY-MM-DD") from error
     profile = load_profile(profile_path)
     task = tasks / f"{day[2:4]}{day[5:7]}{day[8:10]}-{slug}"
     if task.exists():

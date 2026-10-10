@@ -87,6 +87,13 @@ class BuildTests(unittest.TestCase):
         self.assertEqual((slides[0]["presenter"], slides[0]["date_label"]), ("홍길동 (Gildong Hong)", "발표일시 : 2026.08.31"))
         self.assertEqual(slides[1]["layout"], "toc")
         self.assertEqual(len(build.lint(created)["missing_figures"]), 1)
+        compact = Path(project.new_project("compact-date", "날짜 형식", day="20261012", profile_path=profile, tasks=self.task.parent)["task"])
+        self.assertEqual(compact.name, "261012-compact-date")
+        document = (compact / "slides.md").read_text(encoding="utf-8")
+        (compact / "slides.md").write_text(document.replace("date: '2026-10-12'", "date: '20261012'"), encoding="utf-8")
+        self.assertEqual(markdown.parse_task(compact)[1][0]["date_label"], "발표일시 : 2026.10.12")
+        self.assertEqual([f["slide_id"] for f in build.lint(compact)["findings"]], ["cover"])  # created without --subtitle
+        self.assertEqual(build.lint(created)["findings"], [])
         with self.assertRaisesRegex(StateError, "already exists"):
             project.new_project("lab-meeting", "중복", day="2026-08-31", profile_path=profile, tasks=self.task.parent)
 

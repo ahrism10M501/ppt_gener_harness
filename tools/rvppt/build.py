@@ -21,7 +21,7 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Inches, Pt
 
-from .markdown import asset_path, image_node, nodes, pandoc, parse_task, plain, table_rows
+from .markdown import APPENDIX, asset_path, image_node, nodes, pandoc, parse_task, plain, table_rows
 from .preview import contact_sheet, fit_picture, render_pdf, resolve_fonts, text
 from .state import StateError, status, tree_hash
 from .template import ROOT, NS, EMU, load_tokens, sha256, slots, validate_package
@@ -702,7 +702,7 @@ def build(task):
             publish(directory, task, report["outputs"])
         return {"task_id": task.name, "pptx": str(task / f"{stem}.pptx"), "pdf": str(task / f"{stem}.pdf"), "preview": str(workspace / "output/contact-sheet.png"),
                 "slide_count": report["slide_count"], "content_approved": report["content_approved"], "missing_figures": report["missing_figures"],
-                "detected_overflows": 0, "native_equations": report["native_equations"], "native_tables": report["native_tables"], "math_fallbacks": report["math_fallbacks"], "fonts": profile}
+                "warnings": deck_findings(slides), "detected_overflows": 0, "native_equations": report["native_equations"], "native_tables": report["native_tables"], "math_fallbacks": report["math_fallbacks"], "fonts": profile}
     finally:
         lock.unlink(missing_ok=True)
 
@@ -712,9 +712,17 @@ def requested_figures(task, slides):
             for s in slides for n in nodes(s.get("slots", [])) if n["t"] == "Image" and not asset_path(task, n["c"][2][0]).exists()]
 
 
+def deck_findings(slides):
+    """Advisory gaps the parser accepts: RVLAB covers and most section slides carry a yellow subtitle."""
+    findings = [] if slides[0]["subtitle"].strip() else [{"slide_id": "cover", "issue": "Cover subtitle is empty; RVLAB covers show a yellow subtitle under the title. Propose candidates and set deck.subtitle in slides.md"}]
+    findings += [{"slide_id": s["id"], "issue": "Section has no subtitle; use '# 섹션 | 부제' (short description or English name) unless omitted on purpose"}
+                 for s in slides if s["layout"] == "section" and not s["subtitle"] and s["title"] not in APPENDIX]
+    return findings
+
+
 def lint(task):
     _, slides, _ = parse_task(task)
-    return {"task_id": task.name, "slide_count": len(slides), "findings": [], "missing_figures": requested_figures(task, slides), "scope": "Markdown structure, limits, paths and styling; rendered fit is checked by build"}
+    return {"task_id": task.name, "slide_count": len(slides), "findings": deck_findings(slides), "missing_figures": requested_figures(task, slides), "scope": "Markdown structure, limits, paths and styling; rendered fit is checked by build"}
 
 
 def preview(task):

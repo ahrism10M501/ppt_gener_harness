@@ -12,6 +12,7 @@ htmlcov/
 node_modules/
 .cache/
 dist/
+sources/
 
 # Secrets, OS and editor scratch files
 .env
@@ -28,10 +29,13 @@ Thumbs.db
 *~
 ~$*
 
-# Task outputs are rebuilt from slides.md; only the completed example's PPTX/PDF are tracked.
-# Researchers' own sources/ and figures/ (including draft PPTX/PDF) stay trackable.
+# Task outputs are rebuilt from slides.md; only listed tasks' PPTX/PDF are tracked.
+# sources/ (papers, data, draft decks) is ignored above except in the completed example.
+!/tasks/261011-example-il-progress/sources/
 /tasks/*/*.pptx
 /tasks/*/*.pdf
+!tasks/2601-world-model1/*.pptx
+!tasks/2601-world-model1/*.pdf
 !/tasks/261011-example-il-progress/*.pptx
 !/tasks/261011-example-il-progress/*.pdf
 /tasks/*/.build/

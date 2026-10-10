@@ -20,7 +20,7 @@ uv run rvppt build tasks/260831-train-loop
 tasks/260831-train-loop/
 ├── slides.md        # 발표 원본 (# 섹션 / ## 상단 바 토픽 / ### 핵심 문장)
 ├── figures/         # 연구자 그림. 없는 그림은 요청 상자로 표시
-├── sources/         # 논문·데이터·초안 PPT (읽기 전용)
+├── sources/         # 논문·데이터·초안 PPT (읽기 전용, Git 제외)
 ├── plan/            # 인터뷰·메시지·목차 승인 문서
 ├── 20260831_학습루프개선_및_실험.pptx / .pdf
 └── .build/          # 미리보기 PNG·리포트

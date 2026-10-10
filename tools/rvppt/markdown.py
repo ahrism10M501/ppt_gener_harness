@@ -158,7 +158,8 @@ def deck_info(metadata):
     if not isinstance(deck, dict) or not set(deck) <= fields or not all(isinstance(deck.get(k), str) and deck[k].strip() for k in ("title", "date", "presenter")):
         raise StateError("slides.md needs deck.title, deck.presenter and a quoted deck.date; create projects with rvppt new")
     try:
-        date.fromisoformat(deck["date"])
+        # Python also accepts 20261012; normalise so labels and file names stay YYYY-MM-DD based.
+        deck = dict(deck, date=date.fromisoformat(deck["date"]).isoformat())
     except ValueError as error:
         raise StateError("deck.date must be a quoted 'YYYY-MM-DD'") from error
     affiliation = deck.get("affiliation", [])

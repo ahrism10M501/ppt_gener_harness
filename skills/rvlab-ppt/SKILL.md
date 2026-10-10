@@ -29,9 +29,10 @@ description: RVLAB 연구실 양식으로 랩미팅·논문 리뷰·진행 보�
 
 ## 승인
 
-- `uv run rvppt lint tasks/<task>`로 문법·제한·경로·그림 요청을 확인한다.
+- 진행 방식이 같이 만들기면 섹션 하나를 쓸 때마다 자료로 확인할 수 없는 사실, 표·그림의 범위, 연구자 경험으로 바꿀 수 있는 부분을 모아 3~5개씩 묻는다. 추측으로 채우지 않는다([질문 가이드](../rvlab-interview/references/interview-guide.md)).
+- `uv run rvppt lint tasks/<task>`로 문법·제한·경로·그림 요청을 확인한다. `findings`의 빈 표지 부제·섹션 부제는 후보를 제안해 사용자에게 묻는다.
 - 한국어 발표는 승인 요청 전에 [윤문 절차](references/polish.md)로 `humanize-korean`을 적용하고 `uv run rvppt polish-check`로 숫자·구조·수식·경로 보존을 확인한다. 사용자가 원하지 않으면 생략한다.
-- 문서와 `status`의 `review_hash`, 중요한 가정·미해결 항목, 남은 그림 요청을 보여 승인받는다. 명시적인 승인 뒤에만 `uv run rvppt approve tasks/<task> --stage 4 --expected-hash <검토한-review_hash>`를 실행한다. 승인 필드를 직접 고치지 않는다.
+- 채팅에 Stage 4 단계 보고(표지 제목·부제·날짜·발표자, 장별로 바뀐 점, 남은 그림 요청, 미리보기 PNG)를 쓰고 `review_hash`, 중요한 가정·미해결 항목을 붙여 승인받는다. 형식은 [rvlab-interview](../rvlab-interview/SKILL.md)의 단계 보고를 따른다. 명시적인 승인 뒤에만 `uv run rvppt approve tasks/<task> --stage 4 --expected-hash <검토한-review_hash>`를 실행한다. 승인 필드를 직접 고치지 않는다.
 - 연구자가 `slides.md`를 직접 고쳐 목차와 달라지면 무엇이 바뀌었는지 보여 주고 `plan/outline.md`를 맞춘 뒤 다시 승인받는다.
 
 ## 제작과 QA
