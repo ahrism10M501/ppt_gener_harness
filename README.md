@@ -8,6 +8,14 @@
 4. 에이전트에게 “RVLAB PPT 만들어줘”라고 요청하고 인터뷰·핵심 메시지·목차·내용을 확인·승인합니다. 필요한 그림은 에이전트가 제안합니다.
 5. `slides.md`를 직접 고쳐도 됩니다. `uv run rvppt build tasks/<task>`가 폴더 안에 `YYYYMMDD_제목.pptx`와 PDF를 만듭니다.
 
+`<slug>`는 폴더 이름에 붙는 짧은 영문 별칭입니다(소문자·숫자·하이픈). 아래 명령은 `tasks/260831-train-loop/`를 만듭니다.
+
+```bash
+cp profile.example.yaml profile.yaml   # 처음 한 번, 이름·영문 이름·소속 두 줄 입력
+uv run rvppt new train-loop --title "학습루프개선 및 실험" --subtitle "Advanced Train Loop & Experiments" --date 2026-08-31
+uv run rvppt build tasks/260831-train-loop
+```
+
 ```text
 tasks/260831-train-loop/
 ├── slides.md        # 발표 원본 (# 섹션 / ## 상단 바 토픽 / ### 핵심 문장)
