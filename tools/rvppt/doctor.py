@@ -9,6 +9,17 @@ import yaml
 from .template import ROOT, load_tokens, sha256
 
 
+SYMLINK_FIX = "symlink checked out as a plain file; enable symlinks (Windows: Developer Mode), run git config core.symlinks true, then git checkout -- {path}"
+
+
+def link_stand_in(path):
+    """Git without symlink support checks a link out as a one-line file holding its target."""
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > 260:
+        return False
+    target = path.read_bytes().decode("utf-8", "replace")
+    return "\n" not in target and (path.parent / target).exists()
+
+
 def skill_integrity(root=ROOT):
     """Compare every vendored skill file and symlink with skills/dependencies.yaml."""
     problems = []
@@ -18,15 +29,22 @@ def skill_integrity(root=ROOT):
         for name, record in skill["files"].items():
             path = base / name
             if not path.is_file() or sha256(path) != record["sha256"]:
-                problems.append(f"{path.relative_to(root)}: {'missing' if not path.is_file() else 'modified'}; restore with git or copy {skill['repository']}@{skill['commit']}:{record['upstream_path']}")
+                problems.append(f"{path.relative_to(root).as_posix()}: {'missing' if not path.is_file() else 'modified'}; restore with git or copy {skill['repository']}@{skill['commit']}:{record['upstream_path']}")
         for name, record in (skill.get("symlinks") or {}).items():
             path = base / name
-            if not path.is_symlink() or os.readlink(path) != record["target"]:
-                problems.append(f"{path.relative_to(root)}: symlink must point to {record['target']}")
+            relative = path.relative_to(root).as_posix()
+            if link_stand_in(path):
+                problems.append(f"{relative}: {SYMLINK_FIX.format(path=relative)}")
+            # Git for Windows stores link targets with backslashes.
+            elif not path.is_symlink() or os.readlink(path).replace("\\", "/") != record["target"]:
+                problems.append(f"{relative}: symlink must point to {record['target']}")
     for folder in (".agents/skills", ".claude/skills", ".claude/agents"):
         for link in sorted((root / folder).glob("*")):
-            if not link.exists():
-                problems.append(f"{link.relative_to(root)}: broken discovery link")
+            relative = link.relative_to(root).as_posix()
+            if link_stand_in(link):
+                problems.append(f"{relative}: {SYMLINK_FIX.format(path=relative)}")
+            elif not link.exists():
+                problems.append(f"{relative}: broken discovery link")
     return problems
 
 
@@ -64,7 +82,8 @@ def doctor():
         return {script: profile[script]["resolved"] for script in ("latin", "korean")}
 
     def browser():
-        found = os.environ.get("PUPPETEER_EXECUTABLE_PATH") or next(filter(None, map(shutil.which, ("google-chrome", "chromium", "chromium-browser"))), None)
+        from .preview import chrome_binary
+        found = chrome_binary()
         if not found:
             raise RuntimeError("No Chrome/Chromium for Mermaid; set PUPPETEER_EXECUTABLE_PATH or use figures instead")
         return found

@@ -11,9 +11,11 @@ cp profile.example.yaml profile.yaml
 uv run rvppt doctor
 ```
 
+스킬 진입점(`.claude/skills/`, `.agents/skills/`, `.claude/agents/`)은 `skills/`를 가리키는 심볼릭 링크다. Windows에서는 먼저 설정 → 시스템 → 개발자용에서 개발자 모드를 켜고 `git clone -c core.symlinks=true <저장소 URL>`로 받는다. 이미 받았다면 `git config core.symlinks true` 후 `doctor`가 알려 주는 경로를 `git checkout -- <경로>`로 다시 받는다. 링크가 한 줄짜리 텍스트 파일로 받아지면 에이전트가 프로젝트 스킬을 찾지 못한다.
+
 `profile.yaml`에 이름·소속을 입력한다. 이 개인 파일은 Git에서 제외된다. 기존 파일이 있으면 복사하지 말고 내용을 확인한다. 배포된 `templates/RVLAB_reference.pptx`를 사용하므로 처음 설치할 때 양식을 재생성할 필요는 없다.
 
-Mermaid는 Chrome 또는 Chromium을 사용한다. 기존 브라우저를 사용할 때는 `npm ci` 전에 `PUPPETEER_SKIP_DOWNLOAD=true`를 설정하고, 필요하면 `PUPPETEER_EXECUTABLE_PATH`에 실행 파일 경로를 지정한다.
+Mermaid는 Chrome 또는 Chromium을 사용한다. 기존 브라우저를 사용할 때는 `npm ci` 전에 `PUPPETEER_SKIP_DOWNLOAD=true`를 설정한다. 설치된 Chrome은 자동으로 찾으며, 다른 위치라면 `PUPPETEER_EXECUTABLE_PATH`에 실행 파일 경로를 지정한다.
 
 ## 환경 점검
 
@@ -29,9 +31,11 @@ Mermaid는 Chrome 또는 Chromium을 사용한다. 기존 브라우저를 사용
 | --- | --- | --- | --- |
 | Ubuntu | [uv 설치 안내](https://docs.astral.sh/uv/getting-started/installation/), Node 22+ | `sudo apt install libreoffice-impress` | `sudo apt install fonts-liberation fonts-noto-cjk` |
 | macOS | `brew install uv node` | `brew install --cask libreoffice` | `brew install --cask font-noto-sans-cjk-kr` |
-| Windows (PowerShell) | `winget install astral-sh.uv`, `winget install OpenJS.NodeJS.LTS` | `winget install TheDocumentFoundation.LibreOffice` | Arial·맑은 고딕 설치 여부 확인 |
+| Windows (PowerShell) | `winget install astral-sh.uv`, `winget install OpenJS.NodeJS.LTS`, 개발자 모드 | `winget install TheDocumentFoundation.LibreOffice` | Arial·맑은 고딕 설치 여부 확인 |
 
-LibreOffice는 PATH에서 찾으며 macOS의 `/Applications/LibreOffice.app/Contents/MacOS/soffice`와 Windows의 Program Files 경로도 확인한다. Ubuntu snap 버전은 변환 입력을 읽을 수 있도록 `~/snap/libreoffice/common/`에 임시 파일을 둔다.
+LibreOffice는 PATH에서 찾으며 macOS의 `/Applications/LibreOffice.app/Contents/MacOS/soffice`와 Windows의 Program Files 경로도 확인한다. Ubuntu snap 버전은 변환 입력을 읽을 수 있도록 `~/snap/libreoffice/common/`에 임시 파일을 둔다. Mermaid용 Chrome도 PATH 다음에 macOS 응용 프로그램 폴더와 Windows 설치 경로를 확인한다.
+
+모든 OS가 같은 LibreOffice 렌더링을 기준으로 미리보기·넘침 검사를 한다. 외부 스킬 해시와 단계 승인 해시는 LF 바이트 기준이므로 `.gitattributes`가 체크아웃 줄바꿈을 LF로 고정한다. Windows에서 이 파일이 생기기 전에 clone했다면 `git config core.autocrlf false` 후 작업 트리를 다시 체크아웃해야 `doctor`의 skills 점검이 통과한다.
 
 macOS·Windows 실행과 PowerPoint의 실제 편집·표시는 별도 확인이 필요하다. LibreOffice 미리보기로 PowerPoint의 OMML 편집성을 확인했다고 간주하지 않는다.
 

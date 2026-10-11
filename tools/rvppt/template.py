@@ -274,7 +274,7 @@ def main():
     manifest = build_reference(ROOT / tokens["source"]["path"], ROOT / tokens["reference"], tokens)
     target = ROOT / "docs/design/template-manifest.json"
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    target.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"Reference generated: {tokens['reference']} (1 master, 13 layouts, 0 specimen slides)")
     print(f"Original preserved: {manifest['source']['sha256']}")
 

@@ -22,7 +22,7 @@ from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Inches, Pt
 
 from .markdown import APPENDIX, asset_path, image_node, nodes, pandoc, parse_task, plain, table_rows
-from .preview import contact_sheet, fit_picture, render_pdf, resolve_fonts, text
+from .preview import chrome_binary, contact_sheet, fit_picture, render_pdf, resolve_fonts, text
 from .state import StateError, status, tree_hash
 from .template import ROOT, NS, EMU, load_tokens, sha256, slots, validate_package
 
@@ -33,7 +33,7 @@ MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006"
 def run(arguments, *, data=None, cwd=None):
     try:
         result = subprocess.run([str(a) for a in arguments], input=data, cwd=cwd,
-                                text=True, capture_output=True, timeout=120)
+                                text=True, encoding="utf-8", capture_output=True, timeout=120)
     except (OSError, subprocess.TimeoutExpired) as error:
         raise StateError(f"Renderer failed: {error}") from error
     if result.returncode:
@@ -189,8 +189,7 @@ def prepare_image(block, task, directory, box, tokens, profile):
         config = directory / "mermaid-config.json"
         config.write_text(json.dumps({"theme": "base", "securityLevel": "strict", "htmlLabels": False, "flowchart": {"htmlLabels": False}, "themeVariables": {"primaryColor": "#" + tokens["palette"]["secondary"], "primaryTextColor": "#000000", "primaryBorderColor": "#" + tokens["palette"]["primary"], "lineColor": "#" + tokens["palette"]["primary"], "fontFamily": profile["korean"]["resolved"]}}))
         args = ["node", ROOT / "node_modules/@mermaid-js/mermaid-cli/src/cli.js", "-i", code, "-o", source, "-c", config, "-b", "white"]
-        browser = os.environ.get("PUPPETEER_EXECUTABLE_PATH") or next((shutil.which(n) for n in ("google-chrome", "chromium", "chromium-browser") if shutil.which(n)), None)
-        if browser:
+        if browser := chrome_binary():
             puppeteer = directory / "puppeteer-config.json"
             puppeteer.write_text(json.dumps({"executablePath": browser, "args": ["--no-sandbox"]}))
             args += ["-p", puppeteer]

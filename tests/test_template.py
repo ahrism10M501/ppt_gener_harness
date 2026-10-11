@@ -137,6 +137,19 @@ class SkillIntegrityTests(unittest.TestCase):
             self.assertTrue(any("im-not-ai/LICENSE: modified" in p for p in problems))
             self.assertTrue(any("pdf/SKILL.md: missing" in p for p in problems))
 
+    def test_symlinks_checked_out_as_plain_files_are_reported(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shutil.copytree(ROOT / "skills", root / "skills", symlinks=True)
+            vendored = root / "skills/im-not-ai/codex/skills/humanize-korean/references"
+            vendored.unlink()
+            vendored.write_bytes(b"../../../skills/humanize-korean/references")
+            (root / ".claude/skills").mkdir(parents=True)
+            (root / ".claude/skills/rvlab-ppt").write_bytes(b"../../skills/rvlab-ppt")
+            problems = skill_integrity(root)
+            for path in ("skills/im-not-ai/codex/skills/humanize-korean/references", ".claude/skills/rvlab-ppt"):
+                self.assertTrue(any(p.startswith(f"{path}: symlink checked out as a plain file") for p in problems), path)
+
 
 class GraphCheckTests(unittest.TestCase):
     def test_ignore_rules_follow_graphifyignore_semantics(self):

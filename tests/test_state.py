@@ -2,6 +2,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from copy import deepcopy
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -47,7 +48,7 @@ class StateTests(unittest.TestCase):
         metadata = {"schema_version": 1, "task_id": self.task.name, "stage": stage_number, "status": "draft", "approval_hash": None, "upstream_hashes": {}, "assumptions": ["Synthetic fixture, not research evidence"], "open_items": [], "review": deepcopy(REVIEWS[stage_number] if review is None else review)}
         metadata.update(changes)
         body = (SLIDES if stage_number == 4 else "\n# 합성 검증\n\n사용자 요구·사실·추정을 구분하는 상태 검증 픽스처.\n") if body is None else body
-        (self.task / STAGES[stage_number - 1]).write_text("---\n" + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False) + "---\n" + body, encoding="utf-8")
+        (self.task / STAGES[stage_number - 1]).write_text("---\n" + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False) + "---\n" + body, encoding="utf-8", newline="\n")
 
     def document(self, stage):
         return read_document(self.task / STAGES[stage - 1], self.task.name, stage)
@@ -56,7 +57,7 @@ class StateTests(unittest.TestCase):
         document = self.document(stage)
         metadata = dict(document.metadata, **changes)
         body = document.body if body is None else body
-        document.path.write_text("---\n" + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False) + "---\n" + body, encoding="utf-8")
+        document.path.write_text("---\n" + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False) + "---\n" + body, encoding="utf-8", newline="\n")
 
     def snapshot(self):
         return {p.relative_to(self.task).as_posix(): p.read_bytes() for p in self.task.rglob("*.md")}
@@ -179,7 +180,8 @@ class StateTests(unittest.TestCase):
         after = self.document(1)
         self.assertEqual(after.body, body)
         self.assertEqual(after.content_hash, result["approval_hash"])
-        self.assertEqual(after.path.stat().st_mode & 0o777, 0o640)
+        if os.name != "nt":  # Windows keeps only the read-only bit.
+            self.assertEqual(after.path.stat().st_mode & 0o777, 0o640)
 
     def test_blocking_items_prevent_approval_nonblocking_items_are_reported(self):
         item = {"id": "Q06", "description": "독립 평가 표본 수 확인", "blocking": True}
@@ -276,7 +278,7 @@ class StateTests(unittest.TestCase):
             self.assertEqual(status(self.task)["stages"][0]["effective_status"], "invalid")
         self.write_stage(1)
         path = self.task / STAGES[0]
-        path.write_text(path.read_text().replace("stage: 1", "stage: 1\ncustom_date: 2026-10-11"))
+        path.write_text(path.read_text(encoding="utf-8").replace("stage: 1", "stage: 1\ncustom_date: 2026-10-11"), encoding="utf-8", newline="\n")
         self.assertEqual(status(self.task)["stages"][0]["effective_status"], "invalid")
 
     def test_missing_stages_and_incomplete_drafts_keep_build_gate_closed(self):

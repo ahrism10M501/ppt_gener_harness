@@ -66,5 +66,5 @@ def new_project(slug, title, subtitle="", day=None, language="ko", profile_path=
                 "upstream_hashes": {}, "deck": deck, "review": {"language": language}}
     for folder in ("figures", "sources", "plan"):
         (task / folder).mkdir(parents=True)
-    (task / "slides.md").write_text("---\n" + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False) + "---\n" + SKELETON, encoding="utf-8")
+    (task / "slides.md").write_text("---\n" + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False) + "---\n" + SKELETON, encoding="utf-8", newline="\n")
     return {"task": str(task), "slides": str(task / "slides.md"), "next": "Put papers, data and draft PPTs in sources/, figures in figures/, then ask the agent to start the rvlab-interview skill or edit slides.md and run rvppt build."}

@@ -1,0 +1,2 @@
+# 외부 스킬 해시와 단계 승인 해시는 LF 바이트 기준이다. Windows autocrlf가 바꾸지 않도록 고정한다.
+* text=auto eol=lf

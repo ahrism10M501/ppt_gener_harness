@@ -92,6 +92,20 @@ def libreoffice_binary():
     raise RuntimeError("LibreOffice is required; see docs/setup.md")
 
 
+def chrome_binary():
+    """Mermaid browser: PUPPETEER_EXECUTABLE_PATH, PATH, then the macOS and Windows install folders; None if absent."""
+    if path := os.environ.get("PUPPETEER_EXECUTABLE_PATH"):
+        return path
+    for name in ("google-chrome", "chromium", "chromium-browser"):
+        if path := shutil.which(name):
+            return path
+    candidates = [Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")]
+    for variable in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA"):
+        if root := os.environ.get(variable):
+            candidates.append(Path(root) / "Google/Chrome/Application/chrome.exe")
+    return next((str(path) for path in candidates if path.is_file()), None)
+
+
 def render_pdf(source, destination):
     binary = libreoffice_binary()
     staging_parent = None

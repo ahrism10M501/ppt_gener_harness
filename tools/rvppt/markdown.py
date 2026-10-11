@@ -15,7 +15,7 @@ from .template import load_tokens
 def pandoc(arguments, data):
     try:
         result = subprocess.run([pypandoc.get_pandoc_path(), *arguments], input=data,
-                                text=True, capture_output=True, timeout=120)
+                                text=True, encoding="utf-8", capture_output=True, timeout=120)
     except (OSError, subprocess.TimeoutExpired) as error:
         raise StateError(f"Pandoc failed: {error}") from error
     if result.returncode:

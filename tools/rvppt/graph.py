@@ -59,7 +59,7 @@ def graph_check(root=ROOT, record=False):
         version = subprocess.run(["graphify", "--version"], capture_output=True, text=True).stdout.strip() if shutil.which("graphify") else "unknown"
         snapshot = {"schema_version": 1, "graphify": version, "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                     "suffixes": suffixes, "inputs": inputs, "outputs": {name: sha256(out / name) for name in PUBLISHED}}
-        snapshot_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        snapshot_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     if not snapshot_path.is_file():
         raise StateError("graphify-out/snapshot.json missing; run rvppt graph-check --record after building the graph")
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
