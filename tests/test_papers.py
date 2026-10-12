@@ -78,6 +78,12 @@ class PaperTests(unittest.TestCase):
         with self.assertRaisesRegex(StateError, "symlinks"):
             extract_paper(self.task, "sources/synthetic paper.pdf")
 
+    def test_downloaded_papers_in_figures_external_are_accepted(self):
+        (self.task / "figures/external").mkdir(parents=True)
+        (self.task / "figures/external/downloaded.pdf").write_bytes(self.pdf.read_bytes())
+        result = extract_paper(self.task, "figures/external/downloaded.pdf")
+        self.assertTrue((self.task / result["directory"] / "paper.md").exists())
+
     def test_failed_extraction_leaves_no_partial_output(self):
         self.pdf.write_bytes(b"Not a PDF")
         with self.assertRaises(pymupdf.FileDataError):

@@ -135,11 +135,11 @@ def review_issues(document, previous):
     issues.extend(f"review.{key} is missing or incomplete" for key, check in fields.items() if not check(review.get(key)))
     if stage == 2:
         candidates = review.get("candidates")
-        valid = isinstance(candidates, list) and 2 <= len(candidates) <= 3
+        valid = isinstance(candidates, list) and 1 <= len(candidates) <= 3
         if valid:
             valid = all(isinstance(c, dict) and _string(c.get("id")) and _string(c.get("message")) and _strings(c.get("storyline")) and _strings(c.get("evidence")) and _string(c.get("tradeoff")) for c in candidates)
         if not valid:
-            issues.append("review.candidates requires 2–3 grounded message/storyline alternatives")
+            issues.append("review.candidates requires 1–3 grounded message/storyline candidates")
         elif len({c["id"] for c in candidates}) != len(candidates):
             issues.append("Duplicate candidate ID")
         else:
@@ -158,22 +158,41 @@ def review_issues(document, previous):
         duration = review.get("duration_minutes")
         if type(duration) not in (int, float) or duration <= 0 or (isinstance(duration, float) and not math.isfinite(duration)):
             issues.append("review.duration_minutes must be a positive finite number")
-        elif valid and sum(s["seconds"] for s in slides) > duration * 60:
-            issues.append("Outline exceeds the presentation time budget")
     if stage == 4:
         if not isinstance(review.get("language"), str) or review["language"] not in {"ko", "en"}:
             issues.append("review.language must be ko or en")
         headings = slide_headings(document.body)
         if not headings:
             issues.append("slides.md needs '## topic' and '### headline' slides")
-        if 3 in previous:
-            outline_review = previous[3].metadata.get("review")
-            outline = outline_review.get("slides") if isinstance(outline_review, dict) else None
-            if isinstance(outline, list) and all(isinstance(s, dict) and "topic" in s and "headline" in s for s in outline):
-                if headings != [(s["topic"], s["headline"]) for s in outline]:
-                    issues.append("Slide topics and headlines differ from the outline")
+        outline = _outline(previous)
+        if outline is not None and [t for t, _ in headings] != [s["topic"] for s in outline]:
+            issues.append("Slide count or topics differ from the outline; update plan/outline.md")
     issues.extend(f"Blocking open item {i['id']}: {i['description']}" for i in document.metadata.get("open_items", []) if i["blocking"])
     return issues
+
+
+def _outline(previous):
+    review = previous[3].metadata.get("review") if 3 in previous else None
+    slides = review.get("slides") if isinstance(review, dict) else None
+    if isinstance(slides, list) and all(isinstance(s, dict) and "topic" in s and "headline" in s for s in slides):
+        return slides
+    return None
+
+
+def review_warnings(document, previous):
+    """Content advice shown in status and the stage report; it never blocks approval."""
+    stage, review, warnings = document.metadata["stage"], document.metadata.get("review"), []
+    if stage == 3 and isinstance(review, dict):
+        slides, duration = review.get("slides"), review.get("duration_minutes")
+        seconds = sum(s["seconds"] for s in slides if isinstance(s, dict) and type(s.get("seconds")) is int) if isinstance(slides, list) else 0
+        if type(duration) in (int, float) and seconds > duration * 60:
+            warnings.append(f"Outline estimate {seconds / 60:.1f} min exceeds duration_minutes {duration}")
+    outline = _outline(previous) if stage == 4 else None
+    if outline is not None:
+        # Headlines may be reworded while writing; the stage 4 report shows each change instead of re-approving stage 3.
+        warnings += [f"{o.get('id', i + 1)} headline reworded: {o['headline']} → {h}"
+                     for i, (o, (_, h)) in enumerate(zip(outline, slide_headings(document.body))) if o["headline"] != h]
+    return warnings
 
 
 def slide_headings(body):
@@ -250,6 +269,7 @@ def _inspect(task):
         if stage == 4:
             expected["figures/"] = figure_hash
         issues = review_issues(document, documents)
+        item["warnings"] = review_warnings(document, documents)
         upstream_issues = [f"Upstream stage {s} is {stages[s - 1]['effective_status']}" for s in range(1, stage) if stages[s - 1]["effective_status"] != "approved"]
         declared = document.metadata["status"]
         effective = declared

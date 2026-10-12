@@ -18,8 +18,9 @@ from .template import sha256
 def extract_paper(task, pdf):
     task = Path(task).resolve()
     relative = Path(pdf)
-    if not relative.parts or relative.parts[0] != "sources" or relative.suffix.lower() != ".pdf":
-        raise StateError("Paper must be a task-local sources/*.pdf path")
+    # Researcher papers live in sources/; papers the agent downloads go to figures/external/ so they do not reset stage 1.
+    if relative.parts[:1] != ("sources",) and relative.parts[:2] != ("figures", "external") or relative.suffix.lower() != ".pdf":
+        raise StateError("Paper must be a task-local sources/*.pdf or figures/external/*.pdf path")
     source = asset_path(task, pdf)
     digest = sha256(source)
     work = task

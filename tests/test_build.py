@@ -101,14 +101,14 @@ class BuildTests(unittest.TestCase):
         before = self.task / ".build/editorial/before.md"; before.parent.mkdir(parents=True)
         shutil.copy2(self.task / "slides.md", before)
         original = (self.task / "slides.md").read_text(encoding="utf-8")
-        self.edit(4, lambda s: s.replace("- 비교 기준을 기록한다", "- 비교 기준을 남긴다"))
+        self.edit(4, lambda s: s.replace("- 비교 기준을 기록한다", "- 비교 기준을 남긴다").replace("### 합성 표의 모든 셀을 편집할 수 있다", "### 표의 셀을 모두 편집할 수 있습니다"))
         result = polish.polish_check(self.task, before)
         self.assertTrue(result["ok"], result)
         cases = {
             "Numbers changed": ("| B | 18 | 정렬 |", "| B | 19 | 정렬 |"),
             "structure changed": ("figures/chart.svg)", "figures/chart-new.svg)"),
             "structure changed ": (r"\frac{1}{N}", r"\frac{2}{N}"),
-            "structure changed  ": ("### 합성 표의 모든 셀을 편집할 수 있다", "### 표의 셀을 모두 편집한다"),
+            "structure changed  ": ("## 그림 요청", "## 요청 그림"),
             "Frontmatter": ("RVLAB 제작·QA 검증", "RVLAB 검증"),
         }
         for message, (old, new) in cases.items():
@@ -146,10 +146,10 @@ class BuildTests(unittest.TestCase):
         with self.assertRaisesRegex(StateError, "symlink"):
             markdown.asset_path(self.task, "figures/link.png")
 
-    def test_excess_bullets_and_depth_are_rejected(self):
+    def test_excess_bullets_are_advice_not_errors(self):
         self.edit(4, lambda s: s.replace("- 실제 근거를 추가한다", "- 실제 근거를 추가한다\n- 항목 C\n- 항목 D"))
-        with self.assertRaisesRegex(StateError, "5 bullets"):
-            build.lint(self.task)
+        issues = [f["issue"] for f in build.lint(self.task)["findings"]]
+        self.assertTrue(any("bullets (guide: 5)" in issue for issue in issues))
 
     def test_three_levels_are_rejected(self):
         self.edit(4, lambda s: s.replace("  - 확인할 조건", "  - 확인할 조건\n    - 깊이 3"))
@@ -176,12 +176,12 @@ class BuildTests(unittest.TestCase):
         with self.assertRaisesRegex(StateError, "LaTeX styling"):
             build.lint(self.task)
 
-    def test_headlines_that_differ_from_outline_are_draft_edits(self):
+    def test_reworded_headlines_are_reported_not_blocking(self):
         self.edit(4, lambda s: s.replace("### 합성 표의 모든 셀을 편집할 수 있다", "### 연구자가 고친 핵심 문장"))
         markdown.parse_task(self.task)  # Researchers can still compile the draft.
         stage = status(self.task)["stages"][3]
-        self.assertEqual(stage["effective_status"], "invalid")
-        self.assertIn("Slide topics and headlines differ from the outline", stage["issues"])
+        self.assertNotIn("invalid", stage["effective_status"])
+        self.assertTrue(any("연구자가 고친 핵심 문장" in w for w in stage["warnings"]))
 
     def test_headline_quotes_are_not_rewritten(self):
         new = '"합성 기능"을 검증한다'

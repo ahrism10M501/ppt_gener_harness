@@ -249,9 +249,10 @@ def parse_task(task):
             elif level == 3:
                 if topic is None:
                     raise StateError(f"'### {text}' needs a '## topic' above it")
+                current = {"layout": "content", "id": f"S{sum(s['layout'] != 'section' for s in body) + 1:02}", "section": section and section["title"], "topic": topic, "headline": text, "blocks": [], "notes": [], "source": [], "warnings": []}
+                # Length limits are advice; build measures and render-checks the real two-line fit.
                 if len(text) > limits["headline_korean_chars" if re.search(r"[가-힣]", text) else "headline_latin_chars"]:
-                    raise StateError(f"Headline is too long (max two lines): {text}")
-                current = {"layout": "content", "id": f"S{sum(s['layout'] != 'section' for s in body) + 1:02}", "section": section and section["title"], "topic": topic, "headline": text, "blocks": [], "notes": [], "source": []}
+                    current["warnings"].append(f"Headline may exceed two lines; build checks the real fit: {text}")
                 body.append(current)
                 if section and topic not in section["topics"]:
                     section["topics"].append(topic)
@@ -313,9 +314,12 @@ def build_slots(slide, task, tokens):
         validate_blocks(blocks, task, tokens)
         for b in blocks:
             bullets.extend(bullet_items(b))
-    if len(bullets) > tokens["limits"]["bullets"] or any(depth > 2 for depth, _ in bullets):
-        raise StateError(f"{slide['id']}: a slide allows at most 5 bullets and 2 levels")
+    if any(depth > 2 for depth, _ in bullets):
+        raise StateError(f"{slide['id']}: bullets allow at most 2 levels")
+    # Count and length are advice; build stops on real overflow.
+    if len(bullets) > tokens["limits"]["bullets"]:
+        slide["warnings"].append(f"{len(bullets)} bullets (guide: {tokens['limits']['bullets']}); consider splitting the slide")
     for _, value in bullets:
         limit = tokens["limits"]["bullet_korean_chars" if re.search(r"[가-힣]", value) else "bullet_latin_chars"]
         if len(value) > limit:
-            raise StateError(f"Bullet is too long on {slide['id']} ({len(value)} > {limit} chars): {value}")
+            slide["warnings"].append(f"Long bullet ({len(value)} > {limit} chars) may wrap: {value}")

@@ -197,7 +197,7 @@ class StateTests(unittest.TestCase):
     def test_brief_requires_distinct_grounded_candidates_and_consistent_selection(self):
         approve(self.task, 1)
         cases = []
-        one = deepcopy(REVIEWS[2]); one["candidates"] = one["candidates"][:1]; cases.append(one)
+        none = deepcopy(REVIEWS[2]); none["candidates"] = []; cases.append(none)
         mismatch = deepcopy(REVIEWS[2]); mismatch["key_message"] = "unsupported alternative"; cases.append(mismatch)
         duplicate = deepcopy(REVIEWS[2]); duplicate["candidates"][1]["id"] = "A"; cases.append(duplicate)
         no_evidence = deepcopy(REVIEWS[2]); no_evidence["candidates"][0]["evidence"] = []; cases.append(no_evidence)
@@ -216,7 +216,7 @@ class StateTests(unittest.TestCase):
         with self.assertRaisesRegex(StateError, "topic"):
             approve(self.task, 2)
 
-    def test_outline_rejects_arbitrary_styles_bad_ids_and_time_overrun(self):
+    def test_outline_rejects_arbitrary_styles_and_bad_ids(self):
         approve(self.task, 1); approve(self.task, 2)
         cases = []
         style = deepcopy(REVIEWS[3]); style["slides"][0]["font"] = "Comic Sans"; cases.append(style)
@@ -224,17 +224,35 @@ class StateTests(unittest.TestCase):
         sentence = deepcopy(REVIEWS[3]); del sentence["slides"][0]["headline"]; cases.append(sentence)
         duplicate = deepcopy(REVIEWS[3]); duplicate["slides"][1]["id"] = "S01"; cases.append(duplicate)
         boolean = deepcopy(REVIEWS[3]); boolean["slides"][0]["seconds"] = True; cases.append(boolean)
-        overrun = deepcopy(REVIEWS[3]); overrun["duration_minutes"] = 1; cases.append(overrun)
         for review in cases:
             with self.subTest(review=review):
                 self.write_stage(3, review=review)
                 with self.assertRaises(StateError):
                     approve(self.task, 3)
 
-    def test_topics_headlines_and_order_must_match_approved_outline(self):
+    def test_single_user_chosen_candidate_is_enough(self):
+        approve(self.task, 1)
+        review = deepcopy(REVIEWS[2]); review["candidates"] = review["candidates"][:1]
+        self.write_stage(2, review=review)
+        approve(self.task, 2)
+
+    def test_time_overrun_is_a_warning(self):
+        approve(self.task, 1); approve(self.task, 2)
+        review = deepcopy(REVIEWS[3]); review["duration_minutes"] = 1
+        self.write_stage(3, review=review)
+        self.assertIn("exceeds duration_minutes", status(self.task)["stages"][2]["warnings"][0])
+        approve(self.task, 3)
+
+    def test_reworded_headline_is_approvable_with_a_warning(self):
+        self.approve_all()
+        self.write_stage(4, body=SLIDES.replace("독립 평가의 한계를 밝힌다", "독립 평가에는 한계가 있습니다"))
+        self.assertIn("S02 headline reworded", status(self.task)["stages"][3]["warnings"][0])
+        approve(self.task, 4)
+
+    def test_slide_count_topics_and_order_must_match_approved_outline(self):
         for stage in (1, 2, 3):
             approve(self.task, stage)
-        for body in [SLIDES.replace("## 실패 분류", "## 다른 토픽"), SLIDES.replace("독립 평가의 한계를 밝힌다", "과장한 새 주장"), SLIDES + "\n### 실패 분류로 수집 순서를 정한다\n"]:
+        for body in [SLIDES.replace("## 실패 분류", "## 다른 토픽"), SLIDES + "\n### 실패 분류로 수집 순서를 정한다\n"]:
             with self.subTest(body=body):
                 self.write_stage(4, body=body)
                 with self.assertRaises(StateError):

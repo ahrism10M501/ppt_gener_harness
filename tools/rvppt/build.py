@@ -754,10 +754,11 @@ def requested_figures(task, slides):
 
 
 def deck_findings(slides):
-    """Advisory gaps the parser accepts: RVLAB covers and most section slides carry a yellow subtitle."""
+    """Advisory gaps the parser accepts: missing cover/section subtitles and content length hints."""
     findings = [] if slides[0]["subtitle"].strip() else [{"slide_id": "cover", "issue": "Cover subtitle is empty; RVLAB covers show a yellow subtitle under the title. Propose candidates and set deck.subtitle in slides.md"}]
     findings += [{"slide_id": s["id"], "issue": "Section has no subtitle; use '# 섹션 | 부제' (short description or English name) unless omitted on purpose"}
                  for s in slides if s["layout"] == "section" and not s["subtitle"] and s["title"] not in APPENDIX]
+    findings += [{"slide_id": s["id"], "issue": w} for s in slides for w in s.get("warnings", [])]
     return findings
 
 

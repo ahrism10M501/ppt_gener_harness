@@ -14,12 +14,13 @@ LATIN = re.compile(r"[A-Za-z][A-Za-z0-9+\-]*[A-Za-z0-9]")
 
 
 def skeleton(blocks):
-    """What polishing must not touch: headings, block/list/table shapes, code, math, links, image paths, citations."""
+    """What polishing must not touch: section/topic names, block/list/table shapes, code, math, links, image paths, citations.
+    ### headlines may be reworded; their numbers are still checked with the body text."""
     shape = []
     for node in nodes(blocks):
         kind, content = node["t"], node.get("c")
         if kind == "Header":
-            shape.append((kind, content[0], plain(content[2]).strip()))
+            shape.append((kind, content[0], plain(content[2]).strip() if content[0] < 3 else None))
         elif kind in ("Para", "Plain"):
             shape.append((kind,))
         elif kind in ("BulletList", "OrderedList"):
@@ -55,7 +56,7 @@ def polish_check(task, before_path):
     if old_shape != new_shape:
         index = next((i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b), min(len(old_shape), len(new_shape)))
         pair = [s[index] if index < len(s) else None for s in (old_shape, new_shape)]
-        errors.append(f"Markdown structure changed at item {index}: {pair[0]} → {pair[1]}. Headings, lists, tables, code, math, links and figure paths must stay identical")
+        errors.append(f"Markdown structure changed at item {index}: {pair[0]} → {pair[1]}. Section/topic headings, lists, tables, code, math, links and figure paths must stay identical")
     old_text, new_text = plain(old), plain(new)
     numbers = difference(Counter(NUMBER.findall(old_text)), Counter(NUMBER.findall(new_text)))
     if numbers["removed"] or numbers["added"]:
