@@ -9,6 +9,10 @@
 /skills/minimax-docx/
 /skills/minimax-xlsx/
 /skills/pptx-generator/
+/skills/manim-composer/
+/skills/manimce-best-practices/
+/skills/scientific-slides/
+/skills/scientific-visualization/
 /.claude/agents/
 # Real lab decks and personal details are not project structure.
 /templates/
