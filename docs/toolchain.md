@@ -10,7 +10,7 @@ Python 의존성은 python-pptx(구조·표·노트), lxml(OOXML), PyYAML(토큰
 
 ## 렌더링 제약
 
-논문 PDF→Markdown·media 추출은 고정된 PyMuPDF4LLM 0.2.9와 기존 PyMuPDF를 사용한다. `uv run rvppt extract-paper TASK sources/PAPER.pdf`는 `.build/editorial/papers/`에만 변환 결과를 쓰며 원본과 기존 결과를 덮어쓰지 않는다. API·OCR·layout 모델은 필요하지 않다. 캡션·본문 기반 선택과 출처 기록은 [외부 시각 자료 절차](../skills/rvlab-ppt/references/external-visuals.md)를 따른다.
+논문 PDF→Markdown·media 추출은 고정된 PyMuPDF4LLM 0.2.9와 기존 PyMuPDF를 사용한다. `uv run rvppt extract-paper TASK <sources/ 또는 figures/external/의 PDF>`는 `.build/editorial/papers/`에만 변환 결과를 쓰며 원본과 기존 결과를 덮어쓰지 않는다. API·OCR·layout 모델은 필요하지 않다. 캡션·본문 기반 선택과 출처 기록은 [외부 시각 자료 절차](../skills/rvlab-ppt/references/external-visuals.md)를 따른다.
 
 Arial·맑은 고딕이 없으면 Liberation Sans·Noto Sans CJK KR로 대체한다. 글꼴 대체는 줄바꿈을 바꾸므로 실제 선택 폰트로 렌더링과 오버플로 검사를 수행한다.
 

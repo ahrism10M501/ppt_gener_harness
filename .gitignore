@@ -29,17 +29,13 @@ Thumbs.db
 *~
 ~$*
 
-# Real tasks stay local; only the two example tasks are tracked.
+# Real tasks stay local; only the example task is tracked.
 /tasks/*
 !/tasks/261011-example-il-progress/
-!/tasks/2601-world-model1/
-# Within the examples, outputs are rebuilt from slides.md; only listed tasks' PPTX/PDF are tracked.
-# sources/ (papers, data, draft decks) is ignored above except in the completed example.
+# sources/ (papers, data, draft decks) is ignored above except in the example.
 !/tasks/261011-example-il-progress/sources/
 /tasks/*/*.pptx
 /tasks/*/*.pdf
-!tasks/2601-world-model1/*.pptx
-!tasks/2601-world-model1/*.pdf
 !/tasks/261011-example-il-progress/*.pptx
 !/tasks/261011-example-il-progress/*.pdf
 /tasks/*/.build/

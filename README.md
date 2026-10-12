@@ -1,11 +1,13 @@
 # RVLAB PPT Generator
 
-> **에이전트에 붙여넣기:** `AGENTS.md와 docs/setup.md를 읽고 셋업해줘.`
+> **에이전트에 붙여넣기**
+> - 처음 설치: `AGENTS.md와 docs/setup.md를 읽고 셋업해줘.`
+> - 발표 만들기: `tasks/<폴더>의 자료로 RVLAB PPT 만들어줘.` (폴더가 없으면 제목만 알려 주세요)
 
 1. 처음 한 번 `profile.example.yaml`을 `profile.yaml`로 복사해 이름·소속을 채웁니다.
 2. `uv run rvppt new <slug> --title "<발표 제목>" --date YYYY-MM-DD`로 발표 폴더를 만듭니다.
 3. `sources/`에 논문·데이터·메모·초안 PPT를, `figures/`에 그림을 넣습니다.
-4. 에이전트에게 “RVLAB PPT 만들어줘”라고 요청하고 인터뷰·핵심 메시지·목차·내용을 확인·승인합니다. 에이전트가 필요한 웹 사진·논문 figure를 찾아 출처와 함께 넣고, 새 연구 그림은 제안합니다.
+4. 에이전트에게 “RVLAB PPT 만들어줘”라고 요청하고 인터뷰·핵심 메시지·목차·내용을 확인·승인합니다. 에이전트가 필요한 웹 사진·논문 figure를 찾아 출처와 함께 넣고, 도식·차트를 만들며, 새 연구 결과 그래프는 제안합니다. 한국어 발표는 승인 전에 윤문까지 거칩니다.
 5. `slides.md`를 직접 고쳐도 됩니다. `uv run rvppt build tasks/<task>`가 폴더 안에 `YYYYMMDD_제목.pptx`와 PDF를 만듭니다.
 
 `<slug>`는 폴더 이름에 붙는 짧은 영문 별칭입니다(소문자·숫자·하이픈). 아래 명령은 `tasks/260831-train-loop/`를 만듭니다.
@@ -34,7 +36,7 @@ tasks/260831-train-loop/
 
 수식이 있는 발표는 편집형과 `_수식호환.pptx`를 함께 생성합니다. 용도와 원본 편집 방법은 [수식 문법](docs/rendering.md#수식)을 참고하세요.
 
-외부 사진은 에이전트가 검색하고, 논문은 `uv run rvppt extract-paper tasks/<task> sources/<paper>.pdf`로 Markdown·media를 분리해 설명에 맞는 figure를 고릅니다. [외부 시각 자료 절차](skills/rvlab-ppt/references/external-visuals.md)를 참고하세요.
+외부 사진은 에이전트가 검색하고, 논문은 `uv run rvppt extract-paper tasks/<task> sources/<paper>.pdf`(에이전트가 내려받은 PDF는 `figures/external/<paper>.pdf`)로 Markdown·media를 분리해 설명에 맞는 figure를 고릅니다. [외부 시각 자료 절차](skills/rvlab-ppt/references/external-visuals.md)를 참고하세요.
 
 | 필요한 정보 | 문서 |
 | --- | --- |

@@ -46,7 +46,7 @@ review:
 
 ## Stage 2 — plan/brief.md
 
-stage는 2다. 후보 2~3개의 ID는 유일해야 한다. 선택한 후보의 message/storyline이 최종 key_message/storyline과 같아야 한다. 후보를 수정했다면 그 내용을 먼저 갱신한다. 본문에 추천 이유·사용자 선택·범위·전제를 기록한다.
+stage는 2다. 후보는 1~3개이며 ID는 유일해야 한다. 사용자가 메시지를 이미 정했으면 그 하나로 충분하다. 선택한 후보의 message/storyline이 최종 key_message/storyline과 같아야 한다. 후보를 수정했다면 그 내용을 먼저 갱신한다. 본문에 추천 이유·사용자 선택·범위·전제를 기록한다.
 
 ```yaml
 review:
@@ -72,9 +72,9 @@ review:
 
 ## Stage 3 — plan/outline.md
 
-stage는 3이다. review.slides의 필수 필드는 id·topic·headline·evidence·seconds, 선택 필드는 section·figure다. 그 밖의 필드(좌표·폰트·색·layout 등)는 거부한다. ID는 영문자로 시작하는 1~32자의 영문/숫자/밑줄/하이픈이고 중복할 수 없다. topic은 상단 바에 들어갈 짧은 이름, headline은 그 슬라이드의 핵심 문장이다([DESIGN](../DESIGN.md)의 이름 규칙). figure는 슬라이드에 필요한 시각 자료의 계획이다. seconds는 양의 정수, duration_minutes는 양의 유한 숫자다. 예상 시간 합이 시간 예산을 넘으면 승인하지 않는다.
+stage는 3이다. review.slides의 필수 필드는 id·topic·headline·evidence·seconds, 선택 필드는 section·figure다. 그 밖의 필드(좌표·폰트·색·layout 등)는 거부한다. ID는 영문자로 시작하는 1~32자의 영문/숫자/밑줄/하이픈이고 중복할 수 없다. topic은 상단 바에 들어갈 짧은 이름, headline은 그 슬라이드의 핵심 문장이다([DESIGN](../DESIGN.md)의 이름 규칙). figure는 슬라이드에 필요한 시각 자료의 계획이다. seconds는 양의 정수, duration_minutes는 양의 유한 숫자다. 예상 시간 합이 발표 시간을 넘으면 status가 `warnings`로 알린다(승인은 막지 않는다).
 
-`figure`는 재사용 또는 요청된 직접 제작의 표현·근거·제작 경로를 담는 문자열이다. 자세한 시각 요소·설명·배치 관계·검수 기준은 목차 본문과 해당 슬라이드 노트에 기록한다([시각 설계 절차](../skills/rvlab-ppt/references/visual-planning.md)). 필드 형식과 승인 해시 규칙은 그대로 유지한다.
+`figure`는 그림의 표현·근거·재사용/생성 여부를 담는 문자열이다. 새로 만드는 그림의 세부 설계는 목차 본문이나 슬라이드 노트에 둔다([시각 설계 절차](../skills/rvlab-ppt/references/visual-planning.md)).
 
 ```yaml
 review:
@@ -99,7 +99,7 @@ review:
 
 ## Stage 4 — slides.md
 
-stage는 4다. `rvppt new`가 frontmatter를 만든다. `deck`에는 표지의 제목·부제·날짜·발표자·소속을, review에는 language(ko/en)를 넣는다. 본문의 `## 토픽`/`### 핵심 문장` 순서가 목차의 topic/headline과 일치해야 승인할 수 있다. 연구자가 본문을 직접 고쳐 달라지면 status가 `invalid`로 표시하므로 목차를 갱신해 다시 승인받는다. 빌드는 승인 전에도 가능하다. 코드 fence·HTML 주석 안의 제목 형태는 슬라이드로 세지 않는다.
+stage는 4다. `rvppt new`가 frontmatter를 만든다. `deck`에는 표지의 제목·부제·날짜·발표자·소속을, review에는 language(ko/en)를 넣는다. 본문의 슬라이드 수와 `## 토픽` 순서가 목차의 topic과 일치해야 승인할 수 있다. 다르면 status가 `invalid`로 표시하므로 목차를 갱신해 다시 승인받는다. `### 핵심 문장`의 문구는 목차와 달라도 되며, 달라진 문장은 status의 `warnings`에 나온다. 빌드는 승인 전에도 가능하다. 코드 fence·HTML 주석 안의 제목 형태는 슬라이드로 세지 않는다.
 
 ```yaml
 deck:
@@ -143,6 +143,6 @@ review:
 | stale | 저장된 승인은 있으나 내용·자료·상위 승인이 변경됨 |
 | invalid | frontmatter/스키마 오류 또는 승인된 문서에 blocking/불완전 review가 있음 |
 
-status는 읽기 전용이고 파일의 선언 status는 draft/approved 둘 중 하나다. approve는 이전 단계의 현재 승인을 요구하며 뒤 단계의 승인을 무효화한다. 동일한 유효 승인을 다시 기록하면 파일을 수정하지 않는다. 네 단계가 모두 유효하면 `content_approved`가 true이고 build 리포트에도 같은 값이 기록된다.
+status는 읽기 전용이고 파일의 선언 status는 draft/approved 둘 중 하나다. 단계마다 `issues`는 승인을 막는 문제, `warnings`는 보고할 권고(시간 초과, 바뀐 핵심 문장)다. approve는 이전 단계의 현재 승인을 요구하며 뒤 단계의 승인을 무효화한다. 동일한 유효 승인을 다시 기록하면 파일을 수정하지 않는다. 네 단계가 모두 유효하면 `content_approved`가 true이고 build 리포트에도 같은 값이 기록된다.
 
 content_hash는 내용 동일성 검사이며 사용자 승인 자체의 인증 수단은 아니다. 에이전트는 명시적인 사용자 승인 후에만 approve를 호출한다.

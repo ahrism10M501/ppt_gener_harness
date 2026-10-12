@@ -30,16 +30,14 @@ RVLAB task에 적용할 때는 외부 스킬의 작업 cwd를 `TASK/.build/edito
 
 ## 수식·PDF·Office 문서 스킬
 
-`pdf`(OpenAI, Apache-2.0), `typst`(akilrammohan, MIT), `minimax-docx`·`minimax-xlsx`·`pptx-generator`(MiniMax, MIT)를 고정 커밋에서 추가했다. 참조자료·스크립트·템플릿과 라이선스를 원본 그대로 보존하고 같은 manifest에 해시를 기록했다. `pdf`, `typst`, `minimax-docx`, `minimax-xlsx`는 프로젝트 발견 경로에 연결하고 일반 `pptx-generator`는 RVLAB 제작 규칙과 구분해 참고용으로 보관한다.
+`pdf`(OpenAI, Apache-2.0), `typst`(akilrammohan, MIT), `minimax-docx`·`minimax-xlsx`·`pptx-generator`(MiniMax, MIT)는 고정 커밋의 원본을 참조자료·스크립트·템플릿·라이선스와 함께 보존하고 manifest에 해시를 기록한다. `pdf`, `typst`, `minimax-docx`, `minimax-xlsx`는 프로젝트 발견 경로에 연결하고, 일반 `pptx-generator`는 RVLAB 제작 규칙과 구분해 참고용으로 보관한다.
 
-포맷별 선택, 라이선스로 제외한 후보, 실행 의존성과 실제 검증 범위는 [문서 도구 안내](document-tools.md)를 따른다. upstream DOCX frontmatter의 `triggers` 확장 필드는 원본 보존을 위해 그대로 두며 핵심 `name`·`description`과 YAML 형식을 확인한다. 이 필드가 도구별 자동 호출을 보장하지는 않는다.
-
-새 파일 119개를 추가했고 전체 manifest는 파일 182개와 내부 symlink 1개를 기록한다. Typst·.NET·추가 Python 패키지·OCR 모델·MCP 서버를 설치하지 않았다. 포함한 갱신/설치 스크립트는 자동 실행하지 않는다.
+포맷별 선택, 라이선스로 제외한 후보, 실행 의존성은 [문서 도구 안내](document-tools.md)를 따른다. upstream DOCX frontmatter의 `triggers` 확장 필드는 원본 보존을 위해 그대로 둔다. 이 필드가 도구별 자동 호출을 보장하지는 않는다. Typst·.NET·OCR 모델·MCP 서버는 포함하지 않으며, 포함한 갱신/설치 스크립트는 자동 실행하지 않는다.
 
 
 ## 연구 그림·애니메이션 스킬
 
-다음 원문을 고정 커밋에서 설치하고 각 폴더의 `UPSTREAM_LICENSE`에 저장소 라이선스를 별도로 보존했다. 모든 원문·참조자료·스크립트의 SHA-256은 `dependencies.yaml`에 기록한다.
+다음 원문은 고정 커밋의 것이며 각 폴더의 `UPSTREAM_LICENSE`에 저장소 라이선스를 별도로 보존한다. 모든 원문·참조자료·스크립트의 SHA-256은 `dependencies.yaml`에 기록한다.
 
 | 스킬 | 고정 출처 | 발견·사용 범위 |
 | --- | --- | --- |
@@ -48,4 +46,4 @@ RVLAB task에 적용할 때는 외부 스킬의 작업 cwd를 `TASK/.build/edito
 | `scientific-visualization` | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills/tree/92ace75ac21efe19a620434e0ca4e356081fe807), MIT | `.agents/skills`·`.claude/skills`에 연결. 실제 자료의 그래프 선택·축·단위·비교·내보내기 참조. |
 | `scientific-slides` | 같은 고정 커밋, MIT | 참고용. 발표 구조·그림 배치·시각 검토에 필요한 부분만 읽는다. 일반 PPT/Beamer 생성과 AI 이미지/API 스크립트를 자동 실행하지 않는다. |
 
-RVLAB 발표에는 프로젝트의 양식·승인·원자료 규칙이 우선한다. 외부 스킬의 기본 다색 팔레트·둥근 모서리·작은 논문용 폰트는 가져오지 않는다. 그래프는 `docs/design/rvlab.mplstyle`, 애니메이션은 프로젝트 `rvlab-animation`을 따른다. 그림과 애니메이션 생성은 사용자가 요청한 범위에서 진행하며 실제 수치·표본 수·불확실성을 만들지 않는다. 실행 의존성은 `uv sync --frozen --extra visual`로 설치하고 [setup](setup.md#그림애니메이션-선택-도구)에 적힌 OS 개발 패키지를 별도로 확인한다.
+RVLAB 발표에는 프로젝트의 양식·승인·원자료 규칙이 우선한다. 외부 스킬의 기본 다색 팔레트·둥근 모서리·작은 논문용 폰트는 가져오지 않는다. 그래프는 `docs/design/rvlab.mplstyle`, 애니메이션은 프로젝트 `rvlab-animation`을 따른다. 누가 어떤 그림을 만드는지는 `AGENTS.md`의 "자료와 그림"을 따르며, 실제 수치·표본 수·불확실성을 만들지 않는다. 실행 의존성은 `uv sync --frozen --extra visual`로 설치하고 [setup](setup.md#그림애니메이션-선택-도구)에 적힌 OS 개발 패키지를 별도로 확인한다.

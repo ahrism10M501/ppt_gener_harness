@@ -11,10 +11,10 @@
 
 ## 논문 PDF → Markdown·media
 
-공개 PDF를 사용할 때는 저자·학회·프로젝트·arXiv 원문을 우선한다. 새 PDF는 `sources/`에 저장하며 기존 원자료를 수정하지 않는다. 새 원자료가 추가되면 기존 승인 해시가 바뀌므로 기획 자료 확보는 Stage 1 검토 전에 마친다.
+공개 PDF를 사용할 때는 저자·학회·프로젝트·arXiv 원문을 우선한다. 에이전트가 내려받은 PDF는 `figures/external/`에 저장한다. `sources/`는 연구자가 준 원자료이며, 여기에 파일을 더하면 Stage 1부터 승인이 풀린다. `figures/`의 변경은 Stage 4만 다시 확인하면 된다.
 
 ```bash
-uv run rvppt extract-paper tasks/<task> sources/<paper>.pdf
+uv run rvppt extract-paper tasks/<task> figures/external/<paper>.pdf   # 연구자가 준 PDF는 sources/<paper>.pdf
 ```
 
 PyMuPDF4LLM으로 텍스트와 표를 Markdown으로 변환하고 이미지·벡터 그림 후보를 PNG로 추출한다. API 키·외부 문서 전송·모델 다운로드 없이 실행한다. 결과는 다음 경로에 생긴다.
@@ -47,7 +47,7 @@ TASK/.build/editorial/papers/<논문명>-<PDF해시 앞 12자>/
 ```yaml
 - asset: figures/viral-training.png
   kind: paper-figure
-  source_file: sources/viral.pdf
+  source_file: figures/external/viral.pdf
   source_sha256: <pages.json의 원본 해시>
   source_url: <원문 PDF 또는 DOI URL>
   provider: <논문 저자·연도>
