@@ -83,11 +83,29 @@ $$\mathcal{L} = \frac{1}{N}\sum_i (y_i-\hat y_i)^2$$
 
 Mermaid는 단순한 흐름도에만 `mermaid` 코드 fence로 쓴다. 고정 RVLAB 색·폰트·strict 모드로 렌더하며 `.mmd`·SVG·PNG를 `.build/output/generated-assets/`에 보존한다. init/frontmatter·style/classDef/linkStyle·click 지시를 거부한다.
 
-## 수식 호환성
+## GIF 애니메이션
 
-편집용 PPTX에는 Pandoc의 네이티브 OMML을 보존한다. Pandoc이 변환하지 못했지만 MathJax가 처리할 수 있는 수식은 고해상도 그림으로 대체하고 리포트의 `scope=final_and_preview`에 기록한다. 임의 색·폰트 크기·외부 리소스·정의 매크로를 담은 LaTeX는 거부한다.
+움직임이 설명에 필요한 경우 독립 그림 문단에 GIF를 넣는다. 사용 기준과 장면 기획은 프로젝트의 애니메이션 스킬을 따른다.
 
-LibreOffice가 OMML을 표시하지 못하므로 **별도** preview copy에서 수식 포함 블록만 300dpi 이미지로 바꿔 PDF/PNG를 만든다(`scope=preview`). OMML의 실제 PowerPoint 표시·편집과 줄바꿈은 별도 확인이 필요하다.
+```markdown
+![음의 기울기 방향으로 이동하는 교육용 합성 예시](figures/gradient-descent.gif)
+```
+
+`figures/gradient-descent.png`를 같은 폴더에 함께 둔다. GIF와 PNG는 픽셀 크기가 같아야 하며, PNG는 PDF·미리보기에서 보여줄 대표 장면으로 제작자가 직접 선택한다. GIF를 자동으로 첫 프레임에 고정하지 않는다. 일반 그림과 같은 task 내부 경로·symlink 검사와 150dpi 해상도 기준을 적용한다.
+
+GIF는 두 프레임 이상이어야 하고 모든 프레임에 양수 재생 시간이 있어야 한다. 디코딩 자원 한계는 64MiB, 600프레임, `가로 × 세로 × 프레임 수` 합계 3억 픽셀이다. 설명에 적합한 길이·반복·멈춤은 스킬에서 검토한다.
+
+최종 PPTX에는 GIF 원본 바이트를 보존하고, 별도 `presentation-preview-copy.pptx`에서만 동일 위치의 PNG로 바꿔 PDF·PNG를 만든다. 원본 GIF·PNG는 수정하지 않는다. 빌드 리포트의 `images[].animation`에 GIF·대표 PNG 경로, 프레임 수, 전체 재생 시간, 픽셀 크기, 반복 횟수를 기록한다. `loop_count=0`은 무한 반복, 값이 없으면 반복 설정이 없는 GIF다.
+
+PDF·PNG 검사는 대표 정지 화면의 배치와 읽기성만 확인한다. PowerPoint 슬라이드 쇼의 GIF 재생·타이밍·호환성은 별도로 확인해야 하며 자동 QA가 검증했다고 표시하지 않는다.
+
+## 수식
+
+수식 원본은 `slides.md`의 LaTeX다. 문장 안에서는 `$...$`, 독립 블록에서는 `$$...$$`를 사용한다.
+
+편집형 PPTX는 Cambria Math와 고정 크기를 적용한 OMML, 호환 이미지를 함께 저장한다. `_수식호환.pptx`와 PDF는 수식 포함 블록을 300dpi 이미지로 표시하며 종횡비를 유지한다. 내용 수정은 LaTeX 원본을 고쳐 재생성한다.
+
+생성된 PPTX와 PDF를 열어 기호·첨자·분수·배치를 확인한다. 검수에 사용한 앱과 확인 범위를 기록한다.
 
 ## 명령과 결과
 

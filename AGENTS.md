@@ -7,13 +7,16 @@
 
 1. 이 파일과 [README](README.md)의 문서 안내를 확인한다.
 2. PPT 작업이면 [rvlab-ppt 스킬](skills/rvlab-ppt/SKILL.md)과 [DESIGN.md](DESIGN.md)를 읽는다.
+   목차·본문의 시각 자료는 [시각 설계 절차](skills/rvlab-ppt/references/visual-planning.md)로 필요성·표현·제작 경로·검수를 연결한다.
+   도넛·흐름도·타임라인 같은 꾸밈 차트는 [차트 스킬](skills/rvlab-charts/SKILL.md)을 쓴다.
+   개념 설명용 GIF를 만들거나 배치할 때는 [교육 애니메이션 스킬](skills/rvlab-animation/SKILL.md)도 읽는다.
 3. 발표 기획은 [인터뷰 스킬](skills/rvlab-interview/SKILL.md), [워크플로우](docs/workflow.md), [문서 스키마](docs/schemas.md)를 따른다. 윤문은 [윤문 절차](skills/rvlab-ppt/references/polish.md)를 따른다. 문서와 명령의 동작은 실제 코드를 기준으로 확인한다.
 4. 설치·도구 문제는 [setup](docs/setup.md)과 [toolchain](docs/toolchain.md)을 확인한다.
 5. [구조](docs/architecture.md)와 `graphify-out/`는 프로젝트 구조 참고 자료다. 실제 코드와 입력이 우선이며 task 자료를 그래프에 넣지 않는다.
 
 ## 제작 흐름과 승인
 
-`slides.md`가 원본이고 PPTX는 재생성 가능한 산출물이다. task는 Overleaf 프로젝트처럼 `slides.md`(원본)·`figures/`(연구자 그림)·`sources/`(논문·데이터·초안 PPT)·`plan/`(승인 문서)와 그 옆의 `YYYYMMDD_제목.pptx/.pdf`로 구성된다. 사용자가 자료를 넣은 task가 있으면 그 폴더를 재사용한다. 새 task는 `uv run rvppt new <slug> --title <제목>`으로 만들고 표지 인적사항은 `profile.yaml`에서 가져온다. task 간 파일을 공유하거나 덮어쓰지 않는다. `sources/` 원자료를 수정하지 않는다.
+`slides.md`가 원본이고 PPTX는 재생성 가능한 산출물이다. task는 Overleaf 프로젝트처럼 `slides.md`(원본)·`figures/`(연구자 그림·외부 사진·논문 figure)·`sources/`(논문·데이터·초안 PPT)·`plan/`(승인 문서)와 그 옆의 `YYYYMMDD_제목.pptx/.pdf`로 구성된다. 사용자가 자료를 넣은 task가 있으면 그 폴더를 재사용한다. 새 task는 `uv run rvppt new <slug> --title <제목>`으로 만들고 표지 인적사항은 `profile.yaml`에서 가져온다. task 간 파일을 공유하거나 덮어쓰지 않는다. `sources/` 원자료를 수정하지 않는다.
 
 | 단계 | 문서 | 확인할 내용 |
 | --- | --- | --- |
@@ -36,10 +39,11 @@
 - 에이전트는 내용과 정해진 레이아웃 이름만 선택한다. 입력에서 좌표·폰트·색·크기·장식을 지정하지 않는다. 고정 토큰은 DESIGN.md의 YAML이 정의한다.
 - 표지·목차·섹션·상단 바는 DESIGN.md의 RVLAB 이름 규칙을 따른다. `## 토픽`은 상단 바·목차에 실릴 짧은 한 줄 이름이고, 결론은 `### 핵심 문장`에 쓴다. 표지·목차·감사합니다는 빌드가 만든다.
 - 한 슬라이드에 메시지 1개, 불릿 최대 5개·깊이 2단계, 표 최대 8행(헤더 포함)·6열을 지킨다.
-- 그림은 연구자가 만든다. 에이전트는 필요한 그림을 제안하고 `figures/` 경로로 자리를 잡으며, 사용자가 요청한 경우에만 그래프를 직접 만든다.
+- 에이전트는 연구실 내부 발표에 필요한 웹 사진과 공개 논문 figure를 검색·다운로드·추출해 `figures/`에 넣을 수 있다. 캡션·본문 설명과 슬라이드 주장을 대조해 선택하고 원본 이미지·PDF와 눈으로 확인한다. 출처·figure 번호·페이지·변형 내역은 [외부 시각 자료 절차](skills/rvlab-ppt/references/external-visuals.md)를 따른다. 연구 결과 그래프를 새로 만드는 것은 사용자가 요청한 경우에만 한다. 적합한 기존 자료가 없으면 그림을 제안하고 요청 상자로 남긴다.
+- 사용자가 교육 애니메이션 제작을 요청하면 GIF와 같은 이름의 대표 PNG를 `figures/`에 함께 만든다. PPTX에는 원본 GIF, PDF·미리보기에는 대표 PNG를 사용한다. 정적 QA를 PowerPoint 재생 검증으로 기록하지 않는다.
 - 수치·자료·인용·실험 결과를 만들지 않는다. 예시 데이터는 합성임을 명시한다. 한글이 기본이며 영어 발표도 지원한다.
 - Arial·맑은 고딕을 우선 사용한다. 누락 시 Liberation Sans·Noto Sans CJK KR 대체를 허용하고 실제 폰트 프로필을 task에 기록한다.
-- LaTeX 수식은 편집 가능한 OMML을 우선한다. 이미지 fallback을 허용하고 해당 수식과 이유를 검사 리포트에 기록한다. LibreOffice 미리보기만으로 OMML 편집성·렌더링을 확인했다고 주장하지 않는다.
+- 수식은 `slides.md`에 LaTeX로 작성하고 [수식 제작·검수](docs/rendering.md#수식)를 따른다.
 - 빌드 실패 시 이전 성공 산출물을 보존한다. QA 수정은 Markdown/자료를 고친 뒤 재생성한다.
 
 ## 스킬·외부 도구
@@ -47,7 +51,7 @@
 프로젝트 스킬은 `skills/`가 본체이며 `.agents/skills/`와 `.claude/skills/`가 발견 진입점이다. 외부 스킬 원문·라이선스·고정 버전을 보존하고 RVLAB 규칙은 프로젝트 스킬에 둔다. 외부 스킬은 고정 버전을 저장소에 포함하며 출처·라이선스·파일 해시는 `skills/dependencies.yaml`, 사용 범위는 `docs/skills.md`에 기록한다. 자동 다운로드·동기화는 하지 않는다. 한국어 윤문은 `skills/rvlab-ppt/references/polish.md` 절차로 `humanize-korean`을 쓰고 `polish-check`로 보존을 검사한다. 외부 스킬의 자체 작업 폴더는 task의 `.build/editorial/` 안에 격리한다. 수식·PDF·일반 문서 처리의 후보·라이선스·실행 의존성은 `docs/document-tools.md`를 따른다. 포함한 외부 설치·갱신 스크립트는 자동 실행하지 않으며 일반 PPTX 스킬로 RVLAB 고정 양식·승인 절차를 우회하지 않는다.
 
 
-현재 명령: `uv run rvppt new SLUG --title TITLE`, `uv run rvppt status TASK`, `uv run rvppt approve TASK --stage 1|2|3|4 [--expected-hash HASH]`, `uv run rvppt lint TASK`, `uv run rvppt build TASK`, `uv run rvppt preview TASK`, `uv run rvppt polish-check TASK --before BEFORE.md`, `uv run rvppt doctor`, `uv run rvppt graph-check`. 성공 결과는 `TASK/YYYYMMDD_제목.pptx/.pdf`, 미리보기 PNG·리포트는 `TASK/.build/output/`에 있다. 사람이 고친 산출 PPTX는 덮어쓰지 않는다. `doctor`는 도구·폰트·양식·외부 스킬 해시를 읽기 전용으로 점검한다. 완성 예제는 `tasks/261011-example-il-progress/`다. `graph-check`는 프로젝트 구조 스냅샷의 변경과 제외 규칙을 점검한다.
+현재 명령: `uv run rvppt new SLUG --title TITLE`, `uv run rvppt status TASK`, `uv run rvppt approve TASK --stage 1|2|3|4 [--expected-hash HASH]`, `uv run rvppt lint TASK`, `uv run rvppt build TASK`, `uv run rvppt preview TASK`, `uv run rvppt polish-check TASK --before BEFORE.md`, `uv run rvppt extract-paper TASK sources/PAPER.pdf`, `uv run rvppt doctor`, `uv run rvppt graph-check`. 성공 결과는 `TASK/YYYYMMDD_제목.pptx/.pdf`, 미리보기 PNG·리포트는 `TASK/.build/output/`에 있다. 사람이 고친 산출 PPTX는 덮어쓰지 않는다. `doctor`는 도구·폰트·양식·외부 스킬 해시를 읽기 전용으로 점검한다. 완성 예제는 `tasks/261011-example-il-progress/`다. `graph-check`는 프로젝트 구조 스냅샷의 변경과 제외 규칙을 점검한다.
 
 sudo·시스템 설치가 필요한 조치는 구체적인 명령과 이유를 제시해 확인받는다.
 

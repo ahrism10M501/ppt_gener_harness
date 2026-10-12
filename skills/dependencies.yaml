@@ -638,3 +638,307 @@ skills:
       upstream_path: LICENSE
       sha256: eed4ccce37c2d24822da3bd9d5bee7bc12d494741de56ada513d0b97f537fcd0
   symlinks: {}
+- id: manim-composer
+  repository: https://github.com/adithya-s-k/manim_skill
+  commit: cef045011722d285692e3381d12d4d637da56e18
+  license: MIT
+  license_url: https://github.com/adithya-s-k/manim_skill/blob/cef045011722d285692e3381d12d4d637da56e18/LICENSE
+  license_file: skills/manim-composer/UPSTREAM_LICENSE
+  entrypoints:
+    reference: skills/manim-composer/SKILL.md
+  mode: reference_only
+  files:
+    SKILL.md:
+      upstream_path: skills/manim-composer/SKILL.md
+      sha256: 79e7c224fa8912f3e26897aa91252ab30996eddd1208c1128238057a7b89b176
+    UPSTREAM_LICENSE:
+      upstream_path: LICENSE
+      sha256: c02371d11efe3579c38db2bb73258f939cc74ecd729d69128ad3c65c4138b009
+    references/narrative-patterns.md:
+      upstream_path: skills/manim-composer/references/narrative-patterns.md
+      sha256: fc77ac5b0224fd79adc5b6dab889a8ab4719ea99c419634bc66759ec49543656
+    references/scene-examples.md:
+      upstream_path: skills/manim-composer/references/scene-examples.md
+      sha256: f147c92b48c6fffac71245f65baa00e92ece2d337d3a56382a8a60e9405d98fe
+    references/visual-techniques.md:
+      upstream_path: skills/manim-composer/references/visual-techniques.md
+      sha256: 98a493bced91a4aa821b72a059b4d9c3cdde62babccd9de27d50e176caabb052
+    templates/scenes-template.md:
+      upstream_path: skills/manim-composer/templates/scenes-template.md
+      sha256: 562da30cce06b37061aa0f83e19d7dfe96561bd0011ca90c8248d8b15d1ac7b9
+- id: manimce-best-practices
+  repository: https://github.com/adithya-s-k/manim_skill
+  commit: cef045011722d285692e3381d12d4d637da56e18
+  license: MIT
+  license_url: https://github.com/adithya-s-k/manim_skill/blob/cef045011722d285692e3381d12d4d637da56e18/LICENSE
+  license_file: skills/manimce-best-practices/UPSTREAM_LICENSE
+  entrypoints:
+    skill: skills/manimce-best-practices/SKILL.md
+  mode: available_requires_dependencies
+  files:
+    LICENSE.txt:
+      upstream_path: skills/manimce-best-practices/LICENSE.txt
+      sha256: c02371d11efe3579c38db2bb73258f939cc74ecd729d69128ad3c65c4138b009
+    SKILL.md:
+      upstream_path: skills/manimce-best-practices/SKILL.md
+      sha256: ae09751ec9e3e9389b85f923f4e34b706a32e01b18e378759163d1d855f90d4e
+    UPSTREAM_LICENSE:
+      upstream_path: LICENSE
+      sha256: c02371d11efe3579c38db2bb73258f939cc74ecd729d69128ad3c65c4138b009
+    examples/3d_visualization.py:
+      upstream_path: skills/manimce-best-practices/examples/3d_visualization.py
+      sha256: 214dcd11b09b83025405050bc618cfa7d8749691e39f136a0b987de82e47ff95
+    examples/attention/__init__.py:
+      upstream_path: skills/manimce-best-practices/examples/attention/__init__.py
+      sha256: 6c13b542eb4c66701cb349a4c95606a8d9767711eb3155032136e75babe46f7f
+    examples/attention/helpers.py:
+      upstream_path: skills/manimce-best-practices/examples/attention/helpers.py
+      sha256: 82014263adf85db640774467ac6dae00798347b995b02d34d6664e6e917c1409
+    examples/attention/scenes.py:
+      upstream_path: skills/manimce-best-practices/examples/attention/scenes.py
+      sha256: 10aef8fc1d8c65d2043a95215f3b310ff1591f5aaab92139aa48969f50991533
+    examples/basic_animations.py:
+      upstream_path: skills/manimce-best-practices/examples/basic_animations.py
+      sha256: d95f075d90d5cb4114923d99a1b7ad167acfaf8343ae808b682adc3c830c7506
+    examples/graph_plotting.py:
+      upstream_path: skills/manimce-best-practices/examples/graph_plotting.py
+      sha256: 32f9c68313daf3b2a42e5e75e85d24b46628ef77872615eef798036840b52b83
+    examples/lorenz_attractor.py:
+      upstream_path: skills/manimce-best-practices/examples/lorenz_attractor.py
+      sha256: eee8b2d5d5e6b10c61978c46921e1189c3d7a43b94cb6706f2505724f7e03392
+    examples/math_visualization.py:
+      upstream_path: skills/manimce-best-practices/examples/math_visualization.py
+      sha256: e890b6be5fd8322631f708b71ac8da7d9201d639d5676977313a659a1cb87ded
+    examples/updater_patterns.py:
+      upstream_path: skills/manimce-best-practices/examples/updater_patterns.py
+      sha256: f372ad2991835320a2a2243dae5efb4ad7ddbcf8a82cebfd0f85760220ced635
+    rules/3d.md:
+      upstream_path: skills/manimce-best-practices/rules/3d.md
+      sha256: 00857a259d770b43877c02aecc276e44adc1a8c69ae6f8a067a30ee9cc35223c
+    rules/animation-groups.md:
+      upstream_path: skills/manimce-best-practices/rules/animation-groups.md
+      sha256: 9eb1ebfc7bd91690a77b5626de309d4f9d49ba38d21938add04a9787a05db211
+    rules/animations.md:
+      upstream_path: skills/manimce-best-practices/rules/animations.md
+      sha256: 6ad3596f9d4aa176f25847d97cad073a3cbefb078e28ae998047a8e873a17620
+    rules/axes.md:
+      upstream_path: skills/manimce-best-practices/rules/axes.md
+      sha256: 5a0acdb55f332f9a7e31821078d088e987754bc252f5faa28bca31a53173f7dd
+    rules/camera.md:
+      upstream_path: skills/manimce-best-practices/rules/camera.md
+      sha256: cfa876df13e9b2d26e0bb40e8b210c7bc91359c6d6c1e4036d5eb3c90b6f3b48
+    rules/cli.md:
+      upstream_path: skills/manimce-best-practices/rules/cli.md
+      sha256: faee09f0f37f6aa41b94f762a9cdb8ef5536a1e6b1e9e3ac05de1680e576ba6b
+    rules/colors.md:
+      upstream_path: skills/manimce-best-practices/rules/colors.md
+      sha256: b8e63c042ab6d652bb3d42a3309e11cc4c62a7e06f3b9811a4bf2f822eda3020
+    rules/config.md:
+      upstream_path: skills/manimce-best-practices/rules/config.md
+      sha256: 9ef880d55b7c4d8c4b7aeabd6f095c42164f05cfb770e9a8ba25a184034c0c2a
+    rules/creation-animations.md:
+      upstream_path: skills/manimce-best-practices/rules/creation-animations.md
+      sha256: 0bdbf8cacf5137e4acd60bb29ae1bb03bf3e059aa08b7cc2faa43f81491d354f
+    rules/graphing.md:
+      upstream_path: skills/manimce-best-practices/rules/graphing.md
+      sha256: 8996cca86e2d3c6d032ddceb119724312ac29a1e462f835b040f931422187354
+    rules/grouping.md:
+      upstream_path: skills/manimce-best-practices/rules/grouping.md
+      sha256: 05330699f1b935eb9dd6cd5237592bd04ef56dbe9a50444983379b81d6e26dce
+    rules/latex.md:
+      upstream_path: skills/manimce-best-practices/rules/latex.md
+      sha256: 9d244fe31662d734e182fd0d19ce147d9c93b3ee25cb5df137d29c4b186abee1
+    rules/lines.md:
+      upstream_path: skills/manimce-best-practices/rules/lines.md
+      sha256: d13858e8a4016a5bd0dca3b121c5679a8350541dc9d0779562d40fba1abe5443
+    rules/mobjects.md:
+      upstream_path: skills/manimce-best-practices/rules/mobjects.md
+      sha256: a96c8eef4c0e2830cbcbb32f3a25cf9eb30c2788cc593be5a8ca1a60b8fc4449
+    rules/positioning.md:
+      upstream_path: skills/manimce-best-practices/rules/positioning.md
+      sha256: 83230968eaf354cc5993c5c6736fb053cbda48cc7bdd110faf8a04dbb71f7106
+    rules/scenes.md:
+      upstream_path: skills/manimce-best-practices/rules/scenes.md
+      sha256: 7dc32c7c8bfd50d9266351f90cbfc59b2b71f610a37ea6a836af9946dc64b3ba
+    rules/shapes.md:
+      upstream_path: skills/manimce-best-practices/rules/shapes.md
+      sha256: 3054d04c9b8d9cb79cb4f8554a39be46e5a6c78d29a24109c7ab367ff6640133
+    rules/styling.md:
+      upstream_path: skills/manimce-best-practices/rules/styling.md
+      sha256: 740e0bb7dc428db866cefeb0a7272f2c5e16f816e84a87976d146577bf94424e
+    rules/text-animations.md:
+      upstream_path: skills/manimce-best-practices/rules/text-animations.md
+      sha256: 4c8478c1921f56e05b17802abe0666dde1c80ef75e66447d1c8a145fc33159c8
+    rules/text.md:
+      upstream_path: skills/manimce-best-practices/rules/text.md
+      sha256: a4caeb70c295ef879ac718f7e722c4dd2b99805d887233bc217a6b91ae7b5c22
+    rules/timing.md:
+      upstream_path: skills/manimce-best-practices/rules/timing.md
+      sha256: 0534df4e9b694da16a4993a22689e2dab4b7857df008248ee9fe655b97b2ec4e
+    rules/transform-animations.md:
+      upstream_path: skills/manimce-best-practices/rules/transform-animations.md
+      sha256: 3565293834394ecdcbf080504d8a015b44f85b5d3fc2b3493fd4d1ffd1903774
+    rules/updaters.md:
+      upstream_path: skills/manimce-best-practices/rules/updaters.md
+      sha256: b0520d45fc72380bd279df76b80028901a9273becfac61039f6c48e0a345c767
+    templates/basic_scene.py:
+      upstream_path: skills/manimce-best-practices/templates/basic_scene.py
+      sha256: fd47d30ecfd6b03a8baff4a9fb9e88c4cf023fed9b57cf405366e99cbf84c515
+    templates/camera_scene.py:
+      upstream_path: skills/manimce-best-practices/templates/camera_scene.py
+      sha256: 51f46e59278a54415bfdf65124d3064ab58f0538716b964b381e69078d711010
+    templates/threed_scene.py:
+      upstream_path: skills/manimce-best-practices/templates/threed_scene.py
+      sha256: 73ef6dfb132472beb8b239d61c8538b2f1a37dd0e263682e650f9334c10ce023
+- id: scientific-visualization
+  repository: https://github.com/K-Dense-AI/scientific-agent-skills
+  commit: 92ace75ac21efe19a620434e0ca4e356081fe807
+  license: MIT
+  license_url: https://github.com/K-Dense-AI/scientific-agent-skills/blob/92ace75ac21efe19a620434e0ca4e356081fe807/LICENSE.md
+  license_file: skills/scientific-visualization/UPSTREAM_LICENSE
+  entrypoints:
+    skill: skills/scientific-visualization/SKILL.md
+  mode: available_requires_dependencies
+  files:
+    SKILL.md:
+      upstream_path: skills/scientific-visualization/SKILL.md
+      sha256: 8cbde7cdc10d959cf72cfd08335cc8ce996247eee6ebdb900eb64a4cb0ff34a3
+    UPSTREAM_LICENSE:
+      upstream_path: LICENSE.md
+      sha256: 09b02a3c9df3053c55531d503357a9c7cde275970e6c3ceaa1ddf5f0e90b40c1
+    assets/color_palettes.py:
+      upstream_path: skills/scientific-visualization/assets/color_palettes.py
+      sha256: 98ee4aa4b9bbb010996d55144ea6bf45a0ab294009b9bb0ef6d9c5ec9fed5154
+    assets/nature.mplstyle:
+      upstream_path: skills/scientific-visualization/assets/nature.mplstyle
+      sha256: f37a361cdda8846da0794fd879cc8173402094f110239d57e0227fdd8299a4f6
+    assets/presentation.mplstyle:
+      upstream_path: skills/scientific-visualization/assets/presentation.mplstyle
+      sha256: d0e5a768e5965aa3893b12c0f7decd4c3b09502044391a840ebdee37dfea44da
+    assets/publication.mplstyle:
+      upstream_path: skills/scientific-visualization/assets/publication.mplstyle
+      sha256: eba3001f346649a9e41d9ac1d56101abbae10aefecdad3be9530f4c9cd9269b3
+    assets/publisher_profiles.json:
+      upstream_path: skills/scientific-visualization/assets/publisher_profiles.json
+      sha256: 1e1b1b5a4e0e3dfc57877f2abf1e96888fe6b65617234b078f193b8f76e0ebe9
+    references/color_palettes.md:
+      upstream_path: skills/scientific-visualization/references/color_palettes.md
+      sha256: c9b6a596dd1dd1e08050fdcbb304a0268ee515bce2120a9bbd3fba31cd7fa119
+    references/journal_requirements.md:
+      upstream_path: skills/scientific-visualization/references/journal_requirements.md
+      sha256: f7c4b6660eb70f7c5778d13908409e1dc690f00e3dfc8314f430feb89781740c
+    references/matplotlib_examples.md:
+      upstream_path: skills/scientific-visualization/references/matplotlib_examples.md
+      sha256: 74fd5977ce57b09b476285309559bbcbe3b1748943b719844b28a6b61378c041
+    references/publication_guidelines.md:
+      upstream_path: skills/scientific-visualization/references/publication_guidelines.md
+      sha256: 5f70c6b22dbb5e0fae18b0f1197b8794896bf7afc059874bcf7afbd5aa86bbe5
+    references/sources.md:
+      upstream_path: skills/scientific-visualization/references/sources.md
+      sha256: 3ff34759c0fed3baf33286a8005fd81f0c3466a554c8b0d45f43ad30b1e5b505
+    scripts/_common.py:
+      upstream_path: skills/scientific-visualization/scripts/_common.py
+      sha256: e4eea2c2e5f5d8cfa544c6bed152cdb88a3d7c7952df99bcd74b45077fd6f707
+    scripts/export_plan.py:
+      upstream_path: skills/scientific-visualization/scripts/export_plan.py
+      sha256: c20962bf4c624b9939c80bd16815fc0a18fe2be285f0654a6a53704c663add0e
+    scripts/figure_export.py:
+      upstream_path: skills/scientific-visualization/scripts/figure_export.py
+      sha256: fe9c77878da61297ce55224b67282d128631deb628d930aa1929c9eb7330bf79
+    scripts/image_metadata.py:
+      upstream_path: skills/scientific-visualization/scripts/image_metadata.py
+      sha256: 45f79cefd99b8e5dabcbfd1a29b7346363f383411cc43540bf9f73e67fed634e
+    scripts/palette_audit.py:
+      upstream_path: skills/scientific-visualization/scripts/palette_audit.py
+      sha256: 3a90b3c9a4a39dde6a341dc3de7b99cd2bca4773c66564fc90cdc2706a5a8165
+    scripts/style_presets.py:
+      upstream_path: skills/scientific-visualization/scripts/style_presets.py
+      sha256: 8413cfae7f2cbc4a5dd9d4301d74b051fd8eb0c7a4b3375ae59e1da91db3a985
+    scripts/style_preview.py:
+      upstream_path: skills/scientific-visualization/scripts/style_preview.py
+      sha256: ca14e714dc2fb32541ff80292db97b3acbac074a65c4f2fb290f38354f880ba7
+- id: scientific-slides
+  repository: https://github.com/K-Dense-AI/scientific-agent-skills
+  commit: 92ace75ac21efe19a620434e0ca4e356081fe807
+  license: MIT
+  license_url: https://github.com/K-Dense-AI/scientific-agent-skills/blob/92ace75ac21efe19a620434e0ca4e356081fe807/LICENSE.md
+  license_file: skills/scientific-slides/UPSTREAM_LICENSE
+  entrypoints:
+    reference: skills/scientific-slides/SKILL.md
+  mode: reference_only
+  files:
+    SKILL.md:
+      upstream_path: skills/scientific-slides/SKILL.md
+      sha256: b1d34b81d30789f561bd4ee3ddb373c9fb84bed25086794bebd842af46afbad6
+    UPSTREAM_LICENSE:
+      upstream_path: LICENSE.md
+      sha256: 09b02a3c9df3053c55531d503357a9c7cde275970e6c3ceaa1ddf5f0e90b40c1
+    assets/beamer_template_conference.tex:
+      upstream_path: skills/scientific-slides/assets/beamer_template_conference.tex
+      sha256: 6baeb344277e60f0909b48421cd8d93f093e6733469b39426cdfcf38164cdafa
+    assets/beamer_template_defense.tex:
+      upstream_path: skills/scientific-slides/assets/beamer_template_defense.tex
+      sha256: 03893eaf18e9e689fefd42bcb6ffc56413d229fe980c0bd67804422ba0077f45
+    assets/beamer_template_seminar.tex:
+      upstream_path: skills/scientific-slides/assets/beamer_template_seminar.tex
+      sha256: 714a3c3d29b0227100d9ecac10383471c3fb1d11cb3450c691d3955f0ef46ee3
+    assets/powerpoint_design_guide.md:
+      upstream_path: skills/scientific-slides/assets/powerpoint_design_guide.md
+      sha256: afacd3ac9b33311a86ebf1398bc960279b1412a77a25c3ce5429ebbf3e50d94a
+    assets/timing_guidelines.md:
+      upstream_path: skills/scientific-slides/assets/timing_guidelines.md
+      sha256: 39f4720e9d5a602d6c16af0985232fbc78d4e79598e7ed17a2bc076efc9cc195
+    references/beamer_guide.md:
+      upstream_path: skills/scientific-slides/references/beamer_guide.md
+      sha256: a57ee14a34d7b8b6bb72d19bc0b0d4ccaa172731cfc5d8dbf30fbceeb30dcbcd
+    references/common_pitfalls.md:
+      upstream_path: skills/scientific-slides/references/common_pitfalls.md
+      sha256: 1624aa65d42d52469a06727e6a68c5ba66cce311020f107659de7ca80654888b
+    references/data_visualization_slides.md:
+      upstream_path: skills/scientific-slides/references/data_visualization_slides.md
+      sha256: ff0b437dae2cc74b9290907ade331dc69cb1365071584ef2a854f5ade3a53408
+    references/presentation_structure.md:
+      upstream_path: skills/scientific-slides/references/presentation_structure.md
+      sha256: 8e79965dd65ca56a7e239920867b36be1b2f626cee9e65e99e4d6efaaa883004
+    references/presentation_workflow.md:
+      upstream_path: skills/scientific-slides/references/presentation_workflow.md
+      sha256: 5e52ebfcf4b0a423dc82451fd62ec5468e8c4b66599f14d5e57ec6ece9c00700
+    references/prompt_writing.md:
+      upstream_path: skills/scientific-slides/references/prompt_writing.md
+      sha256: 87341d37eac34509c88ba2a3e5e1a880915ac0576e74b12f0f6d2baa31f79f9d
+    references/script_reference.md:
+      upstream_path: skills/scientific-slides/references/script_reference.md
+      sha256: cc20750df4fbb6f3e8068bc9ba355dfacfa943da5c5211223244da0b39e69761
+    references/slide_capabilities.md:
+      upstream_path: skills/scientific-slides/references/slide_capabilities.md
+      sha256: 1ad22713e87571cf65ac3176a84985774ad74e2a8be7e4c3396cb0877876f38b
+    references/slide_design_principles.md:
+      upstream_path: skills/scientific-slides/references/slide_design_principles.md
+      sha256: 6b50148bc161c80272b16da445dfdb87f966a32ccd3a28ff94dedc940dd6fbff
+    references/talk_types_guide.md:
+      upstream_path: skills/scientific-slides/references/talk_types_guide.md
+      sha256: 743274bc2664177f7a015c2531d07d516d1a7a6d6b6cb4a5ff527a3a99fac683
+    references/visual_review_workflow.md:
+      upstream_path: skills/scientific-slides/references/visual_review_workflow.md
+      sha256: 38138ef5f10b92f6d8965906438235bbb9ff08c8839545501a00bd6b799ab581
+    scripts/generate_schematic.py:
+      upstream_path: skills/scientific-slides/scripts/generate_schematic.py
+      sha256: 0c81ce099d5ab9aa3d3c486aa9bd3e81ee1117e18a54db14bb0a68de61eaa4bc
+    scripts/generate_schematic_ai.py:
+      upstream_path: skills/scientific-slides/scripts/generate_schematic_ai.py
+      sha256: 7316f2df92f442b8c60a5dd2bd8b504e17449d4be89352e5af24be2239700046
+    scripts/generate_slide_image.py:
+      upstream_path: skills/scientific-slides/scripts/generate_slide_image.py
+      sha256: 19fe23e762df171625b6d5fec9635759398709dd2434b36f95da4004ec45af00
+    scripts/generate_slide_image_ai.py:
+      upstream_path: skills/scientific-slides/scripts/generate_slide_image_ai.py
+      sha256: 1ecd12ffe9529d13cc16747ff6c63f44340df0df439a35c1ac796c488e6a9fec
+    scripts/pdf_to_images.py:
+      upstream_path: skills/scientific-slides/scripts/pdf_to_images.py
+      sha256: 06ada43a0b3ff5c5f6c89dfb214a451e99ec0f23532ccb7962376b3f3e5ba610
+    scripts/slides_to_pdf.py:
+      upstream_path: skills/scientific-slides/scripts/slides_to_pdf.py
+      sha256: a816f9269c3d1889677b92daa92e819834aafdcf600b1535304f385e178b3fdf
+    scripts/validate_presentation.py:
+      upstream_path: skills/scientific-slides/scripts/validate_presentation.py
+      sha256: f4f8ebe14e2cc593edf60e5236bd31fcae1b686757c90cc4b18eb488cdf78646

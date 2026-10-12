@@ -42,3 +42,17 @@ macOS·Windows 실행과 PowerPoint의 실제 편집·표시는 별도 확인이
 Typst·LaTeX·.NET·OCR 등 추가 문서 처리 도구는 자동 설치하지 않는다. 필요한 런타임과 라이선스는 [문서 도구 안내](document-tools.md)를 따른다.
 
 설치 후 발표를 만들려면 [README](../README.md)와 [워크플로우](workflow.md)를, 코드·양식을 유지보수하려면 [구조](architecture.md)를 따른다.
+
+## 그림·애니메이션 선택 도구
+
+Manim Community Edition, Matplotlib, SciencePlots는 선택 의존성 `visual`로 설치한다. 일반 PPT 빌드에는 필요하지 않다.
+
+```bash
+uv sync --frozen --extra visual
+uv run --extra visual python -m manim --version
+uv run --extra visual rvppt doctor
+```
+
+Linux에서는 Manim의 pycairo/manimpango 빌드에 Cairo·Pango 개발 헤더와 pkg-config, C 컴파일러가 필요하다. Ubuntu에서 컴파일러와 pkg-config가 이미 있을 때 필요한 명령은 `sudo apt-get install libcairo2-dev libpango1.0-dev`다. 에이전트는 시스템 설치 전에 명령·이유를 보여 주고 확인받는다. Windows·macOS 설치는 [Manim 설치 안내](https://docs.manim.community/en/stable/installation.html)를 따른다.
+
+한글은 `Text`와 설치된 Noto Sans CJK KR/맑은 고딕으로 처리한다. `Tex`·`MathTex`는 별도 LaTeX 환경이 필요하며 `visual` 설치에 포함되지 않는다. SciencePlots의 논문용 크기·색·폰트를 RVLAB 슬라이드에 그대로 적용하지 않고 [rvlab.mplstyle](design/rvlab.mplstyle)을 사용한다. Matplotlib 호출자는 `resolve_fonts(load_tokens())`로 확인한 영문·한글 폰트를 `font.family`에 함께 지정해 한글 누락을 피한다. 외부 스킬 원문과 라이선스는 저장소에 포함되므로 실행 중 다시 내려받지 않는다.

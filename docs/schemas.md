@@ -72,7 +72,9 @@ review:
 
 ## Stage 3 — plan/outline.md
 
-stage는 3이다. review.slides의 필수 필드는 id·topic·headline·evidence·seconds, 선택 필드는 section·figure다. 그 밖의 필드(좌표·폰트·색·layout 등)는 거부한다. ID는 영문자로 시작하는 1~32자의 영문/숫자/밑줄/하이픈이고 중복할 수 없다. topic은 상단 바에 들어갈 짧은 이름, headline은 그 슬라이드의 핵심 문장이다([DESIGN](../DESIGN.md)의 이름 규칙). figure는 연구자에게 요청할 그림 제안이다. seconds는 양의 정수, duration_minutes는 양의 유한 숫자다. 예상 시간 합이 시간 예산을 넘으면 승인하지 않는다.
+stage는 3이다. review.slides의 필수 필드는 id·topic·headline·evidence·seconds, 선택 필드는 section·figure다. 그 밖의 필드(좌표·폰트·색·layout 등)는 거부한다. ID는 영문자로 시작하는 1~32자의 영문/숫자/밑줄/하이픈이고 중복할 수 없다. topic은 상단 바에 들어갈 짧은 이름, headline은 그 슬라이드의 핵심 문장이다([DESIGN](../DESIGN.md)의 이름 규칙). figure는 슬라이드에 필요한 시각 자료의 계획이다. seconds는 양의 정수, duration_minutes는 양의 유한 숫자다. 예상 시간 합이 시간 예산을 넘으면 승인하지 않는다.
+
+`figure`는 재사용 또는 요청된 직접 제작의 표현·근거·제작 경로를 담는 문자열이다. 자세한 시각 요소·설명·배치 관계·검수 기준은 목차 본문과 해당 슬라이드 노트에 기록한다([시각 설계 절차](../skills/rvlab-ppt/references/visual-planning.md)). 필드 형식과 승인 해시 규칙은 그대로 유지한다.
 
 ```yaml
 review:

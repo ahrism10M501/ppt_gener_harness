@@ -21,7 +21,7 @@
 
 ## 수식 작성과 추출
 
-RVLAB 슬라이드에는 기존처럼 `$x^2$`, `$$...$$`로 LaTeX 수식을 작성한다. 편집용 PPTX의 OMML과 이미지로 대체한 미리보기 사본을 구분한다. Typst 결과물을 추가해도 기존 OMML 경로를 대체하지 않는다.
+RVLAB 수식은 `slides.md`에 LaTeX로 작성한다. 산출물과 검수 기준은 [수식 문법](rendering.md#수식)을 따른다.
 
 독립 문서를 만들 때 Typst CLI가 준비되어 있다면 다음처럼 컴파일한다. 수식 문법·정렬·행렬은 포함한 [math.md](../skills/typst/references/math.md)를 참고한다.
 
@@ -44,6 +44,12 @@ typst compile document.typ --format png
 OCR 출력은 원문 이미지와 대조한다. 지수·첨자·기호·표 셀·인용을 자동 추출 결과만으로 확정하지 않는다. PyMuPDF는 PDF 텍스트·페이지 렌더링 도구이며 복잡한 수식 의미나 학술 Markdown 구조를 자동 복원하는 모델이 아니다.
 
 ## PDF와 Office 파일 처리
+
+논문 입력은 **PyMuPDF4LLM 0.2.9**를 기본 의존성으로 제공합니다. `uv run rvppt extract-paper TASK sources/PAPER.pdf`가 `.build/editorial/papers/`에 페이지별 Markdown·PNG 후보·원본 해시를 추출합니다. 선택은 캡션·본문 설명과 원본 PDF 시각 확인을 바탕으로 에이전트가 수행합니다. [외부 사진·figure 절차](../skills/rvlab-ppt/references/external-visuals.md)를 따릅니다.
+
+[PyMuPDF4LLM API](https://pymupdf.readthedocs.io/en/latest/pymupdf4llm/api.html)의 `write_images`, `image_path`, `page_chunks`를 사용합니다. 모델이 필요 없는 기존 변환 API를 사용하도록 버전을 고정했으며 layout 확장·OCR·모델 가중치는 설치하지 않습니다. 스캔·복잡한 패널·수식은 원본 페이지로 확인하고 추출 실패 시 페이지 렌더링·크롭으로 보완합니다. PyMuPDF4LLM은 PyMuPDF와 같은 AGPL-3.0/상용 이중 라이선스이며 MIT 라이브러리로 기록하지 않습니다.
+
+PDF→Markdown·이미지 분리 도구로는 [Marker](https://github.com/datalab-to/marker)와 [Docling](https://docling-project.github.io/docling/examples/export_figures/)도 있습니다. 이 저장소에서는 기존 PyMuPDF를 재사용하는 PyMuPDF4LLM을 적용합니다. MarkItDown은 일반 문서 내용 추출용으로 남기며 논문 figure 분리 명령에 사용하지 않습니다.
 
 PDF는 텍스트 추출과 페이지 이미지를 함께 확인한다. 디지털 PDF의 간단한 추출·렌더링은 이미 설치된 PyMuPDF를 재사용한다. 표 추출은 pdfplumber, 병합·분할·폼 필드는 pypdf, 새 PDF 생성은 ReportLab을 후보로 둔다. 글꼴·표·수식·페이지 배치는 렌더 결과로 검토한다.
 

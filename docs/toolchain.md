@@ -10,8 +10,16 @@ Python 의존성은 python-pptx(구조·표·노트), lxml(OOXML), PyYAML(토큰
 
 ## 렌더링 제약
 
+논문 PDF→Markdown·media 추출은 고정된 PyMuPDF4LLM 0.2.9와 기존 PyMuPDF를 사용한다. `uv run rvppt extract-paper TASK sources/PAPER.pdf`는 `.build/editorial/papers/`에만 변환 결과를 쓰며 원본과 기존 결과를 덮어쓰지 않는다. API·OCR·layout 모델은 필요하지 않다. 캡션·본문 기반 선택과 출처 기록은 [외부 시각 자료 절차](../skills/rvlab-ppt/references/external-visuals.md)를 따른다.
+
 Arial·맑은 고딕이 없으면 Liberation Sans·Noto Sans CJK KR로 대체한다. 글꼴 대체는 줄바꿈을 바꾸므로 실제 선택 폰트로 렌더링과 오버플로 검사를 수행한다.
 
-편집용 PPTX에는 OMML 수식을 우선 보존한다. LibreOffice에서 표시되지 않는 수식은 미리보기 사본에서 이미지로 대체하며 검사 리포트에 기록한다. LibreOffice PNG·PDF 검사는 PowerPoint의 네이티브 수식 표시·편집성 검사를 대신하지 않는다. macOS·Windows 실행과 PowerPoint 앱의 실제 편집은 별도 확인이 필요하다.
+수식의 작성·산출물·검수 기준은 [제작 문법](rendering.md#수식)을 따른다. 플랫폼별 실행·편집 검증 범위는 빌드 리포트에 기록한다.
 
 수식·PDF·DOCX·XLSX 등 입력 자료 처리와 일반 문서 생성은 [문서 도구 안내](document-tools.md)를 따른다. 외부 스킬 원문과 추가 런타임이 포함되어 있다는 의미는 다르며, 일반 PPTX 스킬로 RVLAB 고정 양식·승인 절차를 우회하지 않는다.
+
+## 연구 그림·애니메이션
+
+`visual` extra의 Manim CE·Matplotlib·SciencePlots는 그림 자산을 만드는 선택 도구다. PPTX 생성은 기존 RVLAB 경로를 사용한다. `uv.lock`이 버전을 고정하고 `doctor`의 `visual_tools`는 설치·import 여부를 읽기 전용으로 확인한다. 빠져 있어도 일반 PPT 빌드를 막지 않는다.
+
+Manim은 MIT, SciencePlots는 MIT, Matplotlib은 PSF 기반의 BSD 호환 라이선스다. Cairo/Pango 개발 패키지와 한글 폰트는 OS 의존성이며 Python extra로 설치되지 않는다. LaTeX는 `Tex`·`MathTex`를 쓸 때만 별도로 필요하다. 설치는 [setup](setup.md#그림애니메이션-선택-도구), 외부 스킬의 적용 범위는 [skills](skills.md)를 따른다.

@@ -7,6 +7,7 @@ import re
 import subprocess
 
 import pypandoc
+from PIL import Image
 
 from .state import StateError, read_document
 from .template import load_tokens
@@ -65,7 +66,7 @@ def asset_path(task, value):
     path = Path(value)
     if path.is_absolute() or not path.parts or path.parts[0] not in ("figures", "sources") or ".." in path.parts:
         raise StateError(f"Image must be a task-local figures/ or sources/ path: {value}")
-    if path.suffix.lower() not in (".png", ".jpg", ".jpeg", ".svg", ".pdf"):
+    if path.suffix.lower() not in (".png", ".jpg", ".jpeg", ".svg", ".pdf", ".gif"):
         raise StateError(f"Unsupported image type: {value}")
     current = task
     for part in path.parts:
@@ -77,6 +78,40 @@ def asset_path(task, value):
     if not current.is_file() or not current.resolve().is_relative_to(task.resolve()):
         raise StateError(f"Missing task image: {value}")
     return current
+
+
+def animation_metadata(task, source):
+    """A GIF stays animated in PPTX; its matching PNG is the explicit static poster."""
+    poster = asset_path(task, str(source.relative_to(task).with_suffix(".png")))
+    if not poster.is_file():
+        raise StateError(f"Animated GIF requires a matching PNG poster: {poster.relative_to(task)}")
+    if source.stat().st_size > 64 * 1024 * 1024:
+        raise StateError("Animated GIF exceeds 64 MiB; reduce its resolution or frame rate")
+    try:
+        with Image.open(source) as animation:
+            frames = getattr(animation, "n_frames", 1)
+            if animation.format != "GIF" or frames < 2:
+                raise StateError("GIF must contain at least two animation frames")
+            if frames > 600 or animation.width * animation.height * frames > 300_000_000:
+                raise StateError("Animated GIF exceeds 600 frames or 300 million decoded pixels")
+            size, loop, duration = animation.size, animation.info.get("loop"), 0
+            for index in range(frames):
+                animation.seek(index)
+                animation.load()
+                frame_duration = animation.info.get("duration", 0)
+                if not isinstance(frame_duration, int) or frame_duration <= 0:
+                    raise StateError(f"GIF frame {index + 1} requires a positive duration")
+                duration += frame_duration
+        with Image.open(poster) as picture:
+            if picture.format != "PNG" or picture.size != size:
+                raise StateError("GIF and PNG poster must have identical pixel dimensions")
+            picture.load()
+    except StateError:
+        raise
+    except (OSError, ValueError, EOFError, Image.DecompressionBombError) as error:
+        raise StateError(f"Invalid GIF or PNG poster: {source.relative_to(task)}: {error}") from error
+    return {"path": str(source.relative_to(task)), "poster": str(poster.relative_to(task)),
+            "frame_count": frames, "duration_ms": duration, "size_px": list(size), "loop_count": loop}
 
 
 def table_rows(block):
@@ -128,7 +163,9 @@ def validate_blocks(blocks, task, tokens):
                 if attr[0] or attr[2] or classes != permitted:
                     raise StateError("Coordinates, styles and arbitrary attributes are forbidden")
             if kind == "Image":
-                asset_path(task, content[2][0])
+                source = asset_path(task, content[2][0])
+                if source.suffix.lower() == ".gif" and source.is_file():
+                    animation_metadata(task, source)
                 if any(n["t"] == "Math" for n in nodes(content[1])):
                     raise StateError("Figure captions use text; put equations in the slide body")
             if kind == "Math" and re.search(r"\\(?:color|textcolor|class|cssId|style|href|html\w*|bbox|huge|Huge|small|tiny|fontsize|def|newcommand|require|includegraphics)\b", content[1]):

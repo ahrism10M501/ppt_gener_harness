@@ -34,6 +34,9 @@ def main(argv=None):
     polish = subcommands.add_parser("polish-check", help="Verify Korean polishing kept facts and Markdown structure of slides.md")
     polish.add_argument("task")
     polish.add_argument("--before", required=True, help="Copy of slides.md saved before polishing (e.g. TASK/.build/editorial/before.md)")
+    paper = subcommands.add_parser("extract-paper", help="Extract a sources/ PDF into Markdown and media under TASK/.build/editorial/papers/")
+    paper.add_argument("task")
+    paper.add_argument("pdf", help="Task-relative sources/<paper>.pdf; source and existing outputs are preserved")
     subcommands.add_parser("doctor", help="Check tools, fonts, template and vendored skill hashes (offline, read-only)")
     graph = subcommands.add_parser("graph-check", help="Check the Graphify snapshot is fresh and excludes tasks/vendored sources")
     graph.add_argument("--record", action="store_true", help="Write graphify-out/snapshot.json after rebuilding the graph")
@@ -59,6 +62,9 @@ def main(argv=None):
             result = status(task)
         elif args.command == "approve":
             result = approve(task, args.stage, args.expected_hash)
+        elif args.command == "extract-paper":
+            from .papers import extract_paper
+            result = extract_paper(task, args.pdf)
         elif args.command == "polish-check":
             from .polish import polish_check
             result = polish_check(task, args.before)

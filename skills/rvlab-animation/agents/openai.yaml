@@ -1,0 +1,4 @@
+interface:
+  display_name: "RVLAB 교육 애니메이션"
+  short_description: "움직임이 이해에 필요한 연구 발표용 GIF와 정적 대안 제작"
+  default_prompt: "RVLAB 양식을 지키며 이 개념을 설명할 애니메이션과 대표 정적 그림을 만들어 주세요."

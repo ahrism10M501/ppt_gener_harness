@@ -3,6 +3,7 @@
 import os
 import shutil
 import sys
+from importlib.metadata import version
 
 import yaml
 
@@ -107,8 +108,18 @@ def doctor():
             raise RuntimeError("; ".join(problems))
         return "all vendored files match skills/dependencies.yaml"
 
+    def visual():
+        try:
+            import manim
+            import matplotlib
+            import scienceplots
+        except ImportError as error:
+            raise RuntimeError("Optional figure/animation tools: uv sync --extra visual; native dependencies: docs/setup.md") from error
+        return {"manim": manim.__version__, "matplotlib": matplotlib.__version__, "SciencePlots": version("SciencePlots")}
+
     for name, required, test in [("python", True, python), ("pandoc", True, pandoc), ("template", True, template),
                                  ("skills", True, skills), ("libreoffice", True, libreoffice), ("fonts", True, fonts),
-                                 ("node_renderers", True, node), ("mermaid_browser", False, browser), ("profile", False, profile)]:
+                                 ("node_renderers", True, node), ("mermaid_browser", False, browser), ("profile", False, profile),
+                                 ("visual_tools", False, visual)]:
         check(name, required, test)
     return {"ok": all(c["status"] != "fail" for c in checks), "platform": sys.platform, "checks": checks}

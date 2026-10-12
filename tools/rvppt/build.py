@@ -21,13 +21,14 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Inches, Pt
 
-from .markdown import APPENDIX, asset_path, image_node, nodes, pandoc, parse_task, plain, table_rows
+from .markdown import APPENDIX, animation_metadata, asset_path, image_node, nodes, pandoc, parse_task, plain, table_rows
 from .preview import chrome_binary, contact_sheet, fit_picture, render_pdf, resolve_fonts, text
 from .state import StateError, status, tree_hash
 from .template import ROOT, NS, EMU, load_tokens, sha256, slots, validate_package
 
 MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+DRAW_MATH_NS = "http://schemas.microsoft.com/office/drawing/2010/main"
 
 
 def run(arguments, *, data=None, cwd=None):
@@ -247,6 +248,11 @@ def set_typography(shape, size, profile, *, code=False):
         default = ppr.find(f"{{{NS['a']}}}defRPr")
         if default is None:
             default = OxmlElement("a:defRPr"); ppr.append(default)
+    for run in shape._element.iter(f"{{{MATH_NS}}}r"):
+        if run.find(f"{{{NS['a']}}}rPr") is None:
+            properties = OxmlElement("a:rPr")
+            math_properties = run.find(f"{{{MATH_NS}}}rPr")
+            run.insert(1 if math_properties is not None else 0, properties)
     for props in list(shape._element.iter(f"{{{NS['a']}}}rPr")) + list(shape._element.iter(f"{{{NS['a']}}}defRPr")) + list(shape._element.iter(f"{{{NS['a']}}}endParaRPr")):
         paragraph = next((a for a in props.iterancestors() if a.tag == f"{{{NS['a']}}}p"), None)
         ppr = paragraph.find(f"{{{NS['a']}}}pPr") if paragraph is not None else None
@@ -256,7 +262,7 @@ def set_typography(shape, size, profile, *, code=False):
             node = props.find(f"{{{NS['a']}}}{name}")
             if node is None:
                 node = etree.SubElement(props, f"{{{NS['a']}}}{name}")
-            node.set("typeface", family)
+            node.set("typeface", "Cambria Math" if props.getparent().tag == f"{{{MATH_NS}}}r" else family)
         for child in list(props):
             if etree.QName(child).localname in ("solidFill", "gradFill", "noFill"):
                 props.remove(child)
@@ -326,7 +332,7 @@ def native_fragments(api, slides, reference, directory):
         raise StateError("Pandoc fragment count changed unexpectedly")
     result = {}
     for block, slide in zip(fragments, presentation.slides):
-        # LibreOffice drops Pandoc's math shape when its AlternateContent fallback is empty.
+        # Unwrap for python-pptx editing; restore the Office math choice and image fallback before saving.
         for alternate in list(slide._element.iter(f"{{{MC_NS}}}AlternateContent")):
             choice = alternate.find(f"{{{MC_NS}}}Choice")
             if choice is None:
@@ -479,6 +485,7 @@ def assemble(api, slides, tokens, profile, task, directory):
                     if i in picture_indices:
                         image_box = [x, y, w, height - tokens["geometry_in"]["caption_height"]]
                         image = image_node(block)
+                        animation = None
                         if image and not asset_path(task, image["c"][2][0]).exists():
                             caption, dpi = plain(image).strip(), None
                             request = image["c"][2][1] or caption  # ![caption](figures/x.png "what to draw")
@@ -486,12 +493,19 @@ def assemble(api, slides, tokens, profile, task, directory):
                             missing.append({"slide_id": spec["id"], "path": image["c"][2][0], "request": request})
                         else:
                             path, position, caption, dpi = prepare_image(block, task, assets, image_box, tokens, profile)
-                            slide.shapes.add_picture(str(path), *[Inches(v) for v in position])
+                            picture = slide.shapes.add_picture(str(path), *[Inches(v) for v in position])
+                            if path.suffix.lower() == ".gif":
+                                animation = animation_metadata(task, path)
+                                poster = assets / (hashlib.sha256(str(path).encode()).hexdigest()[:20] + "-poster.png")
+                                shutil.copyfile(task / animation["poster"], poster)
+                                records.append({"page": page, "slide_id": spec["id"], "role": "animation_image", "box": position,
+                                                "shape_id": picture.shape_id, "preview_image": str(poster.relative_to(directory))})
                         caption = f"그림 {len(images) + 1}. {caption}"
                         caption_box = [x, y + height - tokens["geometry_in"]["caption_height"], w, tokens["geometry_in"]["caption_height"]]
                         add_text(slide, caption, caption_box, tokens["sizes_pt"]["caption"], profile, center=True)
                         records.append({"page": page, "slide_id": spec["id"], "role": "caption", "box": caption_box, "expected": caption, "max_lines": 1})
-                        images.append({"slide_id": spec["id"], "caption": caption, "effective_dpi": dpi})
+                        images.append({"slide_id": spec["id"], "caption": caption, "effective_dpi": dpi,
+                                       **({"animation": animation} if animation else {})})
                     else:
                         display = block["t"] == "Para" and len(block["c"]) == 1 and block["c"][0]["t"] == "Math" and block["c"][0]["c"][0]["t"] == "DisplayMath"
                         size = tokens["sizes_pt"]["table"] if block["t"] == "Table" else tokens["sizes_pt"]["code"] if block["t"] == "CodeBlock" else tokens["sizes_pt"]["equation"] if display else points
@@ -544,13 +558,35 @@ def assemble(api, slides, tokens, profile, task, directory):
     output = directory / "presentation.pptx"; presentation.save(output)
     package_checks(output, tokens)
     preview = Presentation(output)
+    compatible = Presentation(output) if fallbacks else None
     for record in records:
         if record.get("preview_image"):
             slide = preview.slides[record["page"] - 1]
             shape = next(s for s in slide.shapes if s.shape_id == record["shape_id"])
+            if record["role"] == "animation_image":
+                slide.part.drop_rel(shape._element.blip_rId)
             slide.shapes._spTree.remove(shape._element)
             slide.shapes.add_picture(str(directory / record["preview_image"]), *[Inches(v) for v in record["box"]])
+            if record["role"] == "math_image":
+                compatible_slide = compatible.slides[record["page"] - 1]
+                compatible_shape = next(s for s in compatible_slide.shapes if s.shape_id == record["shape_id"])
+                compatible_slide.shapes._spTree.remove(compatible_shape._element)
+                compatible_slide.shapes.add_picture(str(directory / record["preview_image"]), *[Inches(v) for v in record["box"]])
+                native_slide = presentation.slides[record["page"] - 1]
+                native_shape = next(s for s in native_slide.shapes if s.shape_id == record["shape_id"])
+                if list(native_shape._element.iter(f"{{{MATH_NS}}}oMath")):
+                    tree = native_slide.shapes._spTree
+                    index = tree.index(native_shape._element)
+                    picture = native_slide.shapes.add_picture(str(directory / record["preview_image"]), *[Inches(v) for v in record["box"]])
+                    alternate = etree.Element(f"{{{MC_NS}}}AlternateContent", nsmap={"mc": MC_NS, "a14": DRAW_MATH_NS})
+                    etree.SubElement(alternate, f"{{{MC_NS}}}Choice", Requires="a14").append(native_shape._element)
+                    etree.SubElement(alternate, f"{{{MC_NS}}}Fallback").append(picture._element)
+                    tree.insert(index, alternate)
     preview.save(directory / "presentation-preview-copy.pptx")
+    if compatible is not None:
+        compatible.save(directory / "presentation-math-compatible.pptx")
+    presentation.save(output)
+    package_checks(output, tokens)
     return {"records": records, "math_fallbacks": fallbacks, "images": images, "missing_figures": missing,
             "slide_count": len(presentation.slides), "native_equations": sum(len(list(s._element.iter(f"{{{MATH_NS}}}oMath"))) for s in presentation.slides),
             "native_tables": sum(s.has_table for slide in presentation.slides for s in slide.shapes),
@@ -576,7 +612,7 @@ def render_and_check(directory, report):
         if len(document) != report["slide_count"]:
             raise StateError("Rendered page count differs from the PPTX")
         for record in report["records"]:
-            if record["role"] == "math_image":
+            if record["role"] in ("math_image", "animation_image"):
                 continue
             page = document[record["page"] - 1]
             x, y, w, h = record["box"]
@@ -624,7 +660,7 @@ def _last_report(build):
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
 
 
-def publish(staging, task, outputs):
+def publish(staging, task, outputs, *, math_compatible_name=None):
     """Swap .build/output, then copy the PPTX/PDF beside slides.md like Overleaf's output.pdf."""
     build = task / ".build"
     destination, previous = build / "output", build / ".previous"
@@ -657,7 +693,8 @@ def publish(staging, task, outputs):
         shutil.rmtree(previous, ignore_errors=True)
     for name in outputs:
         temporary = task / f".rvppt-{name}.tmp"
-        shutil.copy2(destination / ("presentation" + Path(name).suffix), temporary)
+        source = "presentation-math-compatible.pptx" if name == math_compatible_name else "presentation" + Path(name).suffix
+        shutil.copy2(destination / source, temporary)
         temporary.replace(task / name)
     for name, digest in managed.items():
         stale = task / name
@@ -692,16 +729,21 @@ def build(task):
             report.update(schema_version=1, task_id=task.name, fingerprint=before, fonts=profile,
                           content_approved=status(task)["content_approved"],
                           findings=findings, detected_overflows=0, powerpoint_editing="unverified",
-                          preview_math="300 DPI raster replacements only in preview copy")
+                          preview_math="300 DPI raster in preview and math-compatible PPTX; native PPTX has OMML and AlternateContent image fallback",
+                          preview_animation="Selected PNG posters only; PowerPoint GIF playback unverified")
             report["artifacts"] = {p.name: sha256(p) for p in directory.iterdir() if p.is_file() and p.suffix in (".pptx", ".pdf", ".png")}
             report["outputs"] = {f"{stem}.pptx": report["artifacts"]["presentation.pptx"], f"{stem}.pdf": report["artifacts"]["presentation.pdf"]}
+            compatible_name = f"{stem}_수식호환.pptx" if (directory / "presentation-math-compatible.pptx").exists() else None
+            if compatible_name:
+                report["outputs"][compatible_name] = report["artifacts"]["presentation-math-compatible.pptx"]
+            report["math_compatible_output"] = compatible_name
             requests = "".join(f"\n- {m['slide_id']}: {m['request']} → `{m['path']}`" for m in report["missing_figures"]) or " 없음"
             (directory / "build-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-            (directory / "build-report.md").write_text(f"# RVLAB build QA\n\nTask: {task.name} · 내용 승인: {'완료' if report['content_approved'] else '미완료(초안 빌드)'}\n\nSlides: {report['slide_count']}; native tables: {report['native_tables']}; native equations: {report['native_equations']}; notes: {report['notes_slides']}.\n\n필요한 그림:{requests}\n\nDetected overflows: 0. PowerPoint editing: unverified. PDF/PNG use the separate math preview copy.\n", encoding="utf-8")
-            publish(directory, task, report["outputs"])
+            (directory / "build-report.md").write_text(f"# RVLAB build QA\n\nTask: {task.name} · 내용 승인: {'완료' if report['content_approved'] else '미완료(초안 빌드)'}\n\nSlides: {report['slide_count']}; native tables: {report['native_tables']}; native equations: {report['native_equations']}; notes: {report['notes_slides']}.\n\n필요한 그림:{requests}\n\nDetected overflows: 0. PowerPoint editing: unverified. PDF/PNG use the separate math/animation preview copy. GIF playback: unverified.\n", encoding="utf-8")
+            publish(directory, task, report["outputs"], math_compatible_name=compatible_name)
         return {"task_id": task.name, "pptx": str(task / f"{stem}.pptx"), "pdf": str(task / f"{stem}.pdf"), "preview": str(workspace / "output/contact-sheet.png"),
                 "slide_count": report["slide_count"], "content_approved": report["content_approved"], "missing_figures": report["missing_figures"],
-                "warnings": deck_findings(slides), "detected_overflows": 0, "native_equations": report["native_equations"], "native_tables": report["native_tables"], "math_fallbacks": report["math_fallbacks"], "fonts": profile}
+                "warnings": deck_findings(slides), "detected_overflows": 0, "native_equations": report["native_equations"], "native_tables": report["native_tables"], "math_fallbacks": report["math_fallbacks"], "math_compatible_pptx": str(task / compatible_name) if compatible_name else None, "fonts": profile}
     finally:
         lock.unlink(missing_ok=True)
 

@@ -5,7 +5,7 @@
 1. 처음 한 번 `profile.example.yaml`을 `profile.yaml`로 복사해 이름·소속을 채웁니다.
 2. `uv run rvppt new <slug> --title "<발표 제목>" --date YYYY-MM-DD`로 발표 폴더를 만듭니다.
 3. `sources/`에 논문·데이터·메모·초안 PPT를, `figures/`에 그림을 넣습니다.
-4. 에이전트에게 “RVLAB PPT 만들어줘”라고 요청하고 인터뷰·핵심 메시지·목차·내용을 확인·승인합니다. 필요한 그림은 에이전트가 제안합니다.
+4. 에이전트에게 “RVLAB PPT 만들어줘”라고 요청하고 인터뷰·핵심 메시지·목차·내용을 확인·승인합니다. 에이전트가 필요한 웹 사진·논문 figure를 찾아 출처와 함께 넣고, 새 연구 그림은 제안합니다.
 5. `slides.md`를 직접 고쳐도 됩니다. `uv run rvppt build tasks/<task>`가 폴더 안에 `YYYYMMDD_제목.pptx`와 PDF를 만듭니다.
 
 `<slug>`는 폴더 이름에 붙는 짧은 영문 별칭입니다(소문자·숫자·하이픈). 아래 명령은 `tasks/260831-train-loop/`를 만듭니다.
@@ -19,7 +19,7 @@ uv run rvppt build tasks/260831-train-loop
 ```text
 tasks/260831-train-loop/
 ├── slides.md        # 발표 원본 (# 섹션 / ## 상단 바 토픽 / ### 핵심 문장)
-├── figures/         # 연구자 그림. 없는 그림은 요청 상자로 표시
+├── figures/         # 연구자 그림·외부 사진·논문 figure. 없는 그림은 요청 상자로 표시
 ├── sources/         # 논문·데이터·초안 PPT (읽기 전용, Git 제외)
 ├── plan/            # 인터뷰·메시지·목차 승인 문서
 ├── 20260831_학습루프개선_및_실험.pptx / .pdf
@@ -28,12 +28,19 @@ tasks/260831-train-loop/
 
 완성 예제: [tasks/261011-example-il-progress](tasks/261011-example-il-progress/slides.md). `uv run rvppt status tasks/<task>`로 이어갈 단계를 확인하고 `uv run rvppt preview tasks/<task>`로 최신 PNG를 봅니다.
 
+교육용 GIF는 `figures/이름.gif`와 같은 크기의 대표 `figures/이름.png`를 함께 넣습니다. GIF는 PPTX에서, PNG는 PDF·미리보기에서 사용합니다. 제작·사용 기준은 [교육 애니메이션 스킬](skills/rvlab-animation/SKILL.md), Manim·SciencePlots 설치는 [setup](docs/setup.md)을 따릅니다.
+
 ## 문서 찾기
+
+수식이 있는 발표는 편집형과 `_수식호환.pptx`를 함께 생성합니다. 용도와 원본 편집 방법은 [수식 문법](docs/rendering.md#수식)을 참고하세요.
+
+외부 사진은 에이전트가 검색하고, 논문은 `uv run rvppt extract-paper tasks/<task> sources/<paper>.pdf`로 Markdown·media를 분리해 설명에 맞는 figure를 고릅니다. [외부 시각 자료 절차](skills/rvlab-ppt/references/external-visuals.md)를 참고하세요.
 
 | 필요한 정보 | 문서 |
 | --- | --- |
 | 설치·환경 점검 | [셋업](docs/setup.md) |
 | 발표 기획·내용 승인 | [워크플로우](docs/workflow.md) |
+| 그래프·도식·GIF 선택과 제작 연결 | [시각 설계 절차](skills/rvlab-ppt/references/visual-planning.md) |
 | Markdown 작성·빌드·렌더 QA | [제작 문법](docs/rendering.md) |
 | 단계 문서의 필드·승인 해시 | [문서 스키마](docs/schemas.md) |
 | 고정 양식·디자인 토큰 | [양식 설계](DESIGN.md) |

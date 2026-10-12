@@ -235,6 +235,25 @@ class BuildTests(unittest.TestCase):
             build.publish(staging, self.task, {})
         self.assertEqual((destination / "user.txt").read_text(), "user file")
 
+    def test_publish_copies_math_compatible_artifact_and_protects_user_edits(self):
+        staging = self.task / ".build/staging"
+        staging.mkdir(parents=True)
+        (staging / "presentation.pptx").write_bytes(b"editable math")
+        (staging / "presentation-math-compatible.pptx").write_bytes(b"raster math")
+        primary, compatible = "20261011_x.pptx", "20261011_x_수식호환.pptx"
+        outputs = {primary: sha256(staging / "presentation.pptx"),
+                   compatible: sha256(staging / "presentation-math-compatible.pptx")}
+        (staging / "build-report.json").write_text(json.dumps({"outputs": outputs}))
+        build.publish(staging, self.task, outputs, math_compatible_name=compatible)
+        self.assertEqual((self.task / primary).read_bytes(), b"editable math")
+        self.assertEqual((self.task / compatible).read_bytes(), b"raster math")
+        (self.task / compatible).write_bytes(b"user edit")
+        retry = self.task / ".build/retry"
+        retry.mkdir()
+        with self.assertRaisesRegex(StateError, "differs from the last build"):
+            build.publish(retry, self.task, outputs, math_compatible_name=compatible)
+        self.assertEqual((self.task / compatible).read_bytes(), b"user edit")
+
     def test_render_failure_preserves_previous_build(self):
         workspace = self.task / ".build/output"; workspace.mkdir(parents=True)
         (workspace / "build-report.json").write_text("{}")
@@ -341,6 +360,23 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(next(s.table for s in reopened.slides[3].shapes if s.has_table).cell(1, 1).text, "99")
         self.assertEqual(reopened.slides[3].notes_slide.notes_text_frame.text, "Edited synthetic note")
         self.assertEqual(sum(len(list(s._element.iter(f"{{{build.MATH_NS}}}oMath"))) for s in reopened.slides), 4)
+        wrappers = [node for s in reopened.slides for node in s._element.iter(f"{{{build.MC_NS}}}AlternateContent")]
+        self.assertEqual(len(wrappers), 3)  # Display and inline math blocks each get a complete fallback.
+        for wrapper in wrappers:
+            choice = wrapper.find(f"{{{build.MC_NS}}}Choice")
+            self.assertEqual(choice.get("Requires"), "a14")
+            self.assertEqual(choice.nsmap["a14"], build.DRAW_MATH_NS)
+            self.assertIsNotNone(wrapper.find(f"{{{build.MC_NS}}}Fallback/{{{build.NS['p']}}}pic"))
+            for run in choice.iter(f"{{{build.MATH_NS}}}r"):
+                properties = run.find(f"{{{build.NS['a']}}}rPr")
+                self.assertIsNotNone(properties)
+                self.assertEqual(properties.get("sz"), "2000")
+                self.assertEqual(properties.find(f"{{{build.NS['a']}}}latin").get("typeface"), "Cambria Math")
+        compatible = Presentation(output / "presentation-math-compatible.pptx")
+        self.assertEqual(sum(len(list(s._element.iter(f"{{{build.MATH_NS}}}oMath"))) for s in compatible.slides), 0)
+        self.assertEqual(sum(s.has_table for slide in compatible.slides for s in slide.shapes), 1)
+        self.assertEqual([s.notes_slide.notes_text_frame.text for s in compatible.slides],
+                         [s.notes_slide.notes_text_frame.text for s in Presentation(output / "presentation.pptx").slides])
         self.assertEqual(sha256(ROOT / tokens["source"]["path"]), source_hash)
         build.package_checks(target, tokens)
 
