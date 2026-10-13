@@ -30,7 +30,7 @@ description: RVLAB 연구실 양식의 발표를 만들거나 수정할 때 slid
 그림이 필요한 슬라이드는 [시각 설계 절차](references/visual-planning.md)로 역할과 표현을 정한다. 글이나 표로 충분하면 그림을 만들지 않는다.
 
 - **찾아 넣기:** 기존 자료, 웹 사진, 공개 논문 figure를 먼저 확보한다([외부 시각 자료 절차](references/external-visuals.md)). 논문 PDF는 `uv run rvppt extract-paper TASK <pdf>`로 Markdown·media를 분리해 캡션과 본문을 읽는다.
-- **직접 만들기:** 확인된 자료로 만드는 도식과 꾸밈 차트([rvlab-charts](../rvlab-charts/SKILL.md))는 판단해서 만든다. 새 연구 결과 그래프와 교육용 GIF([rvlab-animation](../rvlab-animation/SKILL.md))는 사용자가 요청했을 때 만든다. 그 범위 안에서 그림마다 다시 허락받지 않는다.
+- **직접 만들기:** 순서·구조·분류·대안 비교를 불릿이나 표로만 나열하게 되면 흐름도·타임라인·매트릭스·카드([rvlab-charts](../rvlab-charts/SKILL.md))를 요청 없이 만든다. 새 값을 담지 않기 때문이다. 수치 차트(도넛·깔때기), 새 연구 결과 그래프, 교육용 GIF([rvlab-animation](../rvlab-animation/SKILL.md))는 사용자가 요청했을 때 만든다. 그 범위 안에서 그림마다 다시 허락받지 않는다.
 - **요청하기:** 연구자가 만들어야 하는 그림은 `![캡션](figures/이름.png "요청 내용")`으로 자리를 잡는다. 빌드는 그 자리에 요청 상자를 그리고 `missing_figures`에 남긴다.
 
 ## 승인

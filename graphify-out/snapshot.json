@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "graphify": "graphify 0.9.80",
-  "generated_at": "2026-10-12T12:24:03+00:00",
+  "generated_at": "2026-10-13T02:33:03+00:00",
   "suffixes": [
     ".json",
     ".md",
@@ -11,7 +11,7 @@
     ".yaml"
   ],
   "inputs": {
-    "AGENTS.md": "b85b96fb5dfebf2e2623374d717a773aa9cfe178acc07056ddeeb646eba234d4",
+    "AGENTS.md": "284bb4dc6b47328082d666f751b63dc66f4dfe39fe58e274d8a1b9a5b92d4767",
     "CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
     "DESIGN.md": "2a9179c68c5aa096864019ea9f2730016859d933609a421b441501ba4c1e677e",
     "GEMINI.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
@@ -29,15 +29,15 @@
     "skills/dependencies.yaml": "6a7cdf2134b5684d36b2e055b66176bbba4995ebc82c8f3147f5201d02fe7f41",
     "skills/rvlab-animation/SKILL.md": "2fdbe3b6193210c94564f2ed6df52276daf692d6e33c071dd7e883084247c2e7",
     "skills/rvlab-animation/agents/openai.yaml": "49a19588be8e5c9ddbf1fcd9674a22e73d130390e0766b8089216cae1d0f13e4",
-    "skills/rvlab-charts/SKILL.md": "0514e1b0550d8c5dd28b45ef1dd27a2924c9b17b3a07b318fc14533ad13d472e",
+    "skills/rvlab-charts/SKILL.md": "b2fa9e2a5a5906fb6b402440ac744c67627510ce82ddc28d251c80ba0b57b38f",
     "skills/rvlab-charts/charts.py": "45692ecb003292e237a33fb132d15234ad071643ea085bb4b5f18060f20243e9",
     "skills/rvlab-interview/SKILL.md": "cbe30930fd7cf89ae8fe81844bf1116c6f2bd9ac5d6892703bcbc06f975204b3",
     "skills/rvlab-interview/references/interview-guide.md": "f1b58a740f68449afbab0fc9fae7dae10901e5851b02806355eda3294866340d",
-    "skills/rvlab-ppt/SKILL.md": "1d0a91c7c13345f4c0ded16bcd6b0befd6525e64233307aad4e468865dc7f1f8",
+    "skills/rvlab-ppt/SKILL.md": "07ef197153c4fe9e260945dbe42e3b923a2e6e6b9ad33415036ad13f3198135b",
     "skills/rvlab-ppt/references/external-visuals.md": "85719650566768bbaae62860fde63a9b8c09dce45330008e17a8754ffe205036",
     "skills/rvlab-ppt/references/lab-meeting.md": "937934ec9a612e2b76be7f5d0b7a6ea1ba42f3715a6a21c590044de94f2d72c2",
     "skills/rvlab-ppt/references/polish.md": "9646b24bc4069efa692df86578316d70d3daefe0f75f2c255da150fc0f310134",
-    "skills/rvlab-ppt/references/visual-planning.md": "fd71450a1cfa547d3e6b4b0671d0be3436baab67ac28117db4451abd80a16d00",
+    "skills/rvlab-ppt/references/visual-planning.md": "8917559c38cce66e7f95c2a7a05054fa894661a6575ff415c00a67467b3fa5ab",
     "tests/build_fixture.py": "7f20b31a790314343b89a1c1058c1df2c5a8870cf3a02ee2e9eec46cbdc9ce01",
     "tests/test_animation.py": "bb0b76afb81bc9190957af7bf8394a82ff75ab5ba93700ef9a372ac160fd9081",
     "tests/test_build.py": "e5323610b9818fca1b07e559f804517b2d21495fa91248709e09440c87730116",
@@ -62,8 +62,8 @@
     "tools/rvppt/template.py": "2af44c447887c3fe81d84a26d25733b8d4ef5c470bf460086ca594c6956548d1"
   },
   "outputs": {
-    "graph.json": "5fc6e5d35e190a93c8e51c15e9c1854b5fc5bb1dd84d778c0fd6f67582648a5c",
-    "GRAPH_REPORT.md": "33589bd35b4a260362ee27cd0f39d7e62965a25e2e5991c1550424a9706f8c15",
-    "graph.html": "e75a8fa304d8b69018fbba66015168b9871c77275e72bbf7904f254a274547b3"
+    "graph.json": "44e74d0062b9c59f6ee836c80ae26cb66f522be37d6165eadb5a7b17aa41ab39",
+    "GRAPH_REPORT.md": "a35b10f18ecbc537de27a44e2f70298af58d2f70ebb9edcf29b24032d5b639a3",
+    "graph.html": "924b69d4448a58dc48f9a37727ba53daa6a261f08939e0de4008c8a9ed2daaa4"
   }
 }

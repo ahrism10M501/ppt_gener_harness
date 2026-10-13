@@ -54,3 +54,6 @@ _workspace/
 /graphify-out/cost.json
 /graphify-out/manifest.json
 /graphify-out/cache/
+
+# Agent worktrees are local checkouts, never content.
+/.claude/worktrees/
