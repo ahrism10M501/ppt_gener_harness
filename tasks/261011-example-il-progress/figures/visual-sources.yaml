@@ -1,0 +1,140 @@
+- asset: figures/bc-pipeline.png
+  kind: concept-diagram
+  source_file: figures/external/dagger-2011.pdf
+  source_sha256: 17bdd6e049e64f09010b322f9e2d4fb5c744c33ff7ac99b4c4561e39bd9082a7
+  selected_for: 이전 설명용 흐름도, 현재 슬라이드에서는 미사용
+  generator: figures/make_charts.py
+  changes: 직접 재구성한 도식; 설명용, 실측 자료 아님
+  source_url: https://proceedings.mlr.press/v15/ross11a/ross11a.pdf
+  provider: Ross et al., 2011
+  usage_terms: 원문 이용 조건 미확인; 출처 명시한 연구실 내부 예제
+  superseded_by: figures/bc-illustrated.png
+- asset: figures/distribution-shift.png
+  kind: concept-diagram
+  source_file: figures/external/dagger-2011.pdf
+  source_sha256: 17bdd6e049e64f09010b322f9e2d4fb5c744c33ff7ac99b4c4561e39bd9082a7
+  selected_for: 이전 설명용 흐름도, 현재 슬라이드에서는 미사용
+  generator: figures/make_charts.py
+  changes: 직접 재구성한 도식; 설명용, 실측 자료 아님
+  source_url: https://proceedings.mlr.press/v15/ross11a/ross11a.pdf
+  provider: Ross et al., 2011
+  usage_terms: 원문 이용 조건 미확인; 출처 명시한 연구실 내부 예제
+  superseded_by: figures/distribution-shift-illustrated.png
+- asset: figures/dagger-loop.png
+  kind: concept-diagram
+  source_file: figures/external/dagger-2011.pdf
+  source_sha256: 17bdd6e049e64f09010b322f9e2d4fb5c744c33ff7ac99b4c4561e39bd9082a7
+  selected_for: 이전 설명용 흐름도, 현재 슬라이드에서는 미사용
+  generator: figures/make_charts.py
+  changes: 직접 재구성한 도식; 설명용, 실측 자료 아님
+  source_url: https://proceedings.mlr.press/v15/ross11a/ross11a.pdf
+  provider: Ross et al., 2011
+  usage_terms: 원문 이용 조건 미확인; 출처 명시한 연구실 내부 예제
+  superseded_by: figures/dagger-illustrated.png
+- asset: figures/act-architecture.png
+  kind: paper-figure
+  source_file: figures/external/act-2023.pdf
+  source_sha256: 2e2fe25860f5f9cee9e655a2714e9f2264a7a5078bcd267c16d3f39af461345a
+  selected_for: S05 학습 인코더와 테스트 정책 구분
+  generator: figures/make_charts.py
+  changes: PDF 4페이지 Rect(48,50,565,180) pt 크롭, 300dpi; 그림 색·내용 보존
+  source_url: https://arxiv.org/pdf/2304.13705
+  provider: Zhao et al., 2023
+  usage_terms: 원문 이용 조건 미확인; 출처 명시한 연구실 내부 예제
+  figure: Figure 4
+  pdf_page: 4
+  original_caption: 'Architecture of Action Chunking with Transformers (ACT). We train
+    ACT as a Conditional VAE (CVAE), which has an encoder and a decoder. Left: The
+    encoder of the CVAE compresses action sequence and joint observation into z, the
+    style variable. The encoder is discarded at test time. Right: The decoder or policy
+    of ACT synthesizes images from multiple viewpoints, joint positions, and z with
+    a transformer encoder, and predicts a sequence of actions with a transformer decoder.
+    z is simply set to the mean of the prior (i.e. zero) at test time.'
+  original_asset: figures/external/act-2023.pdf
+- asset: figures/temporal-ensemble.png
+  kind: concept-diagram
+  source_file: figures/external/act-2023.pdf
+  source_sha256: 2e2fe25860f5f9cee9e655a2714e9f2264a7a5078bcd267c16d3f39af461345a
+  selected_for: S07 Fig. 5의 중첩 청크 관계
+  generator: figures/make_charts.py
+  changes: 직접 재구성한 도식; 설명용, 실측 자료 아님
+  source_url: https://arxiv.org/pdf/2304.13705
+  provider: Zhao et al., 2023
+  usage_terms: 원문 이용 조건 미확인; 출처 명시한 연구실 내부 예제
+- asset: figures/success-by-chunk.png
+  kind: synthetic-data-chart
+  source_file: sources/eval.csv
+  source_sha256: 38dcf919c2f51cf7d782c6d14264f5ca6f1b4638c2a976c6cd34d2107ed14236
+  selected_for: S09 동일한 축과 Wilson 구간
+  generator: figures/make_charts.py
+  changes: 기존 합성 CSV 집계; 원자료 변경 없음
+- asset: figures/failure-types.png
+  kind: synthetic-data-chart
+  source_file: sources/failures.csv
+  source_sha256: 687b93cb50d146e6b697356e36c8938b3276eeb917f701c257918a1df51f4bfe
+  selected_for: S11 실패 분류·횟수
+  generator: figures/make_charts.py
+  changes: 기존 합성 CSV 집계; 원자료 변경 없음
+- asset: figures/next-experiment.png
+  kind: concept-diagram
+  source_file: sources/failures.csv
+  source_sha256: 687b93cb50d146e6b697356e36c8938b3276eeb917f701c257918a1df51f4bfe
+  selected_for: S12 예제용 계획의 순서
+  generator: figures/make_charts.py
+  changes: 직접 재구성한 도식; 설명용, 실측 자료 아님
+- asset: figures/bc-illustrated.png
+  kind: ai-educational-illustration
+  provider: OpenAI image_gen built-in tool
+  created: '2026-10-13'
+  asset_sha256: 5d472f4a8c3f9e2da5880f846e6092b57f2e32764cb83c4fc8f78335043a00a6
+  principle_source: Ross et al., 2011, §2
+  source_file: figures/external/dagger-2011.pdf
+  source_url: https://proceedings.mlr.press/v15/ross11a.html
+  selected_for: S02 사람의 시연 → 관측·행동 데이터 쌍과 정책 학습 → 자율 실행
+  reference: 없음; 중앙 패널을 관측·행동 쌍으로 1회 수정
+  prompt_record: figures/illustration-prompts.md
+  changes: AI 생성 결과를 그대로 복사; 픽셀 수정 없음
+  limitations: 설명용 AI 삽화. 실험 사진·정확한 하드웨어 설계·실측 궤적 아님. 신경망은 일반적인 학습 기호.
+- asset: figures/distribution-shift-illustrated.png
+  kind: ai-educational-illustration
+  provider: OpenAI image_gen built-in tool
+  created: '2026-10-13'
+  asset_sha256: 5a1b492389091f4640e91224bd11a88a9e2216f00e24867cf35cf77f3f35fd87
+  principle_source: Ross et al., 2011, §2–3
+  source_file: figures/external/dagger-2011.pdf
+  source_url: https://proceedings.mlr.press/v15/ross11a.html
+  selected_for: 'S03 위: 정상 시연, 아래: 파지 오차·물체 이동·빈 그리퍼; 가능한 분포 이동 사례'
+  reference: bc-illustrated.png의 스타일 참조
+  prompt_record: figures/illustration-prompts.md
+  changes: AI 생성 결과를 그대로 복사; 픽셀 수정 없음
+  limitations: 설명용 AI 삽화. 실험 사진·정확한 하드웨어 설계·실측 궤적 아님. 신경망은 일반적인 학습 기호.
+- asset: figures/dagger-illustrated.png
+  kind: ai-educational-illustration
+  provider: OpenAI image_gen built-in tool
+  created: '2026-10-13'
+  asset_sha256: b2a0e0d6d3bd3b44fbafd692afc5bee5da047270763afd6363727180d50fa4de
+  principle_source: Ross et al., 2011, Algorithm 3.1
+  source_file: figures/external/dagger-2011.pdf
+  source_url: https://proceedings.mlr.press/v15/ross11a.html
+  selected_for: S04 정책 방문 상태를 전문가가 화면에서 라벨링 → 기존 데이터 누적·재학습
+  reference: bc-illustrated.png의 스타일 참조
+  prompt_record: figures/illustration-prompts.md
+  changes: AI 생성 결과를 그대로 복사; 픽셀 수정 없음
+  limitations: 설명용 AI 삽화. 실험 사진·정확한 하드웨어 설계·실측 궤적 아님. 신경망은 일반적인 학습 기호.
+- asset: figures/aloha-teleoperation.png
+  kind: paper-figure
+  source_file: figures/external/act-2023.pdf
+  source_sha256: 2e2fe25860f5f9cee9e655a2714e9f2264a7a5078bcd267c16d3f39af461345a
+  source_url: https://arxiv.org/pdf/2304.13705
+  provider: Zhao et al., 2023
+  figure: Figure 1, left panel
+  pdf_page: 1
+  original_caption: 'ALOHA: A Low-cost Open-source Hardware System for Bimanual Teleoperation.
+    The whole system costs <$20k with off-the-shelf robots and 3D printed components.
+    Left: The user teleoperates by backdriving the leader robots, with the follower
+    robots mirroring the motion. Right: ALOHA is capable of precise, contact-rich,
+    and dynamic tasks. We show examples of both teleoperated and learned skills.'
+  selected_for: S01 로봇 시연의 실제 모습; 외부 연구 사례로 표시
+  original_asset: figures/external/act-2023.pdf
+  changes: PDF 1페이지 Rect(48,162,256,324) pt, 왼쪽 시연 사진 크롭, 300dpi; 색·내용 보존
+  usage_terms: 원문 이용 조건 미확인; 출처 명시한 연구실 내부 예제
