@@ -12,11 +12,35 @@ class ChartTests(unittest.TestCase):
     def setUp(self):
         import charts
         self.charts = charts
+        self.charts.set_preset()
         self.temporary = tempfile.TemporaryDirectory()
         self.out = Path(self.temporary.name)
 
     def tearDown(self):
+        self.charts.set_preset()
         self.temporary.cleanup()
+
+    def test_rvlab_palette_is_unchanged_after_switching_presets(self):
+        self.charts.set_preset("modern-16x9")
+        self.charts.set_preset("rvlab")
+        self.assertEqual(
+            [getattr(self.charts, name) for name in ("BLUE", "BAND", "SKY", "TINT", "GRAY", "INK")],
+            ["#0070C0", "#053F95", "#5B9BD5", "#DEEBF7", "#A6A6A6", "#000000"],
+        )
+        self.assertEqual(self.charts.SHADES, ["#053F95", "#0070C0", "#5B9BD5", "#9DC3E6", "#A6A6A6"])
+
+    def test_chart_roles_follow_every_preset(self):
+        from rvppt.template import ROOT, semantic_palette
+        for path in sorted((ROOT / "templates/presets").glob("*.yaml")):
+            with self.subTest(preset=path.stem):
+                result = self.charts.set_preset(path.stem)
+                palette = semantic_palette(path.stem)
+                self.assertEqual(result["palette"], palette)
+                for name, role in {
+                    "BLUE": "accent", "BAND": "band", "SKY": "secondary",
+                    "TINT": "tint", "GRAY": "neutral", "INK": "ink",
+                }.items():
+                    self.assertEqual(getattr(self.charts, name), palette[role])
 
     def test_demo_writes_png_and_svg(self):
         self.charts.demo(self.out)

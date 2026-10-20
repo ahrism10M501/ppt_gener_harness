@@ -15,17 +15,10 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
-BLUE, BAND, SKY, TINT, GRAY, INK = "#0070C0", "#053F95", "#5B9BD5", "#DEEBF7", "#A6A6A6", "#000000"
-SHADES = [BAND, BLUE, SKY, "#9DC3E6", GRAY]  # 큰 값부터 진한 순서. 강조 1개만 BLUE로 두고 나머지를 옅게 써도 된다.
 # 설치된 폰트만 리스트로 넘겨야 findfont 경고 없이 글자별 대체가 된다(한글은 Malgun Gothic → Noto Sans CJK KR).
 _installed = {f.name for f in font_manager.fontManager.ttflist}
 FONTS = [f for f in ("Arial", "Malgun Gothic", "Liberation Sans", "Noto Sans CJK KR") if f in _installed]
 plt.rcParams.update({"font.family": FONTS, "font.size": 18})
-
-
-def _hex(value):
-    s = str(value).strip().lstrip("#")
-    return f"#{s}"
 
 
 def _tint(hex_color, factor=0.86):
@@ -40,20 +33,15 @@ def _tint(hex_color, factor=0.86):
 def set_preset(preset="rvlab"):
     """Load palette colors from a preset (e.g. rvlab, modern-16x9, academic-16x9, executive-16x9, minimal-4x3)."""
     global BLUE, BAND, SKY, TINT, GRAY, INK, SHADES
-    if preset == "rvlab":
-        BLUE, BAND, SKY, TINT, GRAY, INK = "#0070C0", "#053F95", "#5B9BD5", "#DEEBF7", "#A6A6A6", "#000000"
-        SHADES = [BAND, BLUE, SKY, "#9DC3E6", GRAY]
-        return {"preset": preset}
-    from rvppt.template import load_tokens
-    pal = load_tokens(preset=preset)["palette"]
-    BLUE = _hex(pal.get("primary", "0070C0"))
-    BAND = _hex(pal.get("band", "053F95"))
-    SKY = _hex(pal.get("secondary", "5B9BD5"))
-    TINT = _tint(BLUE, 0.86)
-    GRAY = "#A6A6A6"
-    INK = _hex(pal.get("text", "000000"))
-    SHADES = [BAND, BLUE, SKY, _tint(BLUE, 0.65), GRAY]
+    from rvppt.template import semantic_palette
+    pal = semantic_palette(preset)
+    BLUE, BAND, SKY = pal["accent"], pal["band"], pal["secondary"]
+    TINT, GRAY, INK = pal["tint"], pal["neutral"], pal["ink"]
+    SHADES = [BAND, BLUE, SKY, _tint(SKY, 0.4), GRAY]
     return {"preset": preset, "palette": pal}
+
+
+set_preset()
 
 
 def _fit(text, w, h, size):

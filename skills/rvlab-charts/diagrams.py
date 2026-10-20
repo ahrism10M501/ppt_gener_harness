@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 
 from rvppt.preview import resolve_fonts
-from rvppt.template import ROOT, load_tokens
+from rvppt.template import ROOT, load_tokens, semantic_palette
 
 HERE = Path(__file__).resolve().parent
 
@@ -29,6 +29,7 @@ def render(source, out, preset="rvlab"):
     code = source.read_text(encoding="utf-8")
     validate_source(code)
     tokens = load_tokens(preset=preset)
+    palette = semantic_palette(preset)
     fonts = resolve_fonts(tokens)
     font = fonts["korean"]["resolved"]
     width_in = tokens["geometry_in"]["body"][2] - tokens["geometry_in"]["content_indent"]
@@ -38,7 +39,14 @@ def render(source, out, preset="rvlab"):
     out.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as temporary:
         svg, png = [Path(temporary) / f"diagram.{suffix}" for suffix in ("svg", "png")]
-        request = dict(code=code, palette=tokens["palette"], font=font,
+        # Keep the JS renderer's raw-token protocol while sharing the semantic roles.
+        renderer_palette = {
+            key: palette[role].lstrip("#") for key, role in {
+                "primary": "accent", "band": "band", "secondary": "secondary",
+                "text": "ink", "background": "background",
+            }.items()
+        }
+        request = dict(code=code, palette=renderer_palette, font=font,
                        width=round(width_in * dpi), svg=str(svg), png=str(png))
         result = subprocess.run(["node", str(HERE / "diagrams.mjs")],
                                 input=json.dumps(request), text=True, capture_output=True, cwd=ROOT)

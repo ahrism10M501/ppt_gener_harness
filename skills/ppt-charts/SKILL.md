@@ -16,8 +16,11 @@ description: 발표의 흐름도·분기·그룹·피드백·상호작용 도식
 uv run python skills/rvlab-charts/diagrams.py render tasks/<task>/figures/pipeline.mmd tasks/<task>/figures/pipeline --preset modern-16x9
 ```
 
-- 스타일·색상·좌표를 `.mmd`에 직접 적지 않고 의미 역할(`:::focus`)만 표시하면 프리셋의 `accent_blue`, `band_blue`, `table_tint` 팔레트가 자동 적용된다.
+- 스타일·색상·좌표를 `.mmd`에 직접 적지 않고 의미 역할(`:::focus`)만 표시하면 프리셋의 `accent`, `band`, `secondary`와 파생된 옅은 색이 자동 적용된다.
 - 슬라이드 내 최소 글자 크기(18pt) 미달 시 에러를 발생시켜 가독성을 강제한다.
+
+공통 색상 계약은 `rvppt.template.semantic_palette(preset)`이며 값은 #RRGGBB 형식이다.
+팔레트 키: `accent`, `band`, `secondary`, `tint`, `neutral`, `ink`, `section_accent`, `background`.
 
 ## 2. 고정 팔레트 차트 레시피 (`charts.py`)
 

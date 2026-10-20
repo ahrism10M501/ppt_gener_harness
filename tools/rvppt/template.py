@@ -55,6 +55,31 @@ def load_tokens(design=ROOT / "DESIGN.md", preset=None):
     return tokens
 
 
+def semantic_palette(preset="rvlab"):
+    """Return shared visual roles as #RRGGBB, derived from the preset tokens."""
+    palette = load_tokens(preset=preset)["palette"]
+    roles = {
+        role: "#" + palette[key].lstrip("#").upper()
+        for role, key in {
+            "accent": "primary", "band": "band", "secondary": "secondary",
+            "ink": "text", "section_accent": "section_accent", "background": "background",
+        }.items()
+    }
+
+    def blend(color, factor):
+        background = roles["background"]
+        channels = (
+            round(int(color[i:i + 2], 16) * (1 - factor) + int(background[i:i + 2], 16) * factor)
+            for i in (1, 3, 5)
+        )
+        return "#" + "".join(f"{channel:02X}" for channel in channels)
+
+    # These blends retain the original RVLAB chart tint and neutral exactly.
+    roles["tint"] = blend(roles["secondary"], 0.8)
+    roles["neutral"] = blend(roles["ink"], 0.65)
+    return roles
+
+
 def list_presets(root=ROOT):
     presets_dir = Path(root) / "templates/presets"
     items = []
