@@ -2,7 +2,7 @@
 
 단일 양식(RVLAB 4:3)에 고정되어 있던 기존 파이프라인을 확장하여, **범용 멀티 프리셋(16:9 와이드·4:3·RVLAB·사용자 커스텀 PPTX)** 과 **[anatomy](https://skills.wheresryan.sh/anatomy) 하네스 아키텍처(사전 규모/예산 설정 · Truth-first 모델 · `PROGRESS.md` 상태 지속성 · 4x 확대 크롭 크리틱 루프 · 아이소메트릭 기구/시스템 도해)** 를 결합한 프레젠테이션 하네스입니다.
 
-기존 `rvppt` CLI와 `rvlab-*` 스킬(`preset: rvlab`)을 100% 하위 호환으로 유지하면서, 범용 `pptgen` CLI와 `ppt-*` 스킬을 함께 제공합니다.
+기존 `rvppt` CLI와 `rvlab-*` 스킬(`preset: rvlab`)을 유지하면서, 범용 `pptgen` CLI와 `ppt-*` 스킬을 함께 제공합니다.
 
 > **에이전트에 붙여넣기**
 > - 처음 설치: `AGENTS.md와 docs/setup.md를 읽고 셋업해줘.`
@@ -26,6 +26,14 @@
    - **Up-front Sizing (`--budget quick|standard|thorough`)**: 작업 시작 시 발표와 시각 자료의 규모를 합의합니다.
    - **Truth-First & `plan/PROGRESS.md`**: 원자료의 수식·수치·불변 조건과 세션 간 진행 상태를 `plan/PROGRESS.md`에 기록합니다.
    - **4x Close-Up Critic Loop (`uv run pptgen audit tasks/<task> --zoom 4`)**: 전체 썸네일만 보고 통과시키지 않고, 텍스트·수식·그림·출처 영역을 4배 확대한 크롭 시트(`critic-crops-sheet.png`)와 박스 여백·명도 대비(`critic-audit.json`)를 자동 검증합니다.
+
+## 제한 사항
+
+16:9 프리셋은 RVLAB 기반의 마스터·레이아웃 구조를 가로로 늘리고 색을 바꾼 양식입니다. 프리셋마다 별도의 레이아웃 엔진을 제공하지는 않습니다.
+
+`register-template`은 입력 PPTX를 보관하고 슬라이드 크기와 팔레트 색 3개를 가져옵니다. 색은 테마에서 먼저 찾고 부족하면 레이아웃의 직접 지정 색이나 기본값을 사용합니다. 등록한 PPTX의 레이아웃·로고·배경을 그대로 쓰지 않고 RVLAB 기반 구조로 파생 양식을 다시 만듭니다. 사용자 양식을 그대로 살리는 placeholder 매핑은 지원하지 않습니다.
+
+렌더 QA는 LibreOffice와 실제 선택된 폰트로 수행하며, Arial·맑은 고딕이 없으면 Liberation Sans·Noto Sans CJK KR을 사용합니다. PowerPoint에서의 실제 렌더링은 아직 검증하지 않았으므로 앱이나 폰트에 따라 줄바꿈과 배치가 달라질 수 있습니다.
 
 ## 빠른 시작
 

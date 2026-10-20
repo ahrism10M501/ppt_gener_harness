@@ -7,8 +7,10 @@
 | 경로 | 역할 |
 | --- | --- |
 | `tools/rvppt/` | Python CLI, 문서·승인 상태, PPTX 제작과 QA |
+| `tools/pptgen/` | `python -m pptgen`을 위한 범용 별칭 진입점 |
 | `tools/rvppt/render.mjs` | MathJax·Mermaid·SVG 렌더링 |
 | `templates/` | 보존할 원본 양식과 빌드에 쓰는 파생 reference |
+| `templates/presets/` | 기본·커스텀 프리셋 YAML 토큰과 파생 reference |
 | `DESIGN.md` | 고정 레이아웃·폰트·색·크기 YAML 토큰 |
 | `docs/design/` | 원본 양식 구조 manifest와 그래프용 mplstyle |
 | `skills/` | 프로젝트 스킬과 고정 버전 외부 스킬·라이선스 |
@@ -19,20 +21,23 @@
 
 ## 실행 경로
 
-`pyproject.toml`의 `rvppt` 진입점은 `tools/rvppt/cli.py`다. task 명령은 저장소의 `tasks/` 바로 아래 폴더를 대상으로 한다.
+`pyproject.toml`의 `pptgen`과 `rvppt` 명령은 모두 `tools/rvppt/cli.py`의 `main`을 호출한다. `tools/pptgen/__main__.py`도 같은 구현을 호출해 `python -m pptgen`을 제공한다. task 명령은 저장소의 `tasks/` 바로 아래 폴더를 대상으로 한다.
 
 - `project.py`: 프로필에서 표지 정보를 가져와 새 task를 만든다.
 - `state.py`: 네 단계 문서 스키마, 입력 해시, 승인 순서와 무효화를 검사한다.
 - `plan.py`: `status`를 읽어 `plan/contracts.md`에 승인 관계도·상태를 생성하고, 덮어쓰지 않는 `plan/revisions.md` 수정 기록을 준비한다. `rvppt plan`으로 갱신하며 새 task에도 생성한다.
 - `markdown.py`: Pandoc AST에서 슬라이드·본문·그림·수식·노트를 읽는다.
-- `build.py`: lint, 고정 양식 PPTX 작성, LibreOffice 변환과 렌더 QA, 성공 산출물 게시를 수행한다.
+- `build.py`: lint, 프리셋 양식 PPTX 작성, LibreOffice 변환과 렌더 QA, 성공 산출물 게시를 수행한다. `audit` 명령은 빌드 결과에서 확대 크롭과 여백·대비 검사를 생성한다.
+- `anatomy_bridge.py`: 벤더링된 anatomy 빌더를 호출해 task의 PNG·SVG·인터랙티브 HTML 도해를 만든다.
 - `preview.py`: 실제 폰트 선택, 그림 맞춤, PDF 변환과 contact sheet를 제공한다.
-- `template.py`: `DESIGN.md` 토큰을 읽고 원본을 보존하며 파생 reference를 만든다.
+- `template.py`: `DESIGN.md` 또는 `templates/presets/<preset>.yaml` 토큰을 읽고 원본을 보존하며 파생 reference를 만든다. 커스텀 등록은 크기와 색 3개를 가져와 RVLAB 기반 구조를 다시 만든다.
 - `polish.py`: 윤문 전후 AST를 비교해 구조·수치·수식·경로 보존을 검사한다.
 - `doctor.py`: 도구·양식·폰트·외부 스킬 무결성을 읽기 전용으로 점검한다.
 - `graph.py`: Graphify 스냅샷의 입력 변경과 task·외부 스킬 원문 제외를 점검한다.
 
 `slides.md`가 발표 원본이다. 승인 해시는 문서 본문과 상위 입력을 함께 묶는다. 원자료 변경은 Stage 1부터, 그림만 변경하면 Stage 4부터 재확인한다. 내용 승인과 렌더 QA는 서로 다른 상태다. 빌드 실패 시 이전 성공 결과를 보존하며 사람이 편집한 PPTX를 덮어쓰지 않는다.
+
+16:9 프리셋은 RVLAB 기반 구조를 늘리고 색을 바꾼 파생 양식이다. 등록한 PPTX의 레이아웃·로고·배경이나 placeholder를 매핑하지 않는다. 렌더 QA는 LibreOffice와 설치된 폰트(필요하면 대체 폰트)를 사용하며, PowerPoint 실제 렌더링은 아직 검증하지 않았다.
 
 ## 유지보수 확인
 

@@ -2,6 +2,10 @@
 
 아래 첫 YAML 블록은 파생 양식 생성기와 빌드가 읽는 **고정 토큰의 본체**다. 발표 입력에 좌표·폰트·색 토큰을 복사하지 않는다. 토큰 변경은 양식 변경이며 reference·QA deck·검사를 함께 재생성한다.
 
+이 토큰은 기본 `rvlab` 프리셋용이며, 다른 프리셋은 `templates/presets/<preset>.yaml`을 사용한다. 16:9 양식도 RVLAB 기반 구조를 늘리고 색을 바꿔 만든다. `register-template`은 크기와 색 3개를 가져와 같은 구조를 다시 만들며, 입력 PPTX의 레이아웃·로고·배경을 그대로 보존하는 매핑은 제공하지 않는다.
+
+렌더 QA는 LibreOffice와 설치된 폰트(Arial·맑은 고딕이 없으면 대체 폰트)를 기준으로 한다. PowerPoint 실제 렌더링은 아직 검증하지 않았다.
+
 ```yaml
 schema_version: 1
 source:
