@@ -1,1 +1,1 @@
-"""RVLAB presentation tooling."""
+"""Presentation tooling for fixed design presets."""

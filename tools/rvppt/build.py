@@ -271,7 +271,7 @@ def set_typography(shape, size, profile, *, code=False):
         etree.SubElement(fill, f"{{{NS['a']}}}srgbClr", val="000000")
 
 
-def copy_fragment(shape, target, box, size, profile, block):
+def copy_fragment(shape, target, box, size, profile, block, *, preset="rvlab"):
     element = deepcopy(shape._element)
     for node in element.iter():
         for attr, value in list(node.attrib.items()):
@@ -282,7 +282,7 @@ def copy_fragment(shape, target, box, size, profile, block):
                 node.set(attr, target.part.relate_to(relationship.target_ref, relationship.reltype, is_external=True))
     for prop in element.iter(f"{{{NS['p']}}}cNvPr"):
         prop.set("id", str(target.shapes._next_shape_id))
-        prop.set("name", "RVLAB content")
+        prop.set("name", f"{'RVLAB' if preset == 'rvlab' else preset} content")
     for ph in list(element.iter(f"{{{NS['p']}}}ph")):
         ph.getparent().remove(ph)
     if not shape.has_table:
@@ -513,7 +513,8 @@ def assemble(api, slides, tokens, profile, task, directory):
                     else:
                         display = block["t"] == "Para" and len(block["c"]) == 1 and block["c"][0]["t"] == "Math" and block["c"][0]["c"][0]["t"] == "DisplayMath"
                         size = tokens["sizes_pt"]["table"] if block["t"] == "Table" else tokens["sizes_pt"]["code"] if block["t"] == "CodeBlock" else tokens["sizes_pt"]["equation"] if display else points
-                        shape = copy_fragment(fragments[id(block)], slide, box, size, profile, block)
+                        shape = copy_fragment(fragments[id(block)], slide, box, size, profile, block,
+                                              preset=tokens.get("preset_id", "rvlab"))
                         maths = [n["c"] for n in nodes(block) if n["t"] == "Math"]
                         actual_math = len(list(shape._element.iter(f"{{{MATH_NS}}}oMath")))
                         preview_image = None
@@ -753,7 +754,7 @@ def build(task):
         return {"task_id": task.name, "preset": tokens.get("preset_id", "rvlab"), "aspect": tokens["slide"]["aspect"],
                 "pptx": str(task / f"{stem}.pptx"), "pdf": str(task / f"{stem}.pdf"), "preview": str(workspace / "output/contact-sheet.png"),
                 "slide_count": report["slide_count"], "content_approved": report["content_approved"], "missing_figures": report["missing_figures"],
-                "warnings": deck_findings(slides), "detected_overflows": 0, "native_equations": report["native_equations"], "native_tables": report["native_tables"], "math_fallbacks": report["math_fallbacks"], "math_compatible_pptx": str(task / compatible_name) if compatible_name else None, "fonts": profile}
+                "warnings": deck_findings(slides, tokens), "detected_overflows": 0, "native_equations": report["native_equations"], "native_tables": report["native_tables"], "math_fallbacks": report["math_fallbacks"], "math_compatible_pptx": str(task / compatible_name) if compatible_name else None, "fonts": profile}
     finally:
         lock.unlink(missing_ok=True)
 
@@ -763,9 +764,17 @@ def requested_figures(task, slides):
             for s in slides for n in nodes(s.get("slots", [])) if n["t"] == "Image" and not asset_path(task, n["c"][2][0]).exists()]
 
 
-def deck_findings(slides):
+def deck_findings(slides, tokens=None):
     """Advisory gaps the parser accepts: missing cover/section subtitles and content length hints."""
-    findings = [] if slides[0]["subtitle"].strip() else [{"slide_id": "cover", "issue": "Cover subtitle is empty; RVLAB covers show a yellow subtitle under the title. Propose candidates and set deck.subtitle in slides.md"}]
+    tokens = load_tokens() if tokens is None else tokens
+    preset = tokens.get("preset_id", "rvlab")
+    cover_style = "RVLAB covers show a yellow subtitle" if preset == "rvlab" else (
+        f"{preset} covers show a #{tokens['palette']['section_accent'].lstrip('#').upper()} subtitle")
+    findings = [] if slides[0]["subtitle"].strip() else [{
+        "slide_id": "cover",
+        "issue": f"Cover subtitle is empty; {cover_style} under the title. "
+                 "Propose candidates and set deck.subtitle in slides.md",
+    }]
     findings += [{"slide_id": s["id"], "issue": "Section has no subtitle; use '# 섹션 | 부제' (short description or English name) unless omitted on purpose"}
                  for s in slides if s["layout"] == "section" and not s["subtitle"] and s["title"] not in APPENDIX]
     findings += [{"slide_id": s["id"], "issue": w} for s in slides for w in s.get("warnings", [])]
@@ -774,7 +783,7 @@ def deck_findings(slides):
 
 def lint(task):
     _, slides, tokens = parse_task(task)
-    return {"task_id": task.name, "preset": tokens.get("preset_id", "rvlab"), "aspect": tokens["slide"]["aspect"], "slide_count": len(slides), "findings": deck_findings(slides), "missing_figures": requested_figures(task, slides), "scope": "Markdown structure, limits, paths and styling; rendered fit is checked by build"}
+    return {"task_id": task.name, "preset": tokens.get("preset_id", "rvlab"), "aspect": tokens["slide"]["aspect"], "slide_count": len(slides), "findings": deck_findings(slides, tokens), "missing_figures": requested_figures(task, slides), "scope": "Markdown structure, limits, paths and styling; rendered fit is checked by build"}
 
 
 def preview(task):

@@ -44,6 +44,40 @@ class BuildTests(unittest.TestCase):
     def slide(self, slides, identifier):
         return deepcopy(next(s for s in slides if s["id"] == identifier))
 
+    def test_cover_subtitle_warning_uses_current_preset(self):
+        document = read_document(self.task / STAGES[3], self.task.name, 4)
+        for preset in ("rvlab", "modern-16x9", "academic-16x9"):
+            with self.subTest(preset=preset):
+                document.metadata["deck"].update(preset=preset, subtitle="")
+                document.path.write_text(
+                    "---\n" + yaml.safe_dump(document.metadata, allow_unicode=True, sort_keys=False)
+                    + "---\n" + document.body, encoding="utf-8")
+                warnings = build.lint(self.task)["findings"]
+                issue = next(w["issue"] for w in warnings if w["slide_id"] == "cover")
+                if preset == "rvlab":
+                    self.assertEqual(issue, "Cover subtitle is empty; RVLAB covers show a yellow subtitle "
+                                     "under the title. Propose candidates and set deck.subtitle in slides.md")
+                else:
+                    self.assertIn(preset, issue)
+                    color = load_tokens(preset=preset)["palette"]["section_accent"]
+                    self.assertIn(f"#{color}", issue)
+                    self.assertNotIn("RVLAB", issue)
+                    self.assertNotIn("yellow", issue)
+
+    def test_content_shape_name_uses_current_preset(self):
+        presentation = Presentation()
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        source = slide.shapes.add_textbox(0, 0, 914400, 914400)
+        source.text = "Synthetic text"
+        block = {"t": "Para", "c": [{"t": "Str", "c": source.text}]}
+        profile = dict(resolve_fonts(self.tokens), text_top_inset_pt=4)
+        for preset, expected in ((None, "RVLAB content"), ("rvlab", "RVLAB content"),
+                                 ("modern-16x9", "modern-16x9 content")):
+            with self.subTest(preset=preset):
+                options = {} if preset is None else {"preset": preset}
+                copied = build.copy_fragment(source, slide, [0, 0, 1, 1], 20, profile, block, **options)
+                self.assertEqual(copied.name, expected)
+
     def test_pandoc_parser_builds_rvlab_deck_structure(self):
         _, slides, _ = markdown.parse_task(self.task)
         self.assertEqual([s["layout"] for s in slides], ["cover", "toc", "section", "content", "content", "columns", "columns", "section", "content", "figure_2", "figure_3", "figure_4", "content", "content", "content", "closing", "section", "content"])
