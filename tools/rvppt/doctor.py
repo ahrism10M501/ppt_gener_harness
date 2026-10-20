@@ -49,6 +49,35 @@ def skill_integrity(root=ROOT):
     return problems
 
 
+SKILL_ENTRYPOINTS = (".agents/skills", ".claude/skills", ".gemini/skills")
+
+
+def skill_entrypoints(root=ROOT):
+    """Check discovery names and SKILL.md for links or copied skill directories."""
+    problems = []
+    names = {}
+    for folder in SKILL_ENTRYPOINTS:
+        directory = root / folder
+        if not directory.is_dir():
+            problems.append(f"{folder}: missing discovery directory")
+        entries = sorted(path for path in directory.glob("*") if not path.name.startswith("."))
+        names[folder] = {path.name for path in entries}
+        for path in entries:
+            relative = path.relative_to(root).as_posix()
+            if path.is_symlink() and not path.exists():
+                problems.append(f"{relative}: broken discovery link")
+            elif link_stand_in(path):
+                problems.append(f"{relative}: {SYMLINK_FIX.format(path=relative)}")
+            elif not (path / "SKILL.md").is_file():
+                problems.append(f"{relative}: missing SKILL.md (expected a skill directory)")
+    expected = set().union(*names.values())
+    for folder, found in names.items():
+        missing = expected - found
+        if missing:
+            problems.append(f"{folder}: skill list differs; missing {', '.join(sorted(missing))}")
+    return problems
+
+
 def doctor():
     checks = []
 
@@ -108,6 +137,12 @@ def doctor():
             raise RuntimeError("; ".join(problems))
         return "all vendored files match skills/dependencies.yaml"
 
+    def entrypoints():
+        problems = skill_entrypoints()
+        if problems:
+            raise RuntimeError("; ".join(problems))
+        return "discovery skill names match; all entrypoints contain SKILL.md"
+
     def visual():
         try:
             import manim
@@ -118,6 +153,7 @@ def doctor():
         return {"manim": manim.__version__, "matplotlib": matplotlib.__version__, "SciencePlots": version("SciencePlots")}
 
     for name, required, test in [("python", True, python), ("pandoc", True, pandoc), ("template", True, template),
+                                 ("skill_entrypoints", False, entrypoints),
                                  ("skills", True, skills), ("libreoffice", True, libreoffice), ("fonts", True, fonts),
                                  ("node_renderers", True, node), ("mermaid_browser", False, browser), ("profile", False, profile),
                                  ("visual_tools", False, visual)]:

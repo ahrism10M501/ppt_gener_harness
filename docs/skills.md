@@ -22,7 +22,11 @@ gstack의 제3자 소재 고지도 보존하기 위해 원본 [NOTICE.md](../ski
 - **`skills/office-hours/`**: 스킬 본문, sections, 생성용 템플릿, 라이선스 고지를 포함한다. 인터뷰의 참고 자료로 보관한다. 단독 실행 스킬로 등록하지 않는다.
 - **`skills/brainstorming/`**: 스킬 본문, 참조자료, visual companion 스크립트를 포함한다. 인터뷰의 참고 자료로 보관하며 visual companion은 실행하지 않는다.
 
-`im-not-ai`의 `humanize-korean`은 `.agents/skills/`에 Codex판, `.claude/skills/`에 Claude판을 연결한다. Claude 실행용 에이전트 3개는 `.claude/agents/`에 연결한다. 홈 디렉터리나 시스템 환경은 변경하지 않는다.
+### 스킬 발견 진입점
+
+`.agents/skills/`와 `.claude/skills/`는 같은 스킬 목록을 제공한다. `im-not-ai`의 `humanize-korean`은 `skills/dependencies.yaml`의 `entrypoints.codex`와 `entrypoints.claude`에 따라 각각 Codex판(`skills/im-not-ai/codex/skills/humanize-korean`)과 Claude판(`skills/im-not-ai/skills/humanize-korean`)을 연결한다. 이 대상 차이는 의도된 것이므로 링크를 하나로 통일하지 않는다. Claude 실행용 에이전트 3개는 `.claude/agents/`에 연결한다. 홈 디렉터리나 시스템 환경은 변경하지 않는다.
+
+`uv run pptgen doctor`의 `skill_entrypoints` 점검은 `.agents/skills/`, `.claude/skills/`, `.gemini/skills/`의 스킬 목록 차이, 깨진 링크, 대상의 `SKILL.md` 누락을 경고한다. Windows에서 링크 대신 스킬 폴더를 복사한 경우도 검사할 수 있다. Git이 링크를 대상 경로만 적힌 일반 파일로 체크아웃한 경우에는 복구 방법을 안내한다. `.gemini/skills/`는 현재 비어 있으며, 채울지는 사용자가 결정한다.
 
 task에 적용할 때는 외부 스킬의 작업 cwd를 `TASK/.build/editorial/`로 지정해 `_workspace/`를 그 안에 격리한다. `sources/`나 승인된 문서를 직접 덮어쓰지 않고, 차이를 검토해 Markdown 원본에 반영한 뒤 필요한 단계부터 재승인한다. 절차는 [윤문 절차](../skills/rvlab-ppt/references/polish.md)이며 `uv run pptgen polish-check TASK --before BEFORE.md`가 제목·목록·표·코드·수식·링크·그림 경로·인용·숫자 보존을 Pandoc AST로 검사한다. 고정 버전 파일의 해시는 `uv run pptgen doctor`가 매번 대조한다.
 
