@@ -1,6 +1,6 @@
 # Task content is never part of the project knowledge graph, even the Git example.
 /tasks/
-# Vendored external skills keep their own sources; the graph shows RVLAB code and docs only.
+# Vendored external skills keep their own sources; the graph shows harness code and docs only.
 /skills/im-not-ai/
 /skills/office-hours/
 /skills/brainstorming/
@@ -13,6 +13,7 @@
 /skills/manimce-best-practices/
 /skills/scientific-slides/
 /skills/scientific-visualization/
+/skills/anatomy/
 /.claude/agents/
 # Real lab decks and personal details are not project structure.
 /templates/

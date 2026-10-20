@@ -11,13 +11,19 @@
 | `slides.md` | 연구자·에이전트 | 발표 원본(Overleaf의 main.tex) |
 | `figures/` | 연구자·에이전트 | 연구자 그림, 에이전트가 찾은 사진·논문 figure(`figures/external/`), 만든 도식·차트와 출처 기록 |
 | `sources/` | 연구자 | 논문·데이터·메모·초안 PPT. 읽기 전용이며 Git에서 제외한다 |
-| `plan/` | 에이전트 | interview·brief·outline 승인 문서 |
+| `plan/` | 에이전트·명령 | interview·brief·outline 승인 문서, contracts 승인 관계도, revisions 수정 기록 |
 | `YYYYMMDD_제목.pptx/.pdf` | 빌드 | 최신 성공 결과 |
 | `.build/` | 빌드·에이전트 | 슬라이드 PNG·리포트·윤문과 논문 추출의 중간 파일 |
 
 연구자가 넣은 초안 PPTX/PDF는 기존 도구로 읽는다. 텍스트·노트·표는 `uvx --from 'markitdown[pptx]' markitdown sources/<초안>.pptx`로, 슬라이드 모양은 LibreOffice로 PDF를 만들어 확인한다. 그림은 `unzip -j sources/<초안>.pptx 'ppt/media/*' -d figures/draft/`처럼 꺼내 재사용을 제안한다. 초안의 구성·표현은 연구자 요구로 기록하고, 수치는 원자료로 확인한 뒤에만 사실로 기록한다.
 
 `uv run rvppt status tasks/<task>`는 읽기 전용이다. 처음으로 승인되지 않은 단계(`next_stage`·`next_document`)와 단계별 `issues`(승인을 막는 문제), `warnings`(보고할 권고), 가정·미해결 항목을 JSON으로 보여 준다. 사용자가 자료만 넣고 "이걸로 만들어줘"라고 해도 Stage 1부터 시작한다. 이미 유효한 승인은 다시 받지 않는다.
+
+## 기존 발표 수정과 승인 관계도
+
+수정·되돌리기는 [수정 절차](revisions.md)를 따른다. 사용자는 페이지·토픽·문장과 원하는 변경을 자연어로 말하면 된다. 에이전트가 대상 ID·변경 원본·재검토 범위를 찾아 `plan/revisions.md`에 기록하고 반영한다. 수정 요청은 착수 지시이며 단계별 내용 승인과 구분한다.
+
+`uv run rvppt plan tasks/<task>`는 `plan/contracts.md`에 단계별 합의 대상·문서 위치·승인 상태·의존 관계도·다음 검토 위치를 생성한다. 기존 수정 기록은 덮어쓰지 않는다. 재개·수정 후·승인 후·단계 보고 전에 갱신하며, `status` 자체는 계속 읽기 전용이다. 새 task에서는 두 파일이 자동 생성된다.
 
 ## 질문 방식
 

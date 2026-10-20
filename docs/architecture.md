@@ -23,6 +23,7 @@
 
 - `project.py`: 프로필에서 표지 정보를 가져와 새 task를 만든다.
 - `state.py`: 네 단계 문서 스키마, 입력 해시, 승인 순서와 무효화를 검사한다.
+- `plan.py`: `status`를 읽어 `plan/contracts.md`에 승인 관계도·상태를 생성하고, 덮어쓰지 않는 `plan/revisions.md` 수정 기록을 준비한다. `rvppt plan`으로 갱신하며 새 task에도 생성한다.
 - `markdown.py`: Pandoc AST에서 슬라이드·본문·그림·수식·노트를 읽는다.
 - `build.py`: lint, 고정 양식 PPTX 작성, LibreOffice 변환과 렌더 QA, 성공 산출물 게시를 수행한다.
 - `preview.py`: 실제 폰트 선택, 그림 맞춤, PDF 변환과 contact sheet를 제공한다.

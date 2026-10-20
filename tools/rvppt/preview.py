@@ -130,8 +130,13 @@ def render_pdf(source, destination):
 
 def contact_sheet(images, labels, output):
     columns, width, title_h = 2, 640, 28
-    tile_h = round(width * 3 / 4) + title_h
-    sheet = Image.new("RGB", (width * columns, tile_h * math.ceil(len(images) / columns)), "#e5e7eb")
+    ratio = 3 / 4
+    if images:
+        with Image.open(images[0]) as sample:
+            if sample.width > 0 and sample.height > 0:
+                ratio = sample.height / sample.width
+    tile_h = round(width * ratio) + title_h
+    sheet = Image.new("RGB", (width * columns, max(1, tile_h * math.ceil(len(images) / columns))), "#e5e7eb")
     draw = ImageDraw.Draw(sheet)
     for idx, (path, label) in enumerate(zip(images, labels)):
         x, y = idx % columns * width, idx // columns * tile_h

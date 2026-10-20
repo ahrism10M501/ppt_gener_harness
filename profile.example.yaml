@@ -1,7 +1,11 @@
 # 표지 인적사항. profile.yaml로 복사해 채운다(개인 파일이라 Git에서 제외된다).
-# rvppt new가 새 발표의 slides.md deck에 복사하므로 발표마다 따로 고칠 수 있다.
+# pptgen new(또는 rvppt new)가 새 발표의 slides.md deck에 복사하므로 발표마다 따로 고칠 수 있다.
 name: 홍길동
 name_en: Gildong Hong
 affiliation:
   - 경기대학교 창의공과대학 전자공학과 N학년
   - Robotics and Vision Lab Robot Team
+# 선택: 기본 디자인 프리셋 (rvlab | modern-16x9 | academic-16x9 | executive-16x9 | minimal-4x3)
+default_preset: rvlab
+# 선택: 기본 작업 규모/예산 (quick | standard | thorough)
+default_budget: standard

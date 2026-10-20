@@ -1,0 +1,70 @@
+schema_version: 1
+preset_id: academic-16x9
+name: Academic Conference (16:9)
+description: High data-ink 16:9 widescreen preset for academic conferences, seminar talks, and thesis defenses
+mode: preset
+reference: templates/presets/academic-16x9_reference.pptx
+slide:
+  width_in: 13.333
+  height_in: 7.5
+  aspect: '16:9'
+  masters: 1
+  original_layouts: 4
+palette:
+  primary: '0F4C81'
+  band: '0A2E52'
+  secondary: '4A89DC'
+  section_accent: 'F6E05E'
+  text: '111827'
+  background: 'FFFFFF'
+fonts:
+  latin: Arial
+  korean: Malgun Gothic
+  fallback_latin: Liberation Sans
+  fallback_korean: Noto Sans CJK KR
+  code: Liberation Mono
+sizes_pt:
+  headline: 24
+  body: 20
+  secondary: 18
+  columns: 20
+  caption: 12
+  source: 12
+  table: 18
+  equation: 20
+  code: 16
+text_top_inset_pt: 4
+geometry_in:
+  title: [0.69, 0.10, 4.80, 0.56]
+  header_rule: [0.85, 0.36, 12.15, 0.05]
+  body: [0.45, 0.99, 12.43, 6.03]
+  content_indent: 0.25
+  closing_title: [0.60, 3.37, 12.13, 0.57]
+  gap: 0.28
+  caption_height: 0.36
+limits:
+  topic_units: 28
+  headline_lines: 2
+  headline_korean_chars: 68
+  headline_latin_chars: 130
+  bullets: 5
+  bullet_depth: 2
+  bullet_korean_chars: 56
+  bullet_latin_chars: 105
+  table_rows_with_header: 8
+  table_columns: 7
+  toc_lines: 14
+  image_min_effective_dpi: 150
+  generated_image_dpi: 300
+layouts:
+  cover: Title Slide
+  toc: '1_제목 및 내용'
+  section: Section Header
+  content: Title and Content
+  columns: Two Content
+  figure_2: Two Content
+  figure_3: RVLAB Figure Grid 3
+  figure_4: RVLAB Figure Grid 4
+labels:
+  ko: {date: '발표일시 : ', closing: '감사합니다.', chapter: Chapter}
+  en: {date: 'Date : ', closing: 'Thank you.', chapter: Chapter}

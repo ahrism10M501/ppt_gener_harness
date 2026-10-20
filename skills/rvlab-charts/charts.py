@@ -1,7 +1,7 @@
-"""RVLAB 꾸밈 차트 레시피. 복사해 DATA만 고치거나 모듈로 import한다.
+"""꾸밈 차트 레시피(멀티 프리셋 및 RVLAB 호환). 복사해 DATA만 고치거나 모듈로 import한다.
 
 uv run python skills/rvlab-charts/charts.py demo OUT_DIR   # 합성 예시 전부 생성
-각 함수는 PNG(300dpi)+SVG를 `out` 경로(확장자 제외)에 저장한다. 색은 DESIGN.md 팔레트와 그 옅은 단계만 쓴다.
+각 함수는 PNG(300dpi)+SVG를 `out` 경로(확장자 제외)에 저장한다. 색은 선택된 프리셋(`set_preset(...)`) 또는 DESIGN.md 팔레트와 그 옅은 단계만 쓴다.
 상자 안 라벨이 18pt로 들어가지 않으면 ValueError를 낸다(빌드의 넘침 검사는 그림 내부를 보지 못한다).
 """
 import math
@@ -21,6 +21,39 @@ SHADES = [BAND, BLUE, SKY, "#9DC3E6", GRAY]  # 큰 값부터 진한 순서. 강�
 _installed = {f.name for f in font_manager.fontManager.ttflist}
 FONTS = [f for f in ("Arial", "Malgun Gothic", "Liberation Sans", "Noto Sans CJK KR") if f in _installed]
 plt.rcParams.update({"font.family": FONTS, "font.size": 18})
+
+
+def _hex(value):
+    s = str(value).strip().lstrip("#")
+    return f"#{s}"
+
+
+def _tint(hex_color, factor=0.86):
+    s = hex_color.lstrip("#")
+    r, g, b = int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16)
+    tr = round(r + (255 - r) * factor)
+    tg = round(g + (255 - g) * factor)
+    tb = round(b + (255 - b) * factor)
+    return f"#{tr:02X}{tg:02X}{tb:02X}"
+
+
+def set_preset(preset="rvlab"):
+    """Load palette colors from a preset (e.g. rvlab, modern-16x9, academic-16x9, executive-16x9, minimal-4x3)."""
+    global BLUE, BAND, SKY, TINT, GRAY, INK, SHADES
+    if preset == "rvlab":
+        BLUE, BAND, SKY, TINT, GRAY, INK = "#0070C0", "#053F95", "#5B9BD5", "#DEEBF7", "#A6A6A6", "#000000"
+        SHADES = [BAND, BLUE, SKY, "#9DC3E6", GRAY]
+        return {"preset": preset}
+    from rvppt.template import load_tokens
+    pal = load_tokens(preset=preset)["palette"]
+    BLUE = _hex(pal.get("primary", "0070C0"))
+    BAND = _hex(pal.get("band", "053F95"))
+    SKY = _hex(pal.get("secondary", "5B9BD5"))
+    TINT = _tint(BLUE, 0.86)
+    GRAY = "#A6A6A6"
+    INK = _hex(pal.get("text", "000000"))
+    SHADES = [BAND, BLUE, SKY, _tint(BLUE, 0.65), GRAY]
+    return {"preset": preset, "palette": pal}
 
 
 def _fit(text, w, h, size):
@@ -51,13 +84,15 @@ def _canvas(w, h):
     return fig, ax
 
 
-def _box(ax, x, y, w, h, text, fc=BLUE, tc="white", size=18, bold=False):
+def _box(ax, x, y, w, h, text, fc=None, tc="white", size=18, bold=False):
+    fc = BLUE if fc is None else fc
     ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="square,pad=0", fc=fc, ec="none"))
     ax.text(x + w / 2, y + h / 2, _fit(text, w - .4, h - .1, size) if text else "", ha="center", va="center",
             color=tc, fontsize=size, fontweight="bold" if bold else "normal")
 
 
-def _arrow(ax, p, q, color=INK, rad=0.0):
+def _arrow(ax, p, q, color=None, rad=0.0):
+    color = INK if color is None else color
     ax.add_patch(FancyArrowPatch(p, q, arrowstyle="-|>", mutation_scale=18, lw=2, color=color,
                                  connectionstyle=f"arc3,rad={rad}", shrinkA=0, shrinkB=0))
 
@@ -116,7 +151,7 @@ def matrix2x2(out, x_label, y_label, cells, points=()):
     """cells: [좌상, 우상, 좌하, 우하] 사분면 이름. points: [(라벨, x, y)] 0~1 위치(개념 배치임을 캡션에 밝힌다)."""
     fig, ax = plt.subplots(figsize=(6.5, 5.5))
     ax.set_xlim(0, 1); ax.set_ylim(0, 1)
-    for (x, y), name, fc in zip([(0, .5), (.5, .5), (0, 0), (.5, 0)], cells, [TINT, "#BDD7EE", "white", TINT]):
+    for (x, y), name, fc in zip([(0, .5), (.5, .5), (0, 0), (.5, 0)], cells, [TINT, _tint(BLUE, 0.72), "white", TINT]):
         ax.add_patch(plt.Rectangle((x, y), .5, .5, fc=fc, ec="white", lw=3))
         ax.text(x + .25, y + .45, name, ha="center", va="top", fontsize=18, color=BAND, fontweight="bold")
     for name, px, py in points:
@@ -137,7 +172,7 @@ def funnel(out, stages):
     top = max(v for _, v in stages)
     for i, (name, v) in enumerate(stages):
         bw = 6.0 * v / top; y = (len(stages) - 1 - i) * 1.05
-        _box(ax, 2.6 + (6.0 - bw) / 2, y, bw, .85, "", fc=[BAND, BLUE, SKY, "#9DC3E6", GRAY][i % 5])
+        _box(ax, 2.6 + (6.0 - bw) / 2, y, bw, .85, "", fc=SHADES[i % 5])
         ax.text(2.4, y + .42, name, ha="right", va="center", fontsize=18)
         ax.text(2.6 + (6.0 + bw) / 2 + .15, y + .42, f"{v:,}", ha="left", va="center", fontsize=18, fontweight="bold", color=BAND)
     _save(fig, out)
@@ -155,7 +190,8 @@ def cards(out, items, title_size=20):
     _save(fig, out)
 
 
-def demo(d):
+def demo(d, preset="rvlab"):
+    set_preset(preset)
     d = Path(d); d.mkdir(parents=True, exist_ok=True)
     donut(d / "donut", [("A 모듈", 45), ("B 모듈", 30), ("C 모듈", 15), ("기타", 10)], center="합성 예시")
     flow(d / "flow", ["입력", "인코더", "정책", "행동"], highlight=2)
@@ -168,7 +204,7 @@ def demo(d):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3 and sys.argv[1] == "demo":
-        demo(sys.argv[2])
+    if len(sys.argv) in (3, 4) and sys.argv[1] == "demo":
+        demo(sys.argv[2], preset=sys.argv[3] if len(sys.argv) == 4 else "rvlab")
     else:
         sys.exit(__doc__)

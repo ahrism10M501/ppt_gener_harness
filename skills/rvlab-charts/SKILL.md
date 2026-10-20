@@ -1,18 +1,32 @@
 ---
 name: rvlab-charts
-description: RVLAB 발표에서 도넛·파이, 흐름도, 타임라인, 2×2 매트릭스, 깔때기, 비교 카드처럼 표·불릿보다 한눈에 읽히는 꾸밈 차트가 필요할 때 고정 팔레트 레시피로 PNG·SVG를 만든다. 정밀한 실험 그래프(축·오차막대)는 scientific-visualization, 움직임은 rvlab-animation을 쓴다.
+description: RVLAB 발표의 흐름도·분기·그룹·피드백·상호작용을 내용에 맞춰 설계하고 로컬 자동 배치로 PNG·SVG를 만든다. 도넛·타임라인·매트릭스·비교 카드는 고정 팔레트 레시피를 쓴다. 실험 그래프는 scientific-visualization, 움직임은 rvlab-animation을 쓴다.
 ---
 
 # RVLAB 꾸밈 차트
 
-[시각 설계 절차](../rvlab-ppt/references/visual-planning.md)에서 "표·불릿보다 구조·비율·순서가 먼저 보여야 한다"고 판단한 슬라이드에 쓴다. 처음부터 그리지 않고 `charts.py`의 레시피를 복사해 데이터만 바꾼다. 색은 `DESIGN.md` 팔레트(파랑 계열)와 그 옅은 단계·회색만 쓴다. 그 밖의 색·좌표·장식을 입력하지 않는다.
+[시각 설계 절차](../rvlab-ppt/references/visual-planning.md)에서 "표·불릿보다 구조·비율·순서가 먼저 보여야 한다"고 판단한 슬라이드에 쓴다. 도식은 내용의 관계를 먼저 고르고, 수치 차트·타임라인·카드는 `charts.py` 레시피를 재사용한다. 색·폰트는 `DESIGN.md` 고정 토큰을 따르며 입력에 임의 색·좌표·장식을 지정하지 않는다.
+
+## 로컬 자동 도식 — 흐름·구조의 기본 경로
+
+[도식 설계·제작 절차](references/local-diagrams.md)를 읽고 `diagrams.py`를 쓴다. 무료 MIT 라이선스의 `beautiful-mermaid`와 ELK 자동 배치로 분기·그룹·피드백·순차 도식을 만든다. 렌더링은 외부 서비스·API·브라우저 없이 로컬에서 실행한다. 설치는 저장소 루트의 `npm ci`다.
+
+- 모든 내용을 같은 가로 상자 행으로 만들지 않는다. 순서·판단·병렬 입력·그룹·상호작용 중 설명할 관계를 고른다. 기존 승인 내용에서 관계가 확인되지 않으면 화살표를 추가하지 않는다.
+- 노드에는 짧은 개념을, 화살표에는 필요한 관계를 쓴다. 핵심 처리 하나만 `:::focus`로 강조할 수 있다. 도형·선 종류는 역할을 나타낼 때 쓴다.
+- `.mmd` 원본과 PNG·SVG·폰트/가독성 JSON을 같은 task의 `figures/`에 둔다. PNG를 `slides.md`에 삽입한다. 전체 폭 그림만 지원하며 2단에는 넣지 않는다.
+- 렌더러의 18pt 검사는 단독 그림 배치의 추정치다. 실제 슬라이드의 선 교차·글자·캡션은 렌더 QA에서 확인한다. 작은 글자 오류는 라벨·방향·구성을 바꾸거나 슬라이드를 나눠 해결한다.
+
+```bash
+uv run python skills/rvlab-charts/diagrams.py demo .cache/diagram-demo
+uv run python skills/rvlab-charts/diagrams.py render tasks/<task>/figures/pipeline.mmd tasks/<task>/figures/pipeline
+```
 
 ## 표현 고르기
 
 | 전하려는 것 | 레시피 | 제한 |
 | --- | --- | --- |
 | 전체 대비 비율(합이 100%) | `donut` | 3~5조각, 직접 라벨, 3D·폭발 금지. 값이 5개를 넘거나 비교가 목적이면 막대 |
-| 입력→처리→출력 절차, 되돌림 | `flow(loop_back=)` | 3~5칸 직선. 분기가 있는 단순 흐름은 Mermaid, 그보다 복잡하면 슬라이드를 나눈다 |
+| 절차·분기·그룹·되돌림·상호작용 | `diagrams.py` | 내용에 맞춰 구조를 선택하고 자동 배치. 단순 직선 레시피가 필요하면 `flow(loop_back=)` |
 | 시간·단계 순서 | `timeline` | 3~6개. 간격은 균등이며 비례 시간축이 아님 |
 | 두 기준으로 분류·우선순위 | `matrix2x2` | 점 위치는 개념 배치임을 캡션에 밝힘 |
 | 단계별 감소·전환 | `funnel` | 실제 값 필요, 큰 값부터 3~5단 |
@@ -38,4 +52,4 @@ description: RVLAB 발표에서 도넛·파이, 흐름도, 타임라인, 2×2 �
 4. 라벨이 상자에 들어가지 않으면 레시피가 `ValueError`를 낸다. 글자를 줄이지 말고 라벨을 줄인다.
 5. `uv run rvppt lint`·`build` 후 PNG를 직접 확인한다. 빌드의 넘침 검사는 그림 내부 글자를 보지 못한다.
 
-레시피에 없는 모양은 `charts.py`의 `_box`·`_arrow`·`_canvas`로 조합하되 새 레시피가 반복해 필요하면 이 파일에 추가한다. 연구 결과 그래프(점·선·막대·오차)는 [scientific-visualization](../scientific-visualization/SKILL.md)을 쓴다.
+흐름·구조 도식은 위의 로컬 자동 배치를 먼저 쓴다. 그 밖에 레시피에 없는 차트는 `charts.py`의 `_box`·`_arrow`·`_canvas`로 조합하되 새 레시피가 반복해 필요하면 이 파일에 추가한다. 연구 결과 그래프(점·선·막대·오차)는 [scientific-visualization](../scientific-visualization/SKILL.md)을 쓴다.

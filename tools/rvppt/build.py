@@ -1,8 +1,9 @@
-"""Compile approved Pandoc blocks into fixed RVLAB layouts, then publish after QA."""
+"""Compile approved Pandoc blocks into fixed RVLAB or preset layouts, then publish after QA."""
 
 from copy import deepcopy
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -12,7 +13,7 @@ import tempfile
 from zipfile import ZipFile
 
 from lxml import etree
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageStat
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.dml import MSO_LINE
@@ -24,7 +25,7 @@ from pptx.util import Inches, Pt
 from .markdown import APPENDIX, animation_metadata, asset_path, image_node, nodes, pandoc, parse_task, plain, table_rows
 from .preview import chrome_binary, contact_sheet, fit_picture, render_pdf, resolve_fonts, text
 from .state import StateError, status, tree_hash
-from .template import ROOT, NS, EMU, load_tokens, sha256, slots, validate_package
+from .template import ROOT, NS, EMU, ensure_preset_reference, load_tokens, sha256, slots, validate_package
 
 MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -409,9 +410,12 @@ def table_geometry(block, width, directory, tokens, profile):
 def package_checks(output, tokens):
     validate_package(output)
     presentation = Presentation(output)
-    if (presentation.slide_width, presentation.slide_height, len(presentation.slide_masters), len(presentation.slide_layouts)) != (Inches(10), Inches(7.5), 1, 13):
+    expected_w = round(float(tokens["slide"]["width_in"]) * EMU)
+    expected_h = round(float(tokens["slide"]["height_in"]) * EMU)
+    if (abs(presentation.slide_width - expected_w) > 2000 or abs(presentation.slide_height - expected_h) > 2000 or len(presentation.slide_masters) != 1 or len(presentation.slide_layouts) != 13):
         raise StateError("PPTX dimensions, masters or layouts violate the reference")
-    with ZipFile(ROOT / tokens["reference"]) as reference, ZipFile(output) as result:
+    reference_path = ensure_preset_reference(tokens)
+    with ZipFile(reference_path) as reference, ZipFile(output) as result:
         for name in reference.namelist():
             if name.startswith(("ppt/slideMasters/", "ppt/slideLayouts/", "ppt/theme/", "ppt/media/")) and not name.endswith(".rels"):
                 before, after = reference.read(name), result.read(name)
@@ -427,7 +431,7 @@ def package_checks(output, tokens):
 
 
 def assemble(api, slides, tokens, profile, task, directory):
-    reference = ROOT / tokens["reference"]
+    reference = ensure_preset_reference(tokens)
     presentation = Presentation(reference)
     if len(presentation.slides):
         raise StateError("Reference must not contain slides")
@@ -459,7 +463,7 @@ def assemble(api, slides, tokens, profile, task, directory):
             source = plain(spec["source"]).strip()
             if source:
                 region[3] = 6.6 - region[1] - .08
-                source_box = [region[0], 6.6, (9.67 - region[0]), .42]
+                source_box = [region[0], 6.6, (x0 + w0 - region[0]), .42]
                 add_text(slide, source, source_box, tokens["sizes_pt"]["source"], profile)
                 records.append({"page": page, "slide_id": spec["id"], "role": "source", "box": source_box, "expected": source, "max_lines": 2})
             boxes = slots(tokens, count, region)
@@ -638,8 +642,12 @@ def render_and_check(directory, report):
 
 
 def fingerprint(task, tokens):
-    return {"slides.md": sha256(task / "slides.md"), "figures/": tree_hash(task / "figures"), "sources/": tree_hash(task / "sources"),
-            "reference_sha256": sha256(ROOT / tokens["reference"]), "design_sha256": sha256(ROOT / "DESIGN.md")}
+    ref_path = ensure_preset_reference(tokens)
+    result = {"slides.md": sha256(task / "slides.md"), "figures/": tree_hash(task / "figures"), "sources/": tree_hash(task / "sources"),
+              "reference_sha256": sha256(ref_path), "design_sha256": sha256(ROOT / "DESIGN.md")}
+    if tokens.get("preset_id", "rvlab") != "rvlab":
+        result["preset_id"] = tokens["preset_id"]
+    return result
 
 
 def output_stem(deck):
@@ -705,7 +713,7 @@ def publish(staging, task, outputs, *, math_compatible_name=None):
 def build(task):
     """Compile slides.md at any stage, like Overleaf's Recompile; the report records content approval."""
     api, slides, tokens = parse_task(task)
-    if sha256(ROOT / tokens["source"]["path"]) != tokens["source"]["sha256"]:
+    if "source" in tokens and sha256(ROOT / tokens["source"]["path"]) != tokens["source"]["sha256"]:
         raise StateError("Original template checksum changed; restore the original")
     before = fingerprint(task, tokens)
     workspace = _workspace(task)
@@ -726,7 +734,8 @@ def build(task):
             if fingerprint(task, tokens) != before:
                 raise StateError("Inputs or design changed during build; previous build preserved")
             stem = output_stem(slides[0])
-            report.update(schema_version=1, task_id=task.name, fingerprint=before, fonts=profile,
+            report.update(schema_version=1, task_id=task.name, preset=tokens.get("preset_id", "rvlab"),
+                          aspect=tokens["slide"]["aspect"], fingerprint=before, fonts=profile,
                           content_approved=status(task)["content_approved"],
                           findings=findings, detected_overflows=0, powerpoint_editing="unverified",
                           preview_math="300 DPI raster in preview and math-compatible PPTX; native PPTX has OMML and AlternateContent image fallback",
@@ -739,9 +748,10 @@ def build(task):
             report["math_compatible_output"] = compatible_name
             requests = "".join(f"\n- {m['slide_id']}: {m['request']} → `{m['path']}`" for m in report["missing_figures"]) or " 없음"
             (directory / "build-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-            (directory / "build-report.md").write_text(f"# RVLAB build QA\n\nTask: {task.name} · 내용 승인: {'완료' if report['content_approved'] else '미완료(초안 빌드)'}\n\nSlides: {report['slide_count']}; native tables: {report['native_tables']}; native equations: {report['native_equations']}; notes: {report['notes_slides']}.\n\n필요한 그림:{requests}\n\nDetected overflows: 0. PowerPoint editing: unverified. PDF/PNG use the separate math/animation preview copy. GIF playback: unverified.\n", encoding="utf-8")
+            (directory / "build-report.md").write_text(f"# Presentation build QA ({tokens.get('preset_id', 'rvlab')})\n\nTask: {task.name} · 내용 승인: {'완료' if report['content_approved'] else '미완료(초안 빌드)'}\n\nSlides: {report['slide_count']}; native tables: {report['native_tables']}; native equations: {report['native_equations']}; notes: {report['notes_slides']}.\n\n필요한 그림:{requests}\n\nDetected overflows: 0. PowerPoint editing: unverified. PDF/PNG use the separate math/animation preview copy. GIF playback: unverified.\n", encoding="utf-8")
             publish(directory, task, report["outputs"], math_compatible_name=compatible_name)
-        return {"task_id": task.name, "pptx": str(task / f"{stem}.pptx"), "pdf": str(task / f"{stem}.pdf"), "preview": str(workspace / "output/contact-sheet.png"),
+        return {"task_id": task.name, "preset": tokens.get("preset_id", "rvlab"), "aspect": tokens["slide"]["aspect"],
+                "pptx": str(task / f"{stem}.pptx"), "pdf": str(task / f"{stem}.pdf"), "preview": str(workspace / "output/contact-sheet.png"),
                 "slide_count": report["slide_count"], "content_approved": report["content_approved"], "missing_figures": report["missing_figures"],
                 "warnings": deck_findings(slides), "detected_overflows": 0, "native_equations": report["native_equations"], "native_tables": report["native_tables"], "math_fallbacks": report["math_fallbacks"], "math_compatible_pptx": str(task / compatible_name) if compatible_name else None, "fonts": profile}
     finally:
@@ -763,12 +773,12 @@ def deck_findings(slides):
 
 
 def lint(task):
-    _, slides, _ = parse_task(task)
-    return {"task_id": task.name, "slide_count": len(slides), "findings": deck_findings(slides), "missing_figures": requested_figures(task, slides), "scope": "Markdown structure, limits, paths and styling; rendered fit is checked by build"}
+    _, slides, tokens = parse_task(task)
+    return {"task_id": task.name, "preset": tokens.get("preset_id", "rvlab"), "aspect": tokens["slide"]["aspect"], "slide_count": len(slides), "findings": deck_findings(slides), "missing_figures": requested_figures(task, slides), "scope": "Markdown structure, limits, paths and styling; rendered fit is checked by build"}
 
 
 def preview(task):
-    tokens = load_tokens()
+    _, _, tokens = parse_task(task)
     directory = task / ".build/output"
     if directory.is_symlink():
         raise StateError("Output directory symlinks are forbidden")
@@ -790,4 +800,124 @@ def preview(task):
         if path.is_symlink() or not path.is_file() or sha256(path) != expected:
             raise StateError("Build artifact changed; rebuild from slides.md")
     # Successful builds already include render QA; this read-only command returns the verified preview.
-    return {"task_id": task.name, "outputs": [str(task / n) for n in report["outputs"]], "contact_sheet": str(directory / "contact-sheet.png"), "slides": [str(p) for p in sorted(directory.glob("slide-*.png"))], "content_approved": report.get("content_approved"), "missing_figures": report.get("missing_figures", []), "detected_overflows": report["detected_overflows"]}
+    return {"task_id": task.name, "preset": report.get("preset", tokens.get("preset_id", "rvlab")), "outputs": [str(task / n) for n in report["outputs"]], "contact_sheet": str(directory / "contact-sheet.png"), "slides": [str(p) for p in sorted(directory.glob("slide-*.png"))], "content_approved": report.get("content_approved"), "missing_figures": report.get("missing_figures", []), "detected_overflows": report["detected_overflows"]}
+
+
+def audit(task, zoom=4.0):
+    """Anatomy-inspired 4x critic audit: render high-DPI close-ups of slide regions and measure clearance/contrast."""
+    import pymupdf
+    _, slides, tokens = parse_task(task)
+    directory = task / ".build/output"
+    report_path = directory / "build-report.json"
+    if not report_path.is_file() or json.loads(report_path.read_text(encoding="utf-8")).get("fingerprint") != fingerprint(task, tokens):
+        build(task)
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    pdf_path = directory / "presentation.pdf"
+    crops_dir = directory / "crops"
+    crops_dir.mkdir(exist_ok=True)
+    for old in crops_dir.glob("*.png"):
+        old.unlink()
+
+    crop_records = []
+    warnings = []
+    crop_images = []
+    crop_labels = []
+
+    with pymupdf.open(pdf_path) as document:
+        for idx, record in enumerate(report["records"], 1):
+            if record["role"] == "table_cell":
+                continue  # Individual table cells are audited via their slide/headline or full box
+            page = document[record["page"] - 1]
+            x, y, w, h = record["box"]
+            rect = pymupdf.Rect(x * 72, y * 72, (x + w) * 72, (y + h) * 72)
+            padded = (rect + (-4, -4, 4, 4)) & page.rect
+            if padded.is_empty or padded.width < 2 or padded.height < 2:
+                continue
+            pix = page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), clip=padded, alpha=False)
+            crop_name = f"crop-p{record['page']:02}-{record['slide_id']}-{record['role']}-{idx:02}.png"
+            crop_path = crops_dir / crop_name
+            pix.save(crop_path)
+
+            with Image.open(crop_path) as img:
+                gray = img.convert("L")
+                extrema = gray.getextrema()
+                stat = ImageStat.Stat(gray)
+                min_l, max_l = extrema if extrema else (255, 255)
+                mean_l = round(stat.mean[0], 1)
+                contrast = round((max_l + 12.75) / (min_l + 12.75), 2)
+
+            lines = [
+                line
+                for block in page.get_text("dict", clip=rect)["blocks"]
+                if "lines" in block
+                for line in block["lines"]
+                if rect.y0 <= (line["bbox"][1] + line["bbox"][3]) / 2 <= rect.y1
+            ]
+            min_clearance_pt = None
+            if lines and not record.get("template"):
+                clearances = [
+                    min(
+                        line["bbox"][0] - rect.x0,
+                        rect.x1 - line["bbox"][2],
+                        line["bbox"][1] - rect.y0,
+                        rect.y1 - line["bbox"][3],
+                    )
+                    for line in lines
+                ]
+                min_clearance_pt = round(min(clearances), 2)
+                if min_clearance_pt < -1.5:
+                    warnings.append({
+                        "slide_id": record["slide_id"],
+                        "role": record["role"],
+                        "issue": f"4x audit: text approaches or crosses box edge (clearance {min_clearance_pt} pt)",
+                    })
+
+            if contrast < 2.0 and record.get("expected", "").strip():
+                warnings.append({
+                    "slide_id": record["slide_id"],
+                    "role": record["role"],
+                    "issue": f"4x audit: low luminance contrast ({contrast}:1) in rendered region",
+                })
+
+            crop_records.append({
+                "page": record["page"],
+                "slide_id": record["slide_id"],
+                "role": record["role"],
+                "crop": str(crop_path.relative_to(task)),
+                "zoom": zoom,
+                "contrast_ratio": contrast,
+                "mean_luminance": mean_l,
+                "min_clearance_pt": min_clearance_pt,
+            })
+            if record["role"] in ("headline", "math_image", "animation_image", "caption", "source"):
+                crop_images.append(crop_path)
+                crop_labels.append(f"p{record['page']} {record['slide_id']} · {record['role']} ({zoom:.0f}x)")
+
+    sheet_path = directory / "critic-crops-sheet.png"
+    if crop_images:
+        cols, tile_w, header_h = 2, 640, 28
+        tile_h = 200
+        sheet = Image.new("RGB", (tile_w * cols, max(1, (tile_h + header_h) * math.ceil(len(crop_images) / cols))), "#f1f5f9")
+        draw = ImageDraw.Draw(sheet)
+        for i, (cpath, label) in enumerate(zip(crop_images, crop_labels)):
+            cx, cy = (i % cols) * tile_w, (i // cols) * (tile_h + header_h)
+            draw.text((cx + 10, cy + 6), label, fill="#0f172a")
+            with Image.open(cpath) as cimg:
+                scale = min((tile_w - 16) / max(1, cimg.width), (tile_h - 12) / max(1, cimg.height))
+                nw, nh = max(1, round(cimg.width * scale)), max(1, round(cimg.height * scale))
+                sheet.paste(cimg.resize((nw, nh)), (cx + 8, cy + header_h + (tile_h - nh) // 2))
+        sheet.save(sheet_path)
+
+    result = {
+        "ok": len(warnings) == 0,
+        "task_id": task.name,
+        "preset": tokens.get("preset_id", "rvlab"),
+        "zoom": zoom,
+        "crops_count": len(crop_records),
+        "crops_dir": str(crops_dir),
+        "critic_sheet": str(sheet_path) if crop_images else None,
+        "warnings": warnings,
+        "crops": crop_records,
+    }
+    (directory / "critic-audit.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    return result

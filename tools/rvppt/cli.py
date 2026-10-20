@@ -1,4 +1,4 @@
-"""RVLAB project creation, approval, production and QA commands."""
+"""Multi-preset presentation project creation, approval, production, anatomy figure and QA commands."""
 
 import argparse
 import json
@@ -17,7 +17,7 @@ def _task_path(value):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="rvppt", description=__doc__)
+    parser = argparse.ArgumentParser(prog="pptgen", description=__doc__)
     subcommands = parser.add_subparsers(dest="command", required=True)
     create = subcommands.add_parser("new", help="Create tasks/<YYMMDD>-<slug>/ with slides.md filled from profile.yaml")
     create.add_argument("slug")
@@ -25,8 +25,18 @@ def main(argv=None):
     create.add_argument("--subtitle", default="")
     create.add_argument("--date", help="Presentation date YYYY-MM-DD (default: today)")
     create.add_argument("--lang", choices=("ko", "en"), default="ko")
+    create.add_argument("--preset", default=None, help="Design preset ID (e.g. rvlab, modern-16x9, academic-16x9, executive-16x9, minimal-4x3)")
+    create.add_argument("--budget", choices=("quick", "standard", "thorough"), default=None, help="Deck effort/sizing tier (quick=Figure, standard=Hero, thorough=Epic)")
+    subcommands.add_parser("presets", help="List available built-in and custom presentation design presets")
+    reg = subcommands.add_parser("register-template", help="Register a custom .pptx template as a reusable preset")
+    reg.add_argument("pptx", help="Path to the .pptx file to register")
+    reg.add_argument("--id", required=True, dest="preset_id", help="Preset ID (lowercase letters, digits, hyphens)")
+    reg.add_argument("--name", default=None, help="Display name for the registered preset")
+    reg.add_argument("--description", default="", help="Optional description for the preset")
     query = subcommands.add_parser("status", help="Show the next stage, approval freshness, and open items (read-only)")
     query.add_argument("task")
+    plan = subcommands.add_parser("plan", help="Refresh plan/contracts.md approval diagram; preserve plan/revisions.md and plan/PROGRESS.md")
+    plan.add_argument("task")
     approval = subcommands.add_parser("approve", help="Record an explicit user's approval of the current stage")
     approval.add_argument("task")
     approval.add_argument("--stage", type=int, choices=(1, 2, 3, 4), required=True)
@@ -37,11 +47,20 @@ def main(argv=None):
     paper = subcommands.add_parser("extract-paper", help="Extract a sources/ or figures/external/ PDF into Markdown and media under TASK/.build/editorial/papers/")
     paper.add_argument("task")
     paper.add_argument("pdf", help="Task-relative sources/<paper>.pdf or figures/external/<paper>.pdf; source and existing outputs are preserved")
+    anat = subcommands.add_parser("anatomy", help="Build a standalone 300-DPI PNG, SVG, and interactive HTML figure using the vendored anatomy engine")
+    anat.add_argument("task")
+    anat.add_argument("--name", required=True, help="Output figure stem under tasks/<task>/figures/<name>.png and .svg")
+    anat.add_argument("--example", default=None, help="Built-in anatomy example name (e.g. dial-indicator, planetary-gearset, vernier-caliper)")
+    anat.add_argument("--script", default=None, help="Path to a custom .mjs anatomy builder script")
+    anat.add_argument("--theme", choices=("light", "dark"), default="light", help="Color theme for standalone SVG/PNG rendering")
     subcommands.add_parser("doctor", help="Check tools, fonts, template and vendored skill hashes (offline, read-only)")
     graph = subcommands.add_parser("graph-check", help="Check the Graphify snapshot is fresh and excludes tasks/vendored sources")
     graph.add_argument("--record", action="store_true", help="Write graphify-out/snapshot.json after rebuilding the graph")
     for command in ("build", "lint", "preview"):
         subcommands.add_parser(command, help={"build": "Compile slides.md with render QA; outputs YYYYMMDD_title.pptx/.pdf beside it", "lint": "Check Markdown structure, limits and requested figures", "preview": "Show the current verified PDF/PNG preview"}[command]).add_argument("task")
+    aud = subcommands.add_parser("audit", help="Run 4x close-up crop critic audit and box clearance/contrast verification on built slides")
+    aud.add_argument("task")
+    aud.add_argument("--zoom", type=float, default=4.0, help="Zoom factor for close-up crops (default: 4.0)")
     args = parser.parse_args(argv)
     try:
         if args.command in ("doctor", "graph-check"):
@@ -53,21 +72,43 @@ def main(argv=None):
                 result = graph_check(record=args.record)
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if result["ok"] else 2
+        if args.command == "presets":
+            from .template import list_presets
+            print(json.dumps({"presets": list_presets()}, ensure_ascii=False, indent=2))
+            return 0
+        if args.command == "register-template":
+            from .template import register_template
+            result = register_template(args.pptx, args.preset_id, name=args.name, description=args.description)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
         if args.command == "new":
             from .project import new_project
-            print(json.dumps(new_project(args.slug, args.title, args.subtitle, args.date, args.lang), ensure_ascii=False, indent=2))
+            print(json.dumps(new_project(args.slug, args.title, args.subtitle, args.date, args.lang,
+                                         preset=args.preset, budget=args.budget), ensure_ascii=False, indent=2))
             return 0
         task = _task_path(args.task)
         if args.command == "status":
             result = status(task)
+        elif args.command == "plan":
+            from .plan import write_plan
+            result = write_plan(task)
         elif args.command == "approve":
             result = approve(task, args.stage, args.expected_hash)
         elif args.command == "extract-paper":
             from .papers import extract_paper
             result = extract_paper(task, args.pdf)
+        elif args.command == "anatomy":
+            from .anatomy_bridge import build_anatomy_figure
+            result = build_anatomy_figure(task, args.name, example=args.example, script=args.script, theme=args.theme)
         elif args.command == "polish-check":
             from .polish import polish_check
             result = polish_check(task, args.before)
+            if not result["ok"]:
+                print(json.dumps(result, ensure_ascii=False, indent=2))
+                return 2
+        elif args.command == "audit":
+            from . import build
+            result = build.audit(task, zoom=args.zoom)
             if not result["ok"]:
                 print(json.dumps(result, ensure_ascii=False, indent=2))
                 return 2

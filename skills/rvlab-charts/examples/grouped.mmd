@@ -1,0 +1,8 @@
+flowchart LR
+  subgraph observation["관측"]
+    A["영상"]
+    B["상태"]
+  end
+  A --> C["정책"]:::focus
+  B --> C
+  C --> D["행동"]

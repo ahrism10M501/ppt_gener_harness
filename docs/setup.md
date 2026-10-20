@@ -56,3 +56,13 @@ uv run --extra visual rvppt doctor
 Linux에서는 Manim의 pycairo/manimpango 빌드에 Cairo·Pango 개발 헤더와 pkg-config, C 컴파일러가 필요하다. Ubuntu에서 컴파일러와 pkg-config가 이미 있을 때 필요한 명령은 `sudo apt-get install libcairo2-dev libpango1.0-dev`다. 에이전트는 시스템 설치 전에 명령·이유를 보여 주고 확인받는다. Windows·macOS 설치는 [Manim 설치 안내](https://docs.manim.community/en/stable/installation.html)를 따른다.
 
 한글은 `Text`와 설치된 Noto Sans CJK KR/맑은 고딕으로 처리한다. `Tex`·`MathTex`는 별도 LaTeX 환경이 필요하며 `visual` 설치에 포함되지 않는다. SciencePlots의 논문용 크기·색·폰트를 RVLAB 슬라이드에 그대로 적용하지 않고 [rvlab.mplstyle](design/rvlab.mplstyle)을 사용한다. Matplotlib 호출자는 `resolve_fonts(load_tokens())`로 확인한 영문·한글 폰트를 `font.family`에 함께 지정해 한글 누락을 피한다. 외부 스킬 원문과 라이선스는 저장소에 포함되므로 실행 중 다시 내려받지 않는다.
+
+### 로컬 자동 도식
+
+`rvlab-charts`의 흐름·분기·그룹·피드백·순차 도식은 `beautiful-mermaid`와 기존 resvg를 사용한다. `npm ci`로 고정 버전을 설치하며 별도 MCP 서버·브라우저·외부 계정·API 키가 필요하지 않다. 렌더링은 로컬에서 실행한다. 이 경로에는 `visual` extra도 필요하지 않다.
+
+```bash
+uv run python skills/rvlab-charts/diagrams.py demo .cache/diagram-demo
+```
+
+PNG·SVG와 실제 폰트/가독성 JSON을 생성한다. 자세한 입력·검수 절차는 [로컬 도식](../skills/rvlab-charts/references/local-diagrams.md)을 따른다. 기존 `slides.md`의 Mermaid 코드 블록 빌드는 Chromium 경로를 그대로 사용한다.

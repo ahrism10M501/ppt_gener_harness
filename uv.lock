@@ -1134,6 +1134,42 @@ wheels = [
 ]
 
 [[package]]
+name = "ppt-gener"
+version = "0.2.0"
+source = { editable = "." }
+dependencies = [
+    { name = "lxml" },
+    { name = "pillow" },
+    { name = "pymupdf" },
+    { name = "pymupdf4llm" },
+    { name = "pypandoc-binary" },
+    { name = "python-pptx" },
+    { name = "pyyaml" },
+]
+
+[package.optional-dependencies]
+visual = [
+    { name = "manim" },
+    { name = "matplotlib" },
+    { name = "scienceplots" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lxml", specifier = ">=6,<7" },
+    { name = "manim", marker = "extra == 'visual'", specifier = ">=0.22,<0.23" },
+    { name = "matplotlib", marker = "extra == 'visual'", specifier = ">=3.10,<4" },
+    { name = "pillow", specifier = ">=11,<13" },
+    { name = "pymupdf", specifier = ">=1.26,<2" },
+    { name = "pymupdf4llm", specifier = "==0.2.9" },
+    { name = "pypandoc-binary", specifier = ">=1.16,<2" },
+    { name = "python-pptx", specifier = ">=1.0.2,<2" },
+    { name = "pyyaml", specifier = ">=6,<7" },
+    { name = "scienceplots", marker = "extra == 'visual'", specifier = ">=2.2,<3" },
+]
+provides-extras = ["visual"]
+
+[[package]]
 name = "pycairo"
 version = "1.29.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1419,42 +1455,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/c0/8f/0722ca900cc807c13
 wheels = [
     { url = "https://files.pythonhosted.org/packages/82/3b/64d4899d73f91ba49a8c18a8ff3f0ea8f1c1d75481760df8c68ef5235bf5/rich-15.0.0-py3-none-any.whl", hash = "sha256:33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb", size = 310654, upload-time = "2026-04-12T08:24:02.83Z" },
 ]
-
-[[package]]
-name = "rvlab-ppt-generator"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "lxml" },
-    { name = "pillow" },
-    { name = "pymupdf" },
-    { name = "pymupdf4llm" },
-    { name = "pypandoc-binary" },
-    { name = "python-pptx" },
-    { name = "pyyaml" },
-]
-
-[package.optional-dependencies]
-visual = [
-    { name = "manim" },
-    { name = "matplotlib" },
-    { name = "scienceplots" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "lxml", specifier = ">=6,<7" },
-    { name = "manim", marker = "extra == 'visual'", specifier = ">=0.22,<0.23" },
-    { name = "matplotlib", marker = "extra == 'visual'", specifier = ">=3.10,<4" },
-    { name = "pillow", specifier = ">=11,<13" },
-    { name = "pymupdf", specifier = ">=1.26,<2" },
-    { name = "pymupdf4llm", specifier = "==0.2.9" },
-    { name = "pypandoc-binary", specifier = ">=1.16,<2" },
-    { name = "python-pptx", specifier = ">=1.0.2,<2" },
-    { name = "pyyaml", specifier = ">=6,<7" },
-    { name = "scienceplots", marker = "extra == 'visual'", specifier = ">=2.2,<3" },
-]
-provides-extras = ["visual"]
 
 [[package]]
 name = "scienceplots"

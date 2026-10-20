@@ -9,9 +9,17 @@ description: RVLAB 연구실 양식의 발표를 만들거나 수정할 때 slid
 
 ## 시작
 
+수정 요청이면 아래 수정 절차로 영향 범위를 먼저 판정한다. 이전 합의를 확인하고 바뀐 단계부터 재개하며 처음부터 인터뷰를 반복하지 않는다.
+
 - 사용자가 준 task 폴더와 원자료를 재사용하고 `uv run rvppt status tasks/<task>`로 재개 위치를 확인한다. Stage 1~3이 남았으면 [rvlab-interview](../rvlab-interview/SKILL.md)부터 진행한다.
 - 새 발표는 `uv run rvppt new <slug> --title <제목> [--subtitle ..] [--date YYYY-MM-DD]`로 만든다. `profile.yaml`이 없으면 `profile.example.yaml`을 복사하고 이름·영문 이름·소속 두 줄을 사용자에게 받아 채운다.
 - 연구자가 `sources/`에 넣은 초안 PPT·논문·데이터를 먼저 읽는다. 초안 PPT는 `docs/workflow.md`의 기존 도구(markitdown·LibreOffice·unzip)로 읽는다.
+
+## 수정 요청
+
+- 기존 발표의 수정·되돌리기는 [수정 절차](../../docs/revisions.md)를 따른다. 사용자는 쪽수·토픽·문장으로 자연스럽게 요청할 수 있다. 에이전트가 실제 파일에서 본문 ID를 확인하고 원본을 수정한다.
+- `plan/revisions.md`에 요청·대상·유지 조건·변경점·재검토 범위·검증을 기록한다. 재개·수정 후·승인 후·단계 보고 전에 `uv run rvppt plan tasks/<task>`로 `plan/contracts.md`의 관계도와 상태를 갱신한다.
+- 필요한 변경은 바로 반영한다. 수정 요청은 결과 확인을 위한 초안 미리보기를 포함하며, 내용 승인은 기존 규칙대로 별도로 받는다. 유효한 상위 승인은 재요청하지 않는다. 상위 합의가 바뀌면 그 단계부터 보고·승인을 진행한다.
 
 ## 슬라이드 문법과 이름 규칙
 

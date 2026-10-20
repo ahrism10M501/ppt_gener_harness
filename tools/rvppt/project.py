@@ -6,7 +6,9 @@ import re
 import yaml
 
 from .state import StateError
-from .template import ROOT
+from .template import ROOT, load_tokens
+
+BUDGET_TIERS = ("quick", "standard", "thorough")
 
 SKELETON = """
 <!-- # 섹션 | 부제 → 섹션 슬라이드와 목차의 Chapter
@@ -49,7 +51,8 @@ def load_profile(path=ROOT / "profile.yaml"):
     return profile
 
 
-def new_project(slug, title, subtitle="", day=None, language="ko", profile_path=ROOT / "profile.yaml", tasks=ROOT / "tasks"):
+def new_project(slug, title, subtitle="", day=None, language="ko", preset=None, budget=None,
+                profile_path=ROOT / "profile.yaml", tasks=ROOT / "tasks"):
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,40}", slug):
         raise StateError("slug uses lowercase letters, digits and hyphens")
     try:
@@ -57,14 +60,27 @@ def new_project(slug, title, subtitle="", day=None, language="ko", profile_path=
     except ValueError as error:
         raise StateError("--date must be YYYY-MM-DD") from error
     profile = load_profile(profile_path)
+    resolved_preset = preset or profile.get("default_preset") or "rvlab"
+    resolved_budget = budget or profile.get("default_budget") or "standard"
+    if resolved_budget not in BUDGET_TIERS:
+        raise StateError(f"--budget must be one of {', '.join(BUDGET_TIERS)}")
+    try:
+        load_tokens(preset=resolved_preset)
+    except ValueError as error:
+        raise StateError(str(error)) from error
     task = tasks / f"{day[2:4]}{day[5:7]}{day[8:10]}-{slug}"
     if task.exists():
         raise StateError(f"Task already exists: {task.name}")
     deck = {"title": title, "subtitle": subtitle, "date": day,
-            "presenter": f"{profile['name']} ({profile['name_en']})", "affiliation": profile["affiliation"]}
+            "presenter": f"{profile['name']} ({profile['name_en']})", "affiliation": profile["affiliation"],
+            "preset": resolved_preset, "budget": resolved_budget}
     metadata = {"schema_version": 1, "task_id": task.name, "stage": 4, "status": "draft", "approval_hash": None,
                 "upstream_hashes": {}, "deck": deck, "review": {"language": language}}
     for folder in ("figures", "sources", "plan"):
         (task / folder).mkdir(parents=True)
     (task / "slides.md").write_text("---\n" + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False) + "---\n" + SKELETON, encoding="utf-8", newline="\n")
-    return {"task": str(task), "slides": str(task / "slides.md"), "next": "Put papers, data and draft PPTs in sources/, figures in figures/, then ask the agent to start the rvlab-interview skill or edit slides.md and run rvppt build."}
+    from .plan import write_plan
+    plan = write_plan(task)
+    return {"task": str(task), "slides": str(task / "slides.md"), "preset": resolved_preset, "budget": resolved_budget,
+            "contracts": plan["contracts"], "revisions": plan["revisions"], "progress": plan["progress"],
+            "next": "Put papers, data and draft PPTs in sources/, figures in figures/, then ask the agent to start the ppt-interview (or rvlab-interview) skill or edit slides.md and run pptgen build."}

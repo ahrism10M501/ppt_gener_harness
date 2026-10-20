@@ -191,9 +191,9 @@ def units(value):
 
 def deck_info(metadata):
     deck = metadata.get("deck")
-    fields = {"title", "subtitle", "date", "presenter", "affiliation"}
+    fields = {"title", "subtitle", "date", "presenter", "affiliation", "preset", "budget"}
     if not isinstance(deck, dict) or not set(deck) <= fields or not all(isinstance(deck.get(k), str) and deck[k].strip() for k in ("title", "date", "presenter")):
-        raise StateError("slides.md needs deck.title, deck.presenter and a quoted deck.date; create projects with rvppt new")
+        raise StateError("slides.md needs deck.title, deck.presenter and a quoted deck.date; create projects with pptgen new / rvppt new")
     try:
         # Python also accepts 20261012; normalise so labels and file names stay YYYY-MM-DD based.
         deck = dict(deck, date=date.fromisoformat(deck["date"]).isoformat())
@@ -206,7 +206,16 @@ def deck_info(metadata):
     subtitle = deck.get("subtitle") or ""
     if not isinstance(subtitle, str):
         raise StateError("deck.subtitle must be text")
-    return dict(deck, subtitle=subtitle, affiliation=affiliation)
+    preset = deck.get("preset") or "rvlab"
+    if not isinstance(preset, str) or not preset.strip():
+        raise StateError("deck.preset must be a non-empty string")
+    budget = deck.get("budget")
+    if budget is not None and budget not in ("figure", "hero", "epic", "quick", "standard", "thorough"):
+        raise StateError("deck.budget must be one of figure, hero, epic, quick, standard, thorough")
+    result = dict(deck, subtitle=subtitle, affiliation=affiliation, preset=preset.strip())
+    if budget is not None:
+        result["budget"] = budget
+    return result
 
 
 def is_figure(block):
@@ -218,9 +227,12 @@ APPENDIX = {"Appendix", "부록"}
 
 def parse_task(task):
     """Return the full deck: generated cover/TOC/closing around # section, ## topic, ### headline slides."""
-    tokens = load_tokens()
     document = read_document(task / "slides.md", task.name, 4)
     deck = deck_info(document.metadata)
+    try:
+        tokens = load_tokens(preset=deck.get("preset"))
+    except ValueError as error:
+        raise StateError(str(error)) from error
     review = document.metadata.get("review")
     language = review.get("language", "ko") if isinstance(review, dict) else "ko"
     if language not in tokens["labels"]:

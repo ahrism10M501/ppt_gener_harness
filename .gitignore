@@ -49,6 +49,7 @@ _workspace/
 # Template QA sources are reproducible; layout PNGs and manifests are tracked.
 /docs/design/build/
 /templates/examples/
+/templates/custom/
 # The five published Graphify files are tracked; local extraction state is not.
 /graphify-out/.*
 /graphify-out/cost.json

@@ -1,5 +1,7 @@
 # Task 문서 스키마 v1
 
+`plan/contracts.md`와 `plan/revisions.md`는 네 단계 외의 보조 Markdown 문서다. 승인 frontmatter를 갖지 않고 내용·상위 입력 해시에 포함되지 않는다. 관계도는 `rvppt plan`이 `status` 결과에서 생성하며 수정 기록은 에이전트가 추가한다. 이 문서들로 승인 상태를 변경할 수 없다. [수정 절차](revisions.md)를 따른다.
+
 네 Markdown 문서는 YAML frontmatter와 비어 있지 않은 본문을 갖는다. Stage 1~3은 task의 `plan/`에, Stage 4는 task 루트의 `slides.md`에 둔다. 아래 예시는 형식을 설명하는 합성 자료이며 실제 연구 결과가 아니다. task_id는 실제 폴더 이름으로 바꾼다. 자료의 날짜·`yes` 등 YAML에서 다른 타입으로 읽히는 값은 문자열 따옴표로 감싼다.
 
 ## 공통 frontmatter

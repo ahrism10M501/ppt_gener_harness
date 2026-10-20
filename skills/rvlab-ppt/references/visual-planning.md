@@ -21,7 +21,7 @@ Stage 3에서 슬라이드의 주장과 근거를 정할 때 읽는다. Stage 4�
 | 소수의 정확한 값·조건 | 본문 또는 작은 표 | 기존 RVLAB 본문·표 문법 |
 | 조건별 차이·분포·추세 | 점·선·막대 등 정량 그래프 | [scientific-visualization](../../scientific-visualization/SKILL.md) / Matplotlib·SciencePlots |
 | 비율·순서·분류·전환을 꾸밈 있게 보여 줄 때(도넛·흐름도·타임라인·매트릭스·깔때기·비교 카드) | 고정 팔레트 레시피 | [rvlab-charts](../../rvlab-charts/SKILL.md) / `charts.py` |
-| 모듈 구성·입출력·절차 관계 | 정적 직각 도식 | RVLAB 디자인·이 문서 / 기존 Mermaid·SVG·Matplotlib |
+| 모듈 구성·입출력·절차 관계 | 관계에 맞춘 그룹·분기·피드백·순차 도식 | [rvlab-charts 로컬 자동 도식](../../rvlab-charts/references/local-diagrams.md) / 기존 SVG·Matplotlib |
 | 논문의 복잡한 figure·결과 이미지 | 원본 재사용·패널 분리·확대 영역 | [scientific-slides의 발표용 그림 지침](../../scientific-slides/references/data_visualization_slides.md), PDF 처리 시 [pdf](../../pdf/SKILL.md) |
 | 단계마다 발표자가 멈춰 설명할 과정 | 여러 정적 상태 또는 슬라이드 | 기존 RVLAB 그림 배치; 계산·상태 대응은 [rvlab-animation](../../rvlab-animation/SKILL.md) 참고 |
 | 이동·갱신·시간 변화의 대응 | GIF와 대표 PNG | [rvlab-animation](../../rvlab-animation/SKILL.md) → 필요한 경우 Manim 장면 기획·CE 구현 지침 |

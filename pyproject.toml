@@ -3,9 +3,9 @@ requires = ["hatchling>=1.27,<2"]
 build-backend = "hatchling.build"
 
 [project]
-name = "rvlab-ppt-generator"
-version = "0.1.0"
-description = "RVLAB template-constrained presentation production"
+name = "ppt-gener"
+version = "0.2.0"
+description = "General-purpose multi-template presentation harness with RVLAB preset and anatomy integration"
 requires-python = ">=3.11,<3.15"
 dependencies = [
   "python-pptx>=1.0.2,<2",
@@ -25,7 +25,8 @@ visual = [
 ]
 
 [project.scripts]
+pptgen = "rvppt.cli:main"
 rvppt = "rvppt.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["tools/rvppt"]
+packages = ["tools/rvppt", "tools/pptgen"]
