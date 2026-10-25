@@ -5,7 +5,7 @@ name_en: Gildong Hong
 affiliation:
   - 경기대학교 창의공과대학 전자공학과 N학년
   - Robotics and Vision Lab Robot Team
-# 선택: 기본 디자인 프리셋 (rvlab | modern-16x9 | academic-16x9 | executive-16x9 | minimal-4x3)
+# 선택: 기본 디자인 프리셋 (rvlab | modern-minimal | retro | neo-city, 목록은 uv run pptgen presets)
 default_preset: rvlab
 # 선택: 기본 작업 규모/예산 (quick | standard | thorough)
 default_budget: standard

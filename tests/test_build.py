@@ -46,7 +46,7 @@ class BuildTests(unittest.TestCase):
 
     def test_cover_subtitle_warning_uses_current_preset(self):
         document = read_document(self.task / STAGES[3], self.task.name, 4)
-        for preset in ("rvlab", "modern-16x9", "academic-16x9"):
+        for preset in ("rvlab", "modern-minimal", "neo-city"):
             with self.subTest(preset=preset):
                 document.metadata["deck"].update(preset=preset, subtitle="")
                 document.path.write_text(
@@ -72,7 +72,7 @@ class BuildTests(unittest.TestCase):
         block = {"t": "Para", "c": [{"t": "Str", "c": source.text}]}
         profile = dict(resolve_fonts(self.tokens), text_top_inset_pt=4)
         for preset, expected in ((None, "RVLAB content"), ("rvlab", "RVLAB content"),
-                                 ("modern-16x9", "modern-16x9 content")):
+                                 ("retro", "retro content")):
             with self.subTest(preset=preset):
                 options = {} if preset is None else {"preset": preset}
                 copied = build.copy_fragment(source, slide, [0, 0, 1, 1], 20, profile, block, **options)
@@ -90,10 +90,11 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(sum(n["t"] == "Math" for n in markdown.nodes(self.slide(slides, "S02")["slots"])), 4)
         self.assertTrue(all(s["notes"] for s in slides if s["layout"] not in ("cover", "toc", "section", "closing")))
 
-    def test_top_bar_topic_must_be_a_short_name(self):
+    def test_long_topic_is_advice_and_missing_topic_falls_back(self):
         self.edit(4, lambda s: s.replace("## 2단 본문", "## Where is Skip-Connection Now"))
-        with self.assertRaisesRegex(StateError, "Top-bar topic"):
-            build.lint(self.task)
+        self.assertTrue(any("Top-bar topic is long" in f["issue"] for f in build.lint(self.task)["findings"]))
+        self.edit(4, lambda s: s.replace("## 표와 수식\n", "", 1))
+        self.assertEqual(self.slide(markdown.parse_task(self.task)[1], "S01")["topic"], "기능 검증")
 
     def test_content_requires_a_headline_slide(self):
         self.edit(4, lambda s: s.replace("## 표와 수식\n", "## 표와 수식\n\n- 핵심 문장 없는 내용\n", 1))
@@ -185,29 +186,50 @@ class BuildTests(unittest.TestCase):
         issues = [f["issue"] for f in build.lint(self.task)["findings"]]
         self.assertTrue(any("bullets (guide: 5)" in issue for issue in issues))
 
-    def test_three_levels_are_rejected(self):
-        self.edit(4, lambda s: s.replace("  - 확인할 조건", "  - 확인할 조건\n    - 깊이 3"))
-        with self.assertRaisesRegex(StateError, "2 levels"):
+    def test_slide_kinds_parse_and_reject_unknown_classes(self):
+        self.edit(4, lambda s: s.replace("### 합성 표의 모든 셀을 편집할 수 있다", "### 루프가 결과를 바꾼다 {.statement}\n\n합성 예시 문장.\n\n### 성공률 {.number}\n\n92%\n\n합성 예시 값.\n\n### 합성 표의 모든 셀을 편집할 수 있다", 1))
+        slides = markdown.parse_task(self.task)[1]
+        kinds = {s["headline"]: s.get("kind") for s in slides if s["layout"] not in ("cover", "toc", "section", "closing")}
+        self.assertEqual((kinds["루프가 결과를 바꾼다"], kinds["성공률"]), ("statement", "number"))
+        self.edit(4, lambda s: s.replace("{.statement}", "{.hero}"))
+        with self.assertRaisesRegex(StateError, "kind"):
+            build.lint(self.task)
+        self.edit(4, lambda s: s.replace("### 루프가 결과를 바꾼다 {.hero}\n\n합성 예시 문장.", "### 루프가 결과를 바꾼다 {.quote}\n\n- 목록은 안 된다"))
+        with self.assertRaisesRegex(StateError, "short paragraphs"):
+            build.lint(self.task)
+        self.edit(4, lambda s: s.replace("### 루프가 결과를 바꾼다 {.quote}\n\n- 목록은 안 된다", "### 루프가 결과를 바꾼다 {.number}\n\n$3.2\\times$"))
+        with self.assertRaisesRegex(StateError, "plain text"):
             build.lint(self.task)
 
-    def test_table_row_limit(self):
-        self.edit(4, lambda s: s.replace("| C | 24 | 폰트 |", "\n".join(["| C | 24 | 폰트 |"] * 7)))
-        with self.assertRaisesRegex(StateError, "8 rows"):
-            build.lint(self.task)
+    def test_table_columns_follow_content(self):
+        profile = dict(resolve_fonts(self.tokens), text_top_inset_pt=4)
+        rows = [["항목", "설명"], ["A", "아주 긴 설명 문장이 들어가서 이 칸은 넓어야 한다"], ["B", "짧음"]]
+        narrow, wide = build.column_widths(rows, 9.0, 18, profile)
+        self.assertAlmostEqual(narrow + wide, 9.0, places=3)
+        self.assertGreater(wide, narrow * 2)
+        # A column held at its longest word must still fit that word when table_geometry measures it.
+        rows = [["Key", "Description", "Notes"], ["configuration_parameter", "a fairly long description sentence that will want to wrap across several lines", "another long note sentence that wants a lot of horizontal room too"]]
+        widths = build.column_widths(rows, 9.09, 18, profile, self.tokens)
+        for r, row in enumerate(rows):
+            for c, (cell, cw) in enumerate(zip(row, widths)):
+                build.compose(build.para(cell), cw - 2 * build.CELL_PAD - build.CELL_SLACK, 18, self.task, profile, bold=build.bold_cell(r, c, self.tokens))
+
+    def test_deep_bullets_and_large_tables_are_advice(self):
+        self.edit(4, lambda s: s.replace("  - 확인할 조건", "  - 확인할 조건\n    - 깊이 3").replace("| C | 24 | 폰트 |", "\n".join(["| C | 24 | 폰트 |"] * 7)))
+        issues = " ".join(f["issue"] for f in build.lint(self.task)["findings"])
+        self.assertIn("deeper than 2 levels", issues)
+        self.assertIn("Large table", issues)
 
     def test_columns_are_required(self):
         self.edit(4, lambda s: s.replace(":::: columns", ":::: arbitrary", 1))
         with self.assertRaisesRegex(StateError, "Allowed blocks"):
             build.lint(self.task)
 
-    def test_mermaid_styling_is_rejected(self):
-        self.edit(4, lambda s: s.replace("flowchart LR", "flowchart LR\nstyle A fill:#ff0000"))
-        with self.assertRaisesRegex(StateError, "Mermaid styling"):
-            build.lint(self.task)
-
-    def test_equation_colors_are_rejected(self):
-        self.edit(4, lambda s: s.replace("x^2 + y^2", r"\color{red}{x^2}"))
-        with self.assertRaisesRegex(StateError, "LaTeX styling"):
+    def test_emphasis_styling_is_allowed_but_macros_are_not(self):
+        self.edit(4, lambda s: s.replace("flowchart LR", "flowchart LR\nstyle A fill:#ff0000").replace("x^2 + y^2", r"\color{red}{x^2}"))
+        build.lint(self.task)
+        self.edit(4, lambda s: s.replace(r"\color{red}{x^2}", r"\newcommand{\a}{x}\a"))
+        with self.assertRaisesRegex(StateError, "LaTeX definitions"):
             build.lint(self.task)
 
     def test_reworded_headlines_are_reported_not_blocking(self):
@@ -425,6 +447,18 @@ class BuildTests(unittest.TestCase):
         presentation = Presentation(output / "presentation.pptx")
         table = next(s.table for s in presentation.slides[0].shapes if s.has_table)
         self.assertTrue(table.cell(1, 1).text_frame.paragraphs[0].runs[0].font.bold)
+        properties = table.cell(1, 1)._tc.tcPr
+        self.assertEqual([child.tag.split("}")[1] for child in properties][:4], list(build.BORDER_ORDER))
+
+    def test_colored_math_ships_as_picture(self):
+        api, slides, tokens = markdown.parse_task(self.task)
+        slide = self.slide(slides, "S01")
+        slide["slots"] = [json.loads(markdown.pandoc(["-f", "markdown", "-t", "json"], "합성 강조 $\\color{red}{x}+y$\n"))["blocks"]]
+        profile = dict(resolve_fonts(tokens), text_top_inset_pt=4)
+        output = self.task / ".build"; output.mkdir()
+        report = build.assemble(api, [slide], tokens, profile, self.task, output)
+        self.assertEqual(report["native_equations"], 0)
+        self.assertEqual([f["reason"] for f in report["math_fallbacks"]], ["Native OMML would drop \\color"])
 
     def test_four_figure_slots_stay_equal_when_source_is_reserved(self):
         api, slides, tokens = markdown.parse_task(self.task)

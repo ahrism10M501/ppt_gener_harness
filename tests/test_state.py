@@ -216,11 +216,9 @@ class StateTests(unittest.TestCase):
         with self.assertRaisesRegex(StateError, "topic"):
             approve(self.task, 2)
 
-    def test_outline_rejects_arbitrary_styles_and_bad_ids(self):
+    def test_outline_rejects_missing_fields_and_bad_ids(self):
         approve(self.task, 1); approve(self.task, 2)
         cases = []
-        style = deepcopy(REVIEWS[3]); style["slides"][0]["font"] = "Comic Sans"; cases.append(style)
-        layout = deepcopy(REVIEWS[3]); layout["slides"][0]["layout"] = "freeform"; cases.append(layout)
         sentence = deepcopy(REVIEWS[3]); del sentence["slides"][0]["headline"]; cases.append(sentence)
         duplicate = deepcopy(REVIEWS[3]); duplicate["slides"][1]["id"] = "S01"; cases.append(duplicate)
         boolean = deepcopy(REVIEWS[3]); boolean["slides"][0]["seconds"] = True; cases.append(boolean)
@@ -243,20 +241,31 @@ class StateTests(unittest.TestCase):
         self.assertIn("exceeds duration_minutes", status(self.task)["stages"][2]["warnings"][0])
         approve(self.task, 3)
 
+    def test_tutorial_dependency_gap_is_a_warning_only_for_tutorial_tasks(self):
+        outline = deepcopy(REVIEWS[3])
+        outline["slides"][0].update(requires=["터미널"], provides=["가상환경"])
+        outline["slides"][1].update(requires=["가상환경", "configclass"])
+        self.write_stage(3, review=outline)
+        self.assertEqual(status(self.task)["stages"][2]["warnings"], [])
+        self.write_stage(1, review=dict(REVIEWS[1], tutorial={"prerequisites": ["터미널"]}))
+        approve(self.task, 1); approve(self.task, 2)
+        self.assertEqual(status(self.task)["stages"][2]["warnings"], ["S02 requires 'configclass' before any slide provides it"])
+        approve(self.task, 3)
+
     def test_reworded_headline_is_approvable_with_a_warning(self):
         self.approve_all()
         self.write_stage(4, body=SLIDES.replace("독립 평가의 한계를 밝힌다", "독립 평가에는 한계가 있습니다"))
         self.assertIn("S02 headline reworded", status(self.task)["stages"][3]["warnings"][0])
         approve(self.task, 4)
 
-    def test_slide_count_topics_and_order_must_match_approved_outline(self):
+    def test_outline_drift_is_reported_not_blocking(self):
         for stage in (1, 2, 3):
             approve(self.task, stage)
         for body in [SLIDES.replace("## 실패 분류", "## 다른 토픽"), SLIDES + "\n### 실패 분류로 수집 순서를 정한다\n"]:
             with self.subTest(body=body):
                 self.write_stage(4, body=body)
-                with self.assertRaises(StateError):
-                    approve(self.task, 4)
+                self.assertIn("differ from the outline", status(self.task)["stages"][3]["warnings"][0])
+                approve(self.task, 4)
 
     def test_slide_like_headings_inside_fences_and_comments_are_not_slides(self):
         body = SLIDES + "\n```markdown\n### Example inside code\n```\n\n<!--\n### Hidden comment\n-->\n\n~~~~text\n### Tilde fence\n~~~~\n"
@@ -281,7 +290,7 @@ class StateTests(unittest.TestCase):
                 self.assertEqual(status(self.task)["stages"][0]["effective_status"], "invalid")
 
     def test_unhashable_review_types_do_not_crash_status(self):
-        review = deepcopy(REVIEWS[3]); review["slides"][0]["layout"] = []
+        review = deepcopy(REVIEWS[3]); review["slides"][0]["seconds"] = []
         self.write_stage(3, review=review)
         self.write_stage(4, review={"language": []})
         report = status(self.task)

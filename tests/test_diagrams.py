@@ -7,7 +7,7 @@ import unittest
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location("diagrams", ROOT / "skills/rvlab-charts/diagrams.py")
+spec = importlib.util.spec_from_file_location("diagrams", ROOT / "skills/ppt-charts/diagrams.py")
 diagrams = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(diagrams)
 

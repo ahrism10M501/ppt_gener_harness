@@ -19,6 +19,7 @@ if (request.mode === 'math') {
   });
   const node = document.convert(request.tex, { display: request.display });
   svg = adaptor.outerHTML(adaptor.firstChild(node));
+  if (request.color) svg = svg.replaceAll('currentColor', request.color);
   if (svg.includes('data-mjx-error')) throw new Error('Unsupported LaTeX: ' + request.tex);
   const viewbox = svg.match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
   width = Math.max(1, Math.ceil(viewbox[2] / 1000 * request.size / 72 * 300));

@@ -9,6 +9,7 @@ import subprocess
 import pypandoc
 from PIL import Image
 
+from .project import BUDGET_TIERS
 from .state import StateError, read_document
 from .template import load_tokens
 
@@ -148,6 +149,8 @@ def bullet_items(block, depth=1):
 
 
 def validate_blocks(blocks, task, tokens):
+    """Reject what cannot be rendered or is unsafe; return advisory warnings for the rest."""
+    warnings = []
     allowed = {"Para", "Plain", "BulletList", "OrderedList", "Table", "Figure", "CodeBlock"}
     for block in blocks:
         if block["t"] not in allowed:
@@ -168,20 +171,22 @@ def validate_blocks(blocks, task, tokens):
                     animation_metadata(task, source)
                 if any(n["t"] == "Math" for n in nodes(content[1])):
                     raise StateError("Figure captions use text; put equations in the slide body")
-            if kind == "Math" and re.search(r"\\(?:color|textcolor|class|cssId|style|href|html\w*|bbox|huge|Huge|small|tiny|fontsize|def|newcommand|require|includegraphics)\b", content[1]):
-                raise StateError("LaTeX styling, definitions and external macros are forbidden")
+            if kind == "Math" and re.search(r"\\(?:class|cssId|style|href|html\w*|def|newcommand|require|includegraphics)\b", content[1]):
+                raise StateError("LaTeX definitions, HTML hooks and external macros are not supported")
             if kind == "Link" and not re.match(r"^(https?://|mailto:|#)", content[2][0]):
                 raise StateError("Links must use HTTPS/HTTP, mailto or a slide anchor")
             if kind == "Table":
                 rows = table_rows(node)
-                if not rows or len(rows) > tokens["limits"]["table_rows_with_header"] or len(rows[0]) > tokens["limits"]["table_columns"]:
-                    raise StateError("Table exceeds 8 rows including header or 6 columns")
+                if not rows:
+                    raise StateError("Table has no rows")
+                if len(rows) > tokens["limits"]["table_rows_with_header"] or len(rows[0]) > tokens["limits"]["table_columns"]:
+                    # Build measures the real table height and stops on overflow.
+                    warnings.append(f"Large table ({len(rows)}x{len(rows[0])}; guide {tokens['limits']['table_rows_with_header']}x{tokens['limits']['table_columns']}) may need splitting")
                 if any(n["t"] in ("Math", "Image", "CodeBlock", "BulletList", "OrderedList") for n in nodes(node)):
                     raise StateError("Table cells support plain text and emphasis only")
-            if kind == "CodeBlock" and classes == ["mermaid"] and ("%%{" in content[1] or re.search(r"^\s*---", content[1]) or re.search(r"\b(click|style|classDef|linkStyle)\b", content[1])):
-                raise StateError("Mermaid styling, config and click directives are forbidden")
         if any(n["t"] == "Image" for n in nodes(block)) and image_node(block) is None:
             raise StateError("Images must be standalone with a caption")
+    return warnings
 
 
 def units(value):
@@ -191,9 +196,9 @@ def units(value):
 
 def deck_info(metadata):
     deck = metadata.get("deck")
-    fields = {"title", "subtitle", "date", "presenter", "affiliation", "preset", "budget"}
-    if not isinstance(deck, dict) or not set(deck) <= fields or not all(isinstance(deck.get(k), str) and deck[k].strip() for k in ("title", "date", "presenter")):
-        raise StateError("slides.md needs deck.title, deck.presenter and a quoted deck.date; create projects with pptgen new / rvppt new")
+    # Unknown deck keys are kept for the agent's own notes; only known ones are rendered.
+    if not isinstance(deck, dict) or not all(isinstance(deck.get(k), str) and deck[k].strip() for k in ("title", "date", "presenter")):
+        raise StateError("slides.md needs deck.title, deck.presenter and a quoted deck.date; create projects with pptgen new")
     try:
         # Python also accepts 20261012; normalise so labels and file names stay YYYY-MM-DD based.
         deck = dict(deck, date=date.fromisoformat(deck["date"]).isoformat())
@@ -210,8 +215,8 @@ def deck_info(metadata):
     if not isinstance(preset, str) or not preset.strip():
         raise StateError("deck.preset must be a non-empty string")
     budget = deck.get("budget")
-    if budget is not None and budget not in ("figure", "hero", "epic", "quick", "standard", "thorough"):
-        raise StateError("deck.budget must be one of figure, hero, epic, quick, standard, thorough")
+    if budget is not None and budget not in BUDGET_TIERS:
+        raise StateError(f"deck.budget must be one of {', '.join(BUDGET_TIERS)}")
     result = dict(deck, subtitle=subtitle, affiliation=affiliation, preset=preset.strip())
     if budget is not None:
         result["budget"] = budget
@@ -223,6 +228,8 @@ def is_figure(block):
 
 
 APPENDIX = {"Appendix", "부록"}
+# '### text {.kind}' slides break the headline-and-bullets rhythm; each takes short paragraphs only.
+SLIDE_KINDS = {"statement", "number", "quote"}
 
 
 def parse_task(task):
@@ -246,8 +253,9 @@ def parse_task(task):
             continue  # Author comments, like LaTeX %.
         if block["t"] == "Header":
             level, attr, inlines = block["c"]
-            if attr[1] or attr[2]:
-                raise StateError("Heading styles and classes are forbidden")
+            kinds = attr[1]
+            if attr[2] or (kinds and (level != 3 or len(kinds) != 1 or kinds[0] not in SLIDE_KINDS)):
+                raise StateError(f"Only '### headline {{.kind}}' with one of {sorted(SLIDE_KINDS)} is supported on headings")
             text = plain(inlines).strip()
             current = None
             if level == 1:
@@ -255,16 +263,18 @@ def parse_task(task):
                 section = {"layout": "section", "id": title, "title": title, "subtitle": subtitle, "topics": [], "notes": []}
                 body.append(section); topic = None
             elif level == 2:
-                if units(text) > limits["topic_units"]:
-                    raise StateError(f"Top-bar topic must be a short one-line name (Hangul 2, others 1, max {limits['topic_units']}): {text}")
                 topic = text
             elif level == 3:
-                if topic is None:
-                    raise StateError(f"'### {text}' needs a '## topic' above it")
+                # Without '## topic' the top bar repeats the section (or deck) title.
+                topic = topic or (section and section["title"]) or deck["title"]
                 current = {"layout": "content", "id": f"S{sum(s['layout'] != 'section' for s in body) + 1:02}", "section": section and section["title"], "topic": topic, "headline": text, "blocks": [], "notes": [], "source": [], "warnings": []}
+                if kinds:
+                    current["kind"] = kinds[0]
                 # Length limits are advice; build measures and render-checks the real two-line fit.
                 if len(text) > limits["headline_korean_chars" if re.search(r"[가-힣]", text) else "headline_latin_chars"]:
                     current["warnings"].append(f"Headline may exceed two lines; build checks the real fit: {text}")
+                if units(topic) > limits["topic_units"]:
+                    current["warnings"].append(f"Top-bar topic is long (Hangul 2, others 1; guide {limits['topic_units']}): {topic}")
                 body.append(current)
                 if section and topic not in section["topics"]:
                     section["topics"].append(topic)
@@ -306,12 +316,20 @@ def build_slots(slide, task, tokens):
                     raise StateError("Exactly two ::: column blocks are required")
                 columns = [c["c"][1] for c in children]
             else:
-                validate_blocks(children, task, tokens)
+                slide["warnings"] += validate_blocks(children, task, tokens)
                 if any(n["t"] in ("Image", "Table", "CodeBlock") for n in nodes(children)):
                     raise StateError(f"{role} supports text, lists and LaTeX only")
                 slide[role].extend(children)
         else:
             content.append(block)
+    if slide.get("kind"):
+        if columns is not None or any(b["t"] not in ("Para", "Plain") for b in content):
+            raise StateError(f"{slide['id']}: {{.{slide['kind']}}} slides take short paragraphs only (no lists, tables, figures or columns)")
+        # Large kind text is drawn as plain runs, where LaTeX would show up as its source.
+        if any(n["t"] == "Math" for n in nodes(content)):
+            raise StateError(f"{slide['id']}: {{.{slide['kind']}}} slides take plain text; write 3.2× rather than LaTeX")
+        if slide["kind"] == "number" and not content:
+            raise StateError(f"{slide['id']}: {{.number}} needs the number as its first paragraph")
     # Layout follows the content, so authors never pick coordinates or layouts.
     if columns is not None:
         if content:
@@ -323,11 +341,11 @@ def build_slots(slide, task, tokens):
         slide["slots"] = [content]
     bullets = []
     for blocks in slide["slots"]:
-        validate_blocks(blocks, task, tokens)
+        slide["warnings"] += validate_blocks(blocks, task, tokens)
         for b in blocks:
             bullets.extend(bullet_items(b))
     if any(depth > 2 for depth, _ in bullets):
-        raise StateError(f"{slide['id']}: bullets allow at most 2 levels")
+        slide["warnings"].append("Bullets deeper than 2 levels are hard to read; consider flattening")
     # Count and length are advice; build stops on real overflow.
     if len(bullets) > tokens["limits"]["bullets"]:
         slide["warnings"].append(f"{len(bullets)} bullets (guide: {tokens['limits']['bullets']}); consider splitting the slide")

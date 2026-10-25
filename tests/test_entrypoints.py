@@ -44,6 +44,17 @@ class SkillEntrypointTests(unittest.TestCase):
         self.assertEqual(result["status"], "warn")
         self.assertIn("broken discovery link", result["detail"])
 
+    def test_preset_font_gap_warns_without_failing_doctor(self):
+        def fonts(tokens):
+            if tokens["preset_id"] == "retro":
+                raise RuntimeError("Missing required latin font: Liberation Serif / DejaVu Serif")
+            return {s: {"resolved": tokens["fonts"][s]} for s in ("latin", "korean")}
+        with patch("rvppt.preview.resolve_fonts", side_effect=fonts):
+            result = doctor()
+        check = next(c for c in result["checks"] if c["check"] == "preset_fonts")
+        self.assertEqual(check["status"], "warn")
+        self.assertIn("retro: Missing required latin font", check["detail"])
+
     def test_missing_skill_document_is_reported(self):
         self.link_all()
         (self.skill / "SKILL.md").unlink()
@@ -52,11 +63,16 @@ class SkillEntrypointTests(unittest.TestCase):
 
     def test_empty_or_missing_discovery_directory_is_reported(self):
         (self.root / ".agents/skills/example").symlink_to(self.skill, target_is_directory=True)
+        (self.root / ".claude/skills").rmdir()
         (self.root / ".gemini/skills").rmdir()
         problems = skill_entrypoints(self.root)
-        self.assertIn(".gemini/skills: missing discovery directory", problems)
+        self.assertIn(".claude/skills: missing discovery directory", problems)
         self.assertIn(".claude/skills: skill list differs; missing example", problems)
-        self.assertIn(".gemini/skills: skill list differs; missing example", problems)
+        # The optional Gemini entrypoint is only compared once it has entries.
+        self.assertFalse([p for p in problems if p.startswith(".gemini")])
+        (self.root / ".gemini/skills").mkdir()
+        (self.root / ".gemini/skills/other").symlink_to(self.skill, target_is_directory=True)
+        self.assertIn(".gemini/skills: skill list differs; missing example", skill_entrypoints(self.root))
 
     def test_plain_file_symlink_checkout_is_reported(self):
         self.link_all()

@@ -57,6 +57,8 @@ def text(shape, value, size, color, profile, *, center=False, bold=False, bullet
         if bullets:
             ppr.set("marL", "228600")
             ppr.set("indent", "-152400")
+            # Bullets take the text colour so they stay visible on dark templates.
+            etree.SubElement(etree.SubElement(ppr, f"{{{NS['a']}}}buClr"), f"{{{NS['a']}}}srgbClr", val=color)
             etree.SubElement(ppr, f"{{{NS['a']}}}buChar", char="▪")
         else:
             etree.SubElement(ppr, f"{{{NS['a']}}}buNone")

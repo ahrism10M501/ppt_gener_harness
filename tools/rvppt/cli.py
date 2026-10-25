@@ -25,8 +25,8 @@ def main(argv=None):
     create.add_argument("--subtitle", default="")
     create.add_argument("--date", help="Presentation date YYYY-MM-DD (default: today)")
     create.add_argument("--lang", choices=("ko", "en"), default="ko")
-    create.add_argument("--preset", default=None, help="Design preset ID (e.g. rvlab, modern-16x9, academic-16x9, executive-16x9, minimal-4x3)")
-    create.add_argument("--budget", choices=("quick", "standard", "thorough"), default=None, help="Deck effort/sizing tier (quick=Figure, standard=Hero, thorough=Epic)")
+    create.add_argument("--preset", default=None, help="Template ID under templates/ (e.g. rvlab, modern-minimal, retro, neo-city)")
+    create.add_argument("--budget", choices=("quick", "standard", "thorough"), default=None, help="Deck effort tier; tiers are defined in skills/ppt-interview/SKILL.md")
     subcommands.add_parser("presets", help="List available built-in and custom presentation design presets")
     reg = subcommands.add_parser("register-template", help="Register a custom .pptx template as a reusable preset")
     reg.add_argument("pptx", help="Path to the .pptx file to register")
@@ -47,12 +47,15 @@ def main(argv=None):
     paper = subcommands.add_parser("extract-paper", help="Extract a sources/ or figures/external/ PDF into Markdown and media under TASK/.build/editorial/papers/")
     paper.add_argument("task")
     paper.add_argument("pdf", help="Task-relative sources/<paper>.pdf or figures/external/<paper>.pdf; source and existing outputs are preserved")
-    anat = subcommands.add_parser("anatomy", help="Build a standalone 300-DPI PNG, SVG, and interactive HTML figure using the vendored anatomy engine")
+    anat = subcommands.add_parser("anatomy", help="Build a standalone PNG, SVG, and interactive HTML figure in the deck's palette using the vendored anatomy engine; a script that also writes frame-*.svg gets a GIF")
     anat.add_argument("task")
-    anat.add_argument("--name", required=True, help="Output figure stem under tasks/<task>/figures/<name>.png and .svg")
-    anat.add_argument("--example", default=None, help="Built-in anatomy example name (e.g. dial-indicator, planetary-gearset, vernier-caliper)")
-    anat.add_argument("--script", default=None, help="Path to a custom .mjs anatomy builder script")
-    anat.add_argument("--theme", choices=("light", "dark"), default="light", help="Color theme for standalone SVG/PNG rendering")
+    anat.add_argument("--name", required=True, help="Output figure stem under tasks/<task>/figures/<name>.png and .svg (and .gif for animated scripts)")
+    anat.add_argument("--example", default=None, help="Built-in anatomy example name (e.g. dial-indicator, push-button, test-rig; see skills/anatomy/examples/)")
+    anat.add_argument("--script", default=None, help="Path to a custom .mjs anatomy builder script; .mjs files beside it can be imported")
+    anat.add_argument("--theme", choices=("light", "dark"), default=None, help="Color theme for standalone SVG/PNG rendering (default: follows the task preset's background)")
+    anat.add_argument("--width", type=int, default=1800, help="PNG and GIF width in pixels (default: 1800; use about 1200 for a GIF)")
+    anat.add_argument("--fps", type=float, default=12, help="GIF frames per second (default: 12)")
+    anat.add_argument("--hold", type=float, default=1.0, help="Seconds the GIF rests on its last frame before looping (default: 1.0)")
     subcommands.add_parser("doctor", help="Check tools, fonts, template and vendored skill hashes (offline, read-only)")
     graph = subcommands.add_parser("graph-check", help="Check the Graphify snapshot is fresh and excludes tasks/vendored sources")
     graph.add_argument("--record", action="store_true", help="Write graphify-out/snapshot.json after rebuilding the graph")
@@ -99,7 +102,8 @@ def main(argv=None):
             result = extract_paper(task, args.pdf)
         elif args.command == "anatomy":
             from .anatomy_bridge import build_anatomy_figure
-            result = build_anatomy_figure(task, args.name, example=args.example, script=args.script, theme=args.theme)
+            result = build_anatomy_figure(task, args.name, example=args.example, script=args.script, theme=args.theme,
+                                          width=args.width, fps=args.fps, hold=args.hold)
         elif args.command == "polish-check":
             from .polish import polish_check
             result = polish_check(task, args.before)

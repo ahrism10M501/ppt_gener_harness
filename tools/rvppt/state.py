@@ -18,8 +18,8 @@ STAGES = ("plan/interview.md", "plan/brief.md", "plan/outline.md", "slides.md")
 APPROVAL_FIELDS = {"status", "approval_hash", "upstream_hashes"}
 HASH_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 ID_PATTERN = re.compile(r"[A-Za-z][A-Za-z0-9_-]{0,31}\Z")
-HEADING = re.compile(r"^(#{1,3}) +(.+?)\s*$")
-SLIDE_FIELDS = {"id", "section", "topic", "headline", "evidence", "seconds", "figure"}
+# A trailing {.kind} attribute is slide styling, not part of the headline text.
+HEADING = re.compile(r"^(#{1,3}) +(.+?)(?:\s+\{[^}]*\})?\s*$")
 
 
 class StateError(ValueError):
@@ -54,6 +54,10 @@ def _string(value):
 
 def _strings(value):
     return isinstance(value, list) and bool(value) and all(_string(v) for v in value)
+
+
+def _names(value):
+    return [v for v in value if isinstance(v, str)] if isinstance(value, list) else []
 
 
 @dataclass
@@ -150,7 +154,7 @@ def review_issues(document, previous):
         slides = review.get("slides")
         valid = isinstance(slides, list) and bool(slides)
         if valid:
-            valid = all(isinstance(s, dict) and {"id", "topic", "headline", "evidence", "seconds"} <= set(s) <= SLIDE_FIELDS and isinstance(s["id"], str) and ID_PATTERN.fullmatch(s["id"]) and _string(s["topic"]) and _string(s["headline"]) and _strings(s["evidence"]) and type(s["seconds"]) is int and s["seconds"] > 0 and all(_string(s[k]) for k in ("section", "figure") if k in s) for s in slides)
+            valid = all(isinstance(s, dict) and {"id", "topic", "headline", "evidence", "seconds"} <= set(s) and isinstance(s["id"], str) and ID_PATTERN.fullmatch(s["id"]) and _string(s["topic"]) and _string(s["headline"]) and _strings(s["evidence"]) and type(s["seconds"]) is int and s["seconds"] > 0 and all(_string(s[k]) for k in ("section", "figure") if k in s) for s in slides)
         if not valid:
             issues.append("review.slides requires IDs, topics, headlines, evidence, and positive seconds")
         elif len({s["id"] for s in slides}) != len(slides):
@@ -164,9 +168,6 @@ def review_issues(document, previous):
         headings = slide_headings(document.body)
         if not headings:
             issues.append("slides.md needs '## topic' and '### headline' slides")
-        outline = _outline(previous)
-        if outline is not None and [t for t, _ in headings] != [s["topic"] for s in outline]:
-            issues.append("Slide count or topics differ from the outline; update plan/outline.md")
     issues.extend(f"Blocking open item {i['id']}: {i['description']}" for i in document.metadata.get("open_items", []) if i["blocking"])
     return issues
 
@@ -187,11 +188,24 @@ def review_warnings(document, previous):
         seconds = sum(s["seconds"] for s in slides if isinstance(s, dict) and type(s.get("seconds")) is int) if isinstance(slides, list) else 0
         if type(duration) in (int, float) and seconds > duration * 60:
             warnings.append(f"Outline estimate {seconds / 60:.1f} min exceeds duration_minutes {duration}")
+        interview = previous[1].metadata.get("review") if 1 in previous else None
+        tutorial = interview.get("tutorial") if isinstance(interview, dict) else None
+        if isinstance(tutorial, dict) and isinstance(slides, list):
+            # Learners follow a tutorial alone, so each step may rely only on the starting state or an earlier slide.
+            known = set(_names(tutorial.get("prerequisites")))
+            for i, s in enumerate(slide for slide in slides if isinstance(slide, dict)):
+                warnings += [f"{s.get('id', i + 1)} requires '{r}' before any slide provides it" for r in _names(s.get("requires")) if r not in known]
+                known.update(_names(s.get("provides")))
     outline = _outline(previous) if stage == 4 else None
     if outline is not None:
         # Headlines may be reworded while writing; the stage 4 report shows each change instead of re-approving stage 3.
-        warnings += [f"{o.get('id', i + 1)} headline reworded: {o['headline']} → {h}"
-                     for i, (o, (_, h)) in enumerate(zip(outline, slide_headings(document.body))) if o["headline"] != h]
+        headings = slide_headings(document.body)
+        # Structure may evolve while writing; report the drift instead of forcing a stage 3 re-approval.
+        if [t for t, _ in headings] != [s["topic"] for s in outline]:
+            warnings.append(f"Slides differ from the outline ({len(headings)} vs {len(outline)} slides or changed topics); report the change")
+        else:
+            warnings += [f"{o.get('id', i + 1)} headline reworded: {o['headline']} → {h}"
+                         for i, (o, (_, h)) in enumerate(zip(outline, headings)) if o["headline"] != h]
     return warnings
 
 

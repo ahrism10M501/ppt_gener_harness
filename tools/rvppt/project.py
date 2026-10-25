@@ -12,8 +12,8 @@ BUDGET_TIERS = ("quick", "standard", "thorough")
 
 SKELETON = """
 <!-- # 섹션 | 부제 → 섹션 슬라이드와 목차의 Chapter
-     ## 토픽 → 상단 바 제목(한글 10자·영문 20자 이내 한 줄), 목차의 항목
-     ### 핵심 문장 → 슬라이드 한 장. 본문 첫 줄 ▪ 24pt
+     ## 토픽 → 상단 바 제목(한 줄, 길이 한도는 프리셋의 limits.topic_units), 목차의 항목
+     ### 핵심 문장 → 슬라이드 한 장
      표지·목차·감사합니다는 빌드가 만든다. 문법: docs/rendering.md -->
 
 # 연구 배경 | Background
@@ -83,4 +83,4 @@ def new_project(slug, title, subtitle="", day=None, language="ko", preset=None, 
     plan = write_plan(task)
     return {"task": str(task), "slides": str(task / "slides.md"), "preset": resolved_preset, "budget": resolved_budget,
             "contracts": plan["contracts"], "revisions": plan["revisions"], "progress": plan["progress"],
-            "next": "Put papers, data and draft PPTs in sources/, figures in figures/, then ask the agent to start the ppt-interview (or rvlab-interview) skill or edit slides.md and run pptgen build."}
+            "next": "Put papers, data and draft PPTs in sources/, figures in figures/, then ask the agent to start the ppt-interview skill or edit slides.md and run pptgen build."}

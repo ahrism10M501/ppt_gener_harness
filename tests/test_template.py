@@ -132,10 +132,10 @@ class SkillIntegrityTests(unittest.TestCase):
             root = Path(directory)
             shutil.copytree(ROOT / "skills", root / "skills", symlinks=True)
             (root / "skills/im-not-ai/LICENSE").write_text("changed")
-            (root / "skills/pdf/SKILL.md").unlink()
+            (root / "skills/scientific-visualization/SKILL.md").unlink()
             problems = skill_integrity(root)
             self.assertTrue(any("im-not-ai/LICENSE: modified" in p for p in problems))
-            self.assertTrue(any("pdf/SKILL.md: missing" in p for p in problems))
+            self.assertTrue(any("scientific-visualization/SKILL.md: missing" in p for p in problems))
 
     def test_symlinks_checked_out_as_plain_files_are_reported(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -145,9 +145,9 @@ class SkillIntegrityTests(unittest.TestCase):
             vendored.unlink()
             vendored.write_bytes(b"../../../skills/humanize-korean/references")
             (root / ".claude/skills").mkdir(parents=True)
-            (root / ".claude/skills/rvlab-ppt").write_bytes(b"../../skills/rvlab-ppt")
+            (root / ".claude/skills/ppt-maker").write_bytes(b"../../skills/ppt-maker")
             problems = skill_integrity(root)
-            for path in ("skills/im-not-ai/codex/skills/humanize-korean/references", ".claude/skills/rvlab-ppt"):
+            for path in ("skills/im-not-ai/codex/skills/humanize-korean/references", ".claude/skills/ppt-maker"):
                 self.assertTrue(any(p.startswith(f"{path}: symlink checked out as a plain file") for p in problems), path)
 
 
@@ -201,7 +201,6 @@ class IgnoreTests(unittest.TestCase):
             "tasks/261011-example-il-progress/.build/output/contact-sheet.png": True,
             "profile.yaml": True,
             "profile.example.yaml": False,
-            "docs/design/build/layout-specimens.pptx": True,
             "graphify-out/graph.json": False,
             "graphify-out/snapshot.json": False,
             ".env.local": True,

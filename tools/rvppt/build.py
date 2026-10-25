@@ -25,7 +25,7 @@ from pptx.util import Inches, Pt
 from .markdown import APPENDIX, animation_metadata, asset_path, image_node, nodes, pandoc, parse_task, plain, table_rows
 from .preview import chrome_binary, contact_sheet, fit_picture, render_pdf, resolve_fonts, text
 from .state import StateError, status, tree_hash
-from .template import ROOT, NS, EMU, ensure_preset_reference, load_tokens, sha256, slots, validate_package
+from .template import ROOT, NS, EMU, color_of, ensure_preset_reference, load_tokens, sha256, slots, validate_package
 
 MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -70,10 +70,11 @@ def node_render(request):
 
 
 def equation(tex, display, size, directory, profile):
-    key = hashlib.sha256(f"{tex}:{display}:{size}".encode()).hexdigest()[:20]
+    color = "#" + profile.get("ink", "000000")
+    key = hashlib.sha256(f"{tex}:{display}:{size}:{color}".encode()).hexdigest()[:20]
     path = directory / f"math-{key}.png"
     if not path.exists():
-        node_render({"mode": "math", "tex": tex, "display": display, "size": size,
+        node_render({"mode": "math", "tex": tex, "display": display, "size": size, "color": color,
                      "output": str(path), "svg": str(path.with_suffix('.svg')),
                      "font": profile["latin"]["resolved"]})
     return path
@@ -114,7 +115,7 @@ def paragraphs(block, depth=0, marker=None):
         raise StateError(f"Cannot measure {block['t']}")
 
 
-def compose(block, width, size, directory, profile, *, output=None):
+def compose(block, width, size, directory, profile, *, output=None, bold=False):
     """Measure fixed-size text; rasterize math-bearing preview fragments at 300 DPI."""
     scale = 300
     # ponytail: 4% slack absorbs renderer glyph substitution (arrows, autospacing); per-glyph font routing if it still overflows.
@@ -125,8 +126,8 @@ def compose(block, width, size, directory, profile, *, output=None):
         points = 16 if code else size - 2 if depth > 1 else size
         if len(inlines) == 1 and inlines[0]["t"] == "Math" and inlines[0]["c"][0]["t"] == "DisplayMath":
             points = 20
-        latin = ImageFont.truetype(font_path(profile, code=code), round(points / 72 * scale))
-        cjk = ImageFont.truetype(font_path(profile, korean=True), round(points / 72 * scale))
+        latin = ImageFont.truetype(font_path(profile, code=code, bold=bold and not code), round(points / 72 * scale))
+        cjk = ImageFont.truetype(font_path(profile, korean=True, bold=bold), round(points / 72 * scale))
         indent = round(depth * .25 * scale)
         x = indent
         line = []
@@ -152,7 +153,7 @@ def compose(block, width, size, directory, profile, *, output=None):
                     parts.append((word, advance, round(points / 72 * scale * 1.25), font))
             for value, w, h, font in parts:
                 if w > pixel_width - indent + 1:
-                    raise StateError("Text token or equation exceeds the fixed content width")
+                    raise StateError(f"Text token or equation exceeds the fixed content width: {value if isinstance(value, str) else 'equation'!r}")
                 if isinstance(value, str) and value == "\n":
                     layouts.append((y, line_h, line)); y += line_h
                     x, line, line_h = indent, [], round(points / 72 * scale * 1.25)
@@ -165,13 +166,13 @@ def compose(block, width, size, directory, profile, *, output=None):
                 line.append((x, value, font)); x += w; line_h = max(line_h, h)
         layouts.append((y, line_h, line)); y += line_h + round((.14 if depth else .05) * scale)
     if output:
-        canvas = Image.new("RGB", (round(width * scale), max(1, y)), "white")
+        canvas = Image.new("RGB", (round(width * scale), max(1, y)), "#" + profile.get("paper", "FFFFFF"))
         draw = ImageDraw.Draw(canvas)
         for top, height, line in layouts:
             for left, value, font in line:
                 if isinstance(value, str):
                     # One baseline per line so Hangul and Latin fallback fonts line up.
-                    draw.text((left, top + round(height * .8)), value, fill="black", font=font, anchor="ls")
+                    draw.text((left, top + round(height * .8)), value, fill="#" + profile.get("ink", "000000"), font=font, anchor="ls")
                 else:
                     canvas.paste(value, (left, round(top + (height - value.height) / 2)), value)
         canvas.save(output, dpi=(300, 300))
@@ -189,8 +190,8 @@ def prepare_image(block, task, directory, box, tokens, profile):
         source = directory / f"mermaid-{key}.svg"
         code = source.with_suffix(".mmd"); code.write_text(block["c"][1], encoding="utf-8")
         config = directory / "mermaid-config.json"
-        config.write_text(json.dumps({"theme": "base", "securityLevel": "strict", "htmlLabels": False, "flowchart": {"htmlLabels": False}, "themeVariables": {"primaryColor": "#" + tokens["palette"]["secondary"], "primaryTextColor": "#000000", "primaryBorderColor": "#" + tokens["palette"]["primary"], "lineColor": "#" + tokens["palette"]["primary"], "fontFamily": profile["korean"]["resolved"]}}))
-        args = ["node", ROOT / "node_modules/@mermaid-js/mermaid-cli/src/cli.js", "-i", code, "-o", source, "-c", config, "-b", "white"]
+        config.write_text(json.dumps({"theme": "base", "securityLevel": "strict", "htmlLabels": False, "flowchart": {"htmlLabels": False}, "themeVariables": {"primaryColor": "#" + tokens["palette"]["secondary"], "primaryTextColor": "#" + tokens["palette"]["text"], "textColor": "#" + tokens["palette"]["text"], "primaryBorderColor": "#" + tokens["palette"]["primary"], "lineColor": "#" + tokens["palette"]["primary"], "fontFamily": profile["korean"]["resolved"]}}))
+        args = ["node", ROOT / "node_modules/@mermaid-js/mermaid-cli/src/cli.js", "-i", code, "-o", source, "-c", config, "-b", "#" + tokens["palette"]["background"]]
         if browser := chrome_binary():
             puppeteer = directory / "puppeteer-config.json"
             puppeteer.write_text(json.dumps({"executablePath": browser, "args": ["--no-sandbox"]}))
@@ -268,7 +269,7 @@ def set_typography(shape, size, profile, *, code=False):
             if etree.QName(child).localname in ("solidFill", "gradFill", "noFill"):
                 props.remove(child)
         fill = etree.Element(f"{{{NS['a']}}}solidFill"); props.insert(0, fill)
-        etree.SubElement(fill, f"{{{NS['a']}}}srgbClr", val="000000")
+        etree.SubElement(fill, f"{{{NS['a']}}}srgbClr", val=profile.get("ink", "000000"))
 
 
 def copy_fragment(shape, target, box, size, profile, block, *, preset="rvlab"):
@@ -306,6 +307,9 @@ def copy_fragment(shape, target, box, size, profile, block, *, preset="rvlab"):
                 bullet = OxmlElement("a:buNone")
             default = ppr.find(f"{{{NS['a']}}}defRPr")
             ppr.insert(ppr.index(default) if default is not None else len(ppr), bullet)
+            if bullet.tag != f"{{{NS['a']}}}buNone":
+                bullet_color = OxmlElement("a:buClr"); bullet_color.append(OxmlElement("a:srgbClr"))
+                bullet_color[0].set("val", profile.get("ink", "000000")); bullet.addprevious(bullet_color)
     target.shapes._spTree.insert_element_before(element, "p:extLst")
     added = target.shapes[-1]
     added.left, added.top, added.width, added.height = [Inches(v) for v in box]
@@ -350,9 +354,9 @@ def native_fragments(api, slides, reference, directory):
     return result
 
 
-def add_text(slide, value, box, size, profile, *, center=False, bold=False, color="000000", bullets=False):
+def add_text(slide, value, box, size, profile, *, center=False, bold=False, color=None, bullets=False):
     shape = slide.shapes.add_textbox(*[Inches(v) for v in box])
-    text(shape, value, size, color, profile, center=center, bold=bold, bullets=bullets)
+    text(shape, value, size, color or profile.get("ink", "000000"), profile, center=center, bold=bold, bullets=bullets)
     return shape
 
 
@@ -400,11 +404,79 @@ def figure_request(slide, box, request, path, tokens, profile):
     shape.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
 
 
+TABLE_STYLE = {"header_fill": "primary", "header_text": "background", "header_rule": "band", "stripe": "tint",
+               "rule": "neutral", "rule_pt": 0.5, "first_column_bold": False}
+CELL_PAD = .08  # left/right inches inside each cell
+# LibreOffice also spaces Hangul next to punctuation; cells are measured this much narrower so a borderline cell gets its second line.
+CELL_SLACK = .2
+
+
+def text_width(value, size, profile, bold=False):
+    """Single-line width in inches, measured like compose: font routing, Hangul–Latin autospacing and its 4% slack."""
+    scale = 300
+    latin = ImageFont.truetype(font_path(profile, bold=bold), round(size / 72 * scale))
+    cjk = ImageFont.truetype(font_path(profile, korean=True, bold=bold), round(size / 72 * scale))
+    total, previous = 0, " "
+    for word in re.findall(r"[가-힣一-龥]|[^가-힣一-龥]+", value):
+        total += (cjk if re.search(r"[가-힣一-龥]", word) else latin).getlength(word)
+        if re.match(r"[가-힣一-龥][A-Za-z0-9]|[A-Za-z0-9][가-힣一-龥]", previous[-1] + word[0]):
+            total += size / 72 * scale / 4
+        previous = word
+    return total / scale / .96
+
+
+def bold_cell(row, column, tokens):
+    return row == 0 or (column == 0 and {**TABLE_STYLE, **tokens.get("table", {})}["first_column_bold"])
+
+
+def column_widths(rows, width, size, profile, tokens=None):
+    """Share the width by content: each column wants its longest line, never less than its longest word."""
+    bold = lambda r, c: bool(tokens) and bold_cell(r, c, tokens)
+    extra = 2 * CELL_PAD + CELL_SLACK  # the width table_geometry measures each cell at
+    want = [max(text_width(row[c], size, profile, bold(r, c)) for r, row in enumerate(rows)) + extra for c in range(len(rows[0]))]
+    floor = [max([text_width(word, size, profile, bold(r, c)) for r, row in enumerate(rows) for word in row[c].split()] or [0]) + extra for c in range(len(rows[0]))]
+    if sum(floor) > width:
+        raise StateError("Table columns cannot fit their longest words; split the table or shorten cells")
+    if sum(want) <= width:
+        return [w + (width - sum(want)) * w / sum(want) for w in want]
+    # Water-fill: wide columns wrap first, narrow ones keep their single line.
+    widths, fixed = list(floor), set()
+    while True:
+        free = [c for c in range(len(want)) if c not in fixed]
+        budget = width - sum(widths[c] for c in fixed)
+        share = {c: budget * want[c] / sum(want[c] for c in free) for c in free}
+        under = [c for c in free if share[c] < floor[c]]
+        if not under:
+            for c in free:
+                widths[c] = share[c]
+            return widths
+        fixed.update(under)
+
+
 def table_geometry(block, width, directory, tokens, profile):
     rows = table_rows(block)
-    cell_width = width / len(rows[0])
-    heights = [max(.42, max(compose({"t": "Para", "c": [{"t": "Str", "c": cell}]}, cell_width - .12, tokens["sizes_pt"]["table"], directory, profile) for cell in row) + .1) for row in rows]
-    return rows, heights
+    size = tokens["sizes_pt"]["table"]
+    widths = column_widths(rows, width, size, profile, tokens)
+    heights = [max(.42, max(compose(para(cell), cw - 2 * CELL_PAD - CELL_SLACK, size, directory, profile, bold=bold_cell(r, c, tokens))
+                            for c, (cell, cw) in enumerate(zip(row, widths))) + .1) for r, row in enumerate(rows)]
+    return rows, heights, widths
+
+
+BORDER_ORDER = ("lnL", "lnR", "lnT", "lnB")
+
+
+def _border(properties, side, color=None, points=0):
+    border = properties.find(f"{{{NS['a']}}}{side}")
+    if border is None:
+        # Schema order is lnL, lnR, lnT, lnB, then the fill; insert after the borders that precede this side.
+        before = BORDER_ORDER[:BORDER_ORDER.index(side)]
+        border = OxmlElement(f"a:{side}"); properties.insert(sum(properties.find(f"{{{NS['a']}}}{s}") is not None for s in before), border)
+    border.clear()
+    if color:
+        border.set("w", str(round(points * 12700)))
+        fill = OxmlElement("a:solidFill"); value = OxmlElement("a:srgbClr"); value.set("val", color); fill.append(value); border.append(fill)
+    else:
+        border.append(OxmlElement("a:noFill"))
 
 
 def package_checks(output, tokens):
@@ -430,6 +502,62 @@ def package_checks(output, tokens):
                 raise StateError("Shape exceeds slide boundaries")
 
 
+KIND_STYLE = {
+    "statement": {"size": 36, "color": "text", "bar": "primary", "note": "neutral"},
+    "number": {"size": 88, "color": "primary", "note": "text"},
+    "quote": {"size": 30, "color": "text", "mark": "primary", "note": "neutral"},
+}
+
+
+def para(value):
+    return {"t": "Para", "c": [{"t": "Str", "c": value}]}
+
+
+def render_kind(slide, spec, region, tokens, profile, assets, page, records):
+    """statement: one big claim; number: the claim, then one huge figure; quote: the headline as a quotation.
+
+    Blocks are stacked and centred vertically in the free region; build stops if they do not fit."""
+    kind = spec["kind"]
+    look = {**KIND_STYLE[kind], **tokens.get("slide_kinds", {}).get(kind, {})}
+    x, y, w, h = region
+    body = tokens["sizes_pt"]["body"]
+    notes = [plain([b]).strip() for b in spec["slots"][0]]
+    gap = tokens["geometry_in"]["gap"]
+    items = []  # (text, size, color, bold, center, inset, role)
+    if kind == "statement":
+        items.append((spec["headline"], look["size"], look["color"], True, False, .35, "headline"))
+        items += [(n, body, look["note"], False, False, .35, "text") for n in notes]
+    elif kind == "number":
+        items.append((notes[0], look["size"], look["color"], True, True, 0, "number"))
+        items += [(n, body, look["note"], False, True, 0, "text") for n in notes[1:]]
+    else:
+        items.append((spec["headline"], look["size"], look["color"], False, False, .9, "headline"))
+        items += [("— " + n, body, look["note"], False, False, .9, "text") for n in notes]
+    # Large CJK glyphs rise above the first-line origin; give each block headroom proportional to its size.
+    pads = [size * .15 / 72 for _, size, *_ in items]
+    heights = [compose(para(t), w - 2 * inset, size, assets, profile, bold=bold) + pad for (t, size, _, bold, _, inset, _), pad in zip(items, pads)]
+    total = sum(heights) + gap * (len(items) - 1)
+    if total > h + .01:
+        raise StateError(f"Content overflow on {spec['id']} ({{.{kind}}}); shorten the text")
+    top = y + (h - total) / 2
+    for (value, size, color, bold, center, inset, role), height, pad in zip(items, heights, pads):
+        box = [x + inset, top, w - 2 * inset, height]
+        add_text(slide, value, [box[0], top + pad, box[2], height - pad], size, profile, center=center, bold=bold, color=color_of(color, tokens))
+        records.append({"page": page, "slide_id": spec["id"], "role": role, "box": box, "expected": value, "max_lines": None})
+        top += height + gap
+    first = [x, y + (h - total) / 2, 0, heights[0]]
+    if kind == "statement":
+        bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(first[0]), Inches(first[1] + .08), Inches(.08), Inches(max(.2, first[3] - .16)))
+    elif kind == "quote":
+        mark = slide.shapes.add_textbox(Inches(x), Inches(first[1] - .25), Inches(.8), Inches(1.0))
+        text(mark, "“", 72, color_of(look["mark"], tokens), profile, bold=True)
+        bar = None
+    else:
+        bar = None
+    if bar is not None:
+        bar.fill.solid(); bar.fill.fore_color.rgb = RGBColor.from_string(color_of(look["bar"], tokens)); bar.line.fill.background()
+
+
 def assemble(api, slides, tokens, profile, task, directory):
     reference = ensure_preset_reference(tokens)
     presentation = Presentation(reference)
@@ -453,6 +581,17 @@ def assemble(api, slides, tokens, profile, task, directory):
             records.append({"page": page, "slide_id": spec["id"], "role": "title", "box": box_of(slide.shapes.title), "expected": spec["topic"], "max_lines": 1})
             x0, y0, w0, h0 = tokens["geometry_in"]["body"]
             indent = tokens["geometry_in"]["content_indent"]
+            source_y = tokens["slide"]["height_in"] - .9  # 6.6 on the 7.5in-tall presets
+            if spec.get("kind") in ("statement", "quote"):
+                source = plain(spec["source"]).strip()
+                bottom = source_y - .08 if source else y0 + h0
+                if source:
+                    source_box = [x0 + indent, source_y, w0 - indent, .42]
+                    add_text(slide, source, source_box, tokens["sizes_pt"]["source"], profile)
+                    records.append({"page": page, "slide_id": spec["id"], "role": "source", "box": source_box, "expected": source, "max_lines": 2})
+                render_kind(slide, spec, [x0, y0, w0, bottom - y0], tokens, profile, assets, page, records)
+                slide.notes_slide.notes_text_frame.text = plain(spec["notes"]).strip()
+                continue
             headline = {"t": "Para", "c": [{"t": "Str", "c": spec["headline"]}]}
             headline_box = [x0, y0, w0, compose(headline, w0 - indent, tokens["sizes_pt"]["headline"], assets, profile)]
             add_text(slide, spec["headline"], headline_box, tokens["sizes_pt"]["headline"], profile, bullets=True)
@@ -462,10 +601,14 @@ def assemble(api, slides, tokens, profile, task, directory):
             count = len(spec["slots"])
             source = plain(spec["source"]).strip()
             if source:
-                region[3] = 6.6 - region[1] - .08
-                source_box = [region[0], 6.6, (x0 + w0 - region[0]), .42]
+                region[3] = source_y - region[1] - .08
+                source_box = [region[0], source_y, (x0 + w0 - region[0]), .42]
                 add_text(slide, source, source_box, tokens["sizes_pt"]["source"], profile)
                 records.append({"page": page, "slide_id": spec["id"], "role": "source", "box": source_box, "expected": source, "max_lines": 2})
+            if spec.get("kind") == "number":
+                render_kind(slide, spec, region, tokens, profile, assets, page, records)
+                slide.notes_slide.notes_text_frame.text = plain(spec["notes"]).strip()
+                continue
             boxes = slots(tokens, count, region)
             for slot_index, (contents, base) in enumerate(zip(spec["slots"], boxes)):
                 x, y, w, h = base
@@ -521,40 +664,50 @@ def assemble(api, slides, tokens, profile, task, directory):
                         if maths:
                             preview_image = assets / f"preview-math-{page}-{slot_index}-{i}.png"
                             compose(block, w, points, assets, profile, output=preview_image)
-                            if actual_math != len(maths):
+                            # Pandoc's OMML drops \color, so colored math ships as the rendered picture to keep the emphasis.
+                            colored = any(re.search(r"\\(?:color|textcolor)\b", tex) for _, tex in maths)
+                            native = actual_math == len(maths) and not colored
+                            if not native:
                                 slide.shapes._spTree.remove(shape._element)
                                 shape = slide.shapes.add_picture(str(preview_image), *[Inches(v) for v in box])
+                            reason = ("LibreOffice cannot display native OMML" if native else "Native OMML would drop \\color" if colored
+                                      else "Pandoc could not convert LaTeX to native OMML")
                             for _, tex in maths:
-                                fallbacks.append({"slide_id": spec["id"], "tex": tex, "scope": "preview" if actual_math == len(maths) else "final_and_preview", "reason": "LibreOffice cannot display native OMML" if actual_math == len(maths) else "Pandoc could not convert LaTeX to native OMML"})
+                                fallbacks.append({"slide_id": spec["id"], "tex": tex, "scope": "preview" if native else "final_and_preview", "reason": reason})
                         if block["t"] == "Table":
-                            rows, row_heights = table_geometry(block, w, assets, tokens, profile)
-                            for column in shape.table.columns:
-                                column.width = Inches(w / len(rows[0]))
+                            rows, row_heights, widths = table_geometry(block, w, assets, tokens, profile)
+                            look = {**TABLE_STYLE, **tokens.get("table", {})}
+                            paint = {k: color_of(v, tokens) if isinstance(v, str) and v != "none" else None for k, v in look.items() if k not in ("rule_pt", "first_column_bold")}
+                            for column, cw in zip(shape.table.columns, widths):
+                                column.width = Inches(cw)
                             top = y
                             for row_index, (row, row_h) in enumerate(zip(shape.table.rows, row_heights)):
                                 row.height = Inches(row_h)
-                                for col_index, cell in enumerate(row.cells):
-                                    cell.margin_left = cell.margin_right = Inches(.06)
-                                    cell.margin_top = Pt(4); cell.margin_bottom = 0
-                                    cell.fill.solid(); cell.fill.fore_color.rgb = RGBColor.from_string(tokens["palette"]["primary"] if row_index == 0 else "FFFFFF")
+                                header, last = row_index == 0, row_index == len(rows) - 1
+                                left = x
+                                for col_index, (cell, cw) in enumerate(zip(row.cells, widths)):
+                                    cell.margin_left = cell.margin_right = Inches(CELL_PAD)
+                                    cell.margin_top = Pt(4); cell.margin_bottom = Pt(2)
+                                    cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+                                    # Header fill, then zebra stripes on every other body row so long rows stay traceable.
+                                    fill = paint["header_fill"] if header else paint["stripe"] if row_index % 2 == 0 else None
+                                    if fill:
+                                        cell.fill.solid(); cell.fill.fore_color.rgb = RGBColor.from_string(fill)
+                                    else:
+                                        cell.fill.background()
                                     for p in cell.text_frame.paragraphs:
-                                        p.alignment = PP_ALIGN.RIGHT if row_index > 0 and re.fullmatch(r"[-+\d.,%\s]+", rows[row_index][col_index]) else PP_ALIGN.LEFT
+                                        p.alignment = PP_ALIGN.RIGHT if not header and re.fullmatch(r"[-+\d.,%\s]+", rows[row_index][col_index]) else PP_ALIGN.LEFT
                                         for r in p.runs:
-                                            r.font.color.rgb = RGBColor.from_string("FFFFFF" if row_index == 0 else "000000")
-                                            if row_index == 0:
+                                            r.font.color.rgb = RGBColor.from_string(paint["header_text"] if header else tokens["palette"]["text"])
+                                            if header or (look["first_column_bold"] and col_index == 0):
                                                 r.font.bold = True
                                     properties = cell._tc.get_or_add_tcPr()
-                                    for side in ("lnL", "lnR", "lnT", "lnB"):
-                                        border = properties.find(f"{{{NS['a']}}}{side}")
-                                        if border is None:
-                                            border = OxmlElement(f"a:{side}"); properties.insert(0, border)
-                                        border.clear()
-                                        if side == "lnB" and row_index in (0, len(rows) - 1):
-                                            border.set("w", "12700")
-                                            fill = OxmlElement("a:solidFill"); color = OxmlElement("a:srgbClr"); color.set("val", tokens["palette"]["primary"]); fill.append(color); border.append(fill)
-                                        else:
-                                            border.append(OxmlElement("a:noFill"))
-                                    records.append({"page": page, "slide_id": spec["id"], "role": "table_cell", "box": [x + col_index * w / len(rows[0]), top, w / len(rows[0]), row_h], "expected": rows[row_index][col_index]})
+                                    for side in ("lnL", "lnR", "lnT"):
+                                        _border(properties, side)
+                                    _border(properties, "lnB", paint["header_rule"] if header or last else paint["rule"],
+                                            1.5 if header else 1 if last else look["rule_pt"])
+                                    records.append({"page": page, "slide_id": spec["id"], "role": "table_cell", "box": [left, top, cw, row_h], "expected": rows[row_index][col_index]})
+                                    left += cw
                                 top += row_h
                         else:
                             records.append({"page": page, "slide_id": spec["id"], "role": "math_image" if preview_image else "text", "box": box, "expected": plain(block).strip(), "shape_id": shape.shape_id, "preview_image": str(preview_image.relative_to(directory)) if preview_image else None})
@@ -645,7 +798,9 @@ def render_and_check(directory, report):
 def fingerprint(task, tokens):
     ref_path = ensure_preset_reference(tokens)
     result = {"slides.md": sha256(task / "slides.md"), "figures/": tree_hash(task / "figures"), "sources/": tree_hash(task / "sources"),
-              "reference_sha256": sha256(ref_path), "design_sha256": sha256(ROOT / "DESIGN.md")}
+              "reference_sha256": sha256(ref_path),
+              # Tokens alone shape the output, so editing a DESIGN.md's prose does not make builds stale.
+              "tokens_sha256": hashlib.sha256(json.dumps(tokens, sort_keys=True, ensure_ascii=False).encode()).hexdigest()}
     if tokens.get("preset_id", "rvlab") != "rvlab":
         result["preset_id"] = tokens["preset_id"]
     return result
@@ -727,7 +882,8 @@ def build(task):
     try:
         with tempfile.TemporaryDirectory(prefix=".rvppt-", dir=workspace) as temporary:
             directory = Path(temporary)
-            profile = dict(resolve_fonts(tokens), text_top_inset_pt=tokens["text_top_inset_pt"])
+            # ink/paper carry the theme's text and background into every generated run, table and image.
+            profile = dict(resolve_fonts(tokens), text_top_inset_pt=tokens["text_top_inset_pt"], ink=tokens["palette"]["text"], paper=tokens["palette"]["background"])
             report = assemble(api, slides, tokens, profile, task, directory)
             findings = render_and_check(directory, report)
             if findings:
@@ -793,7 +949,7 @@ def preview(task):
         raise StateError("Output directory symlinks are forbidden")
     report_path = directory / "build-report.json"
     if not report_path.is_file():
-        raise StateError("No successful build; run rvppt build TASK first")
+        raise StateError("No successful build; run pptgen build TASK first")
     try:
         report = json.loads(report_path.read_text(encoding="utf-8"))
         if not isinstance(report["fingerprint"], dict) or not isinstance(report["artifacts"], dict) or not isinstance(report["outputs"], dict) or report["detected_overflows"] != 0:
@@ -801,7 +957,7 @@ def preview(task):
     except (ValueError, TypeError, KeyError) as error:
         raise StateError("Invalid build report; rebuild from slides.md") from error
     if report["fingerprint"] != fingerprint(task, tokens):
-        raise StateError("Build is stale; slides.md, figures or design changed. Run rvppt build TASK")
+        raise StateError("Build is stale; slides.md, figures or design changed. Run pptgen build TASK")
     for name, expected in report["artifacts"].items():
         if not isinstance(name, str) or name != Path(name).name:
             raise StateError("Invalid build artifact path in report")

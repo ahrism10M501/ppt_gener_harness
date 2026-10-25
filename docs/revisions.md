@@ -29,18 +29,19 @@
 | `interview.md` | 청중·목적·제약의 합의 | 에이전트, 사용자 검토 |
 | `brief.md` | 메시지·스토리라인의 합의 | 에이전트, 사용자 검토 |
 | `outline.md` | 순서·토픽·주장과 근거의 합의 | 에이전트, 사용자 검토 |
-| `contracts.md` | 원본 위치·단계별 승인 상태·의존 관계도·다음 검토 위치 | `rvppt plan`이 생성 |
+| `contracts.md` | 원본 위치·단계별 승인 상태·의존 관계도·다음 검토 위치 | `pptgen plan`이 생성 |
 | `revisions.md` | 요청 원문·대상·변경점·재검토 범위·검증·완료 기록 | 에이전트가 추가 |
+| `PROGRESS.md` | Truth Model·프리셋·규모·세션 간 작업 기록 | `pptgen plan`이 처음 한 번 만들고 에이전트가 갱신 |
 
 여기서 ‘계약’은 단계마다 확인한 합의를 뜻한다. 계약 본문은 기존 승인 문서이며 `contracts.md`는 그 위치와 현재 상태를 모아 보여 주는 뷰다. 별도 승인 체계를 만들지 않는다. `revisions.md`에 “승인”이라고 적는 것만으로 승인되지 않는다.
 
-새 task에는 두 보조 문서가 자동 생성된다. 기존 task에서도 아래 명령으로 만든다. `contracts.md`만 갱신하고 기존 `revisions.md`는 보존한다. `contracts.md`가 사용자가 작성한 문서이면 덮어쓰지 않고 오류를 알린다.
+새 task에는 세 보조 문서(`contracts.md`·`revisions.md`·`PROGRESS.md`)가 자동 생성된다. 기존 task에서도 아래 명령으로 만든다. `contracts.md`만 갱신하고 기존 `revisions.md`·`PROGRESS.md`는 보존한다. `contracts.md`가 사용자가 작성한 문서이면 덮어쓰지 않고 오류를 알린다.
 
 ```bash
-uv run rvppt plan tasks/<task>
+uv run pptgen plan tasks/<task>
 ```
 
-관계도는 Mermaid이며 이를 지원하는 Markdown 뷰어에서 볼 수 있다. 같은 정보의 표와 문제 목록도 있어 다이어그램 없이 읽을 수 있다. 이 파일은 **명령 실행 시점의 스냅샷**이다. 재개·수정 후·승인 후·단계 보고 전에 갱신한다. `rvppt status`는 계속 읽기 전용이다.
+관계도는 Mermaid이며 이를 지원하는 Markdown 뷰어에서 볼 수 있다. 같은 정보의 표와 문제 목록도 있어 다이어그램 없이 읽을 수 있다. 이 파일은 **명령 실행 시점의 스냅샷**이다. 재개·수정 후·승인 후·단계 보고 전에 갱신한다. `pptgen status`는 계속 읽기 전용이다.
 
 ```mermaid
 flowchart LR

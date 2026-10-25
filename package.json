@@ -1,8 +1,8 @@
 {
-  "name": "rvlab-ppt-renderers",
+  "name": "ppt-gener-renderers",
   "private": true,
   "version": "0.1.0",
-  "description": "Fixed RVLAB math, SVG and Mermaid renderers",
+  "description": "Pinned math, SVG and Mermaid renderers for ppt-gener",
   "engines": { "node": ">=22" },
   "overrides": { "@xmldom/xmldom": "0.9.12" },
   "dependencies": {

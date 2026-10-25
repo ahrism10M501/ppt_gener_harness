@@ -1,209 +1,278 @@
-# Graph Report - ppt-gener  (2026-10-20)
+# Graph Report - ppt-gener  (2026-10-25)
 
 ## Corpus Check
-- Corpus is ~43,926 words - fits in a single context window. You may not need a graph.
+- Corpus is ~48,455 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 705 nodes · 1664 edges · 32 communities (24 shown, 8 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 36 edges (avg confidence: 0.88)
-- Token cost: unmetered local-session semantic extraction; no external LLM API calls. Zero counters are placeholders, not measured token usage.
+- 849 nodes · 2018 edges · 48 communities (36 shown, 12 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 136 edges (avg confidence: 0.87)
+- Token cost: 436,047 tokens spent by the two semantic subagents (combined input and output, as reported by the harness); AST extraction and the merge run locally. No external LLM API calls.
 
 ## Graph Freshness
-- Built from commit: `f037d422`
+- Built from commit: `d9d7a7a0`
 - Run `uv run pptgen graph-check` to verify recorded input and output hashes, freshness and source exclusions.
 - Rebuild with the Graphify skill after source changes, then record with `uv run pptgen graph-check --record`. Semantic extraction token usage depends on the active session or configured backend.
 
 ## Community Hubs (Navigation)
 - Slide Building and Markdown
-- Templates and Approval State
 - Stage Approval Tests
-- Figure Planning and Production
-- CLI Planning and Environment
-- Template Integrity and Papers
-- Node Diagram Renderers
-- Slide Content Lint Tests
+- Anatomy Bridge and Palettes
+- Test Fixtures and Shared Imports
+- Node Packages and Renderers
 - Chart Recipe Library
-- Skill Entrypoint Integrity
+- Approval State and Hashing
+- Template Catalog and RVLAB Design
+- Slide Rule Tests
+- Workflow and Revision Procedure
+- Template Package Tests
+- Pinned External Skills
+- Animation Skill and Storyboard
+- Visual Planning and External Figures
+- Graph Check and Diagram Rendering
+- Template Layout Builders
+- Document Schemas and Profile
+- Overview and Toolchain
+- Doctor and Binary Detection
+- Layout and Overflow Tests
+- Project Skills and Roles
+- Template Registry and Tokens
+- Skill Entrypoint Tests
 - Shared Harness Rules
-- Diagram and Graph Integrity
-- Vendored Skill Setup
-- Pinned External Skill Manifest
-- Slide Layout and Typography
-- Semantic Palette Tests
 - Source Format and Rendering
-- Revisions and Document Schemas
-- Animation Truth and Storyboards
-- Audience Interview and Storyline
-- Animation and Math Tests
-- Document Extraction and Toolchain
-- Slide Authoring and Audit
-- Semantic Chart Palette
-- Content Approval Workflow
+- Setup and Environment Guide
+- Talk Types and Plan Documents
+- Animation Tests
+- Interview Question Guide
+- PPTX Library Imports
+- Plan Contracts and Polish Check
+- Charts Skill and Preset Palette
+- Local Diagram Rendering
+- CLI Entry and Argument Parsing
+- Korean Polish Procedure
+- Modern Minimal Design
+- Neo City Design
+- Retro Editorial Design
+- General Harness Tests
+- Paper Extraction Tests
+- Document Extraction Tools
 - Python Package Dependencies
-- Animation Palette Contract
-- Local Diagram Tests
-- Animation Agent Interface
+- Skill Integrity Tests
+- CLI Integration Tests
+- Diagram Tests
 
 ## God Nodes (most connected - your core abstractions)
-1. `StateError` - 53 edges
-2. `BuildTests` - 50 edges
-3. `StateTests` - 42 edges
-4. `approve()` - 32 edges
-5. `status()` - 31 edges
-6. `resolve_fonts()` - 24 edges
-7. `sha256()` - 24 edges
-8. `assemble()` - 23 edges
-9. `load_tokens()` - 23 edges
-10. `build()` - 22 edges
+1. `StateError` - 56 edges
+2. `BuildTests` - 51 edges
+3. `StateTests` - 43 edges
+4. `Presentation production workflow and approval rules` - 34 edges
+5. `status()` - 33 edges
+6. `approve()` - 33 edges
+7. ``slides.md` authoring syntax and render QA` - 29 edges
+8. `Template folder structure and DESIGN.md contract` - 28 edges
+9. `resolve_fonts()` - 27 edges
+10. `assemble()` - 26 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `set_preset()` --calls--> `semantic_palette()`  [INFERRED]
-  skills/rvlab-charts/charts.py → tools/rvppt/template.py
-- `AnimationTests` --uses--> `StateError`  [INFERRED]
-  tests/test_animation.py → tools/rvppt/state.py
-- `BuildTests` --uses--> `StateError`  [INFERRED]
-  tests/test_build.py → tools/rvppt/state.py
-- `PaperTests` --uses--> `StateError`  [INFERRED]
-  tests/test_papers.py → tools/rvppt/state.py
-- `PlanTests` --uses--> `StateError`  [INFERRED]
-  tests/test_plan.py → tools/rvppt/state.py
+- `TOC skeleton from sections and topics` --semantically_similar_to--> `RVLAB 4:3 lab template design specification`  [INFERRED] [semantically similar]
+  skills/ppt-maker/references/talk-types.md → templates/rvlab/DESIGN.md
+- `Discovery entrypoints for agents` --semantically_similar_to--> `Common agent guidelines for PPT-Gener`  [INFERRED] [semantically similar]
+  docs/skills.md → AGENTS.md
+- `Template-specific style rules live in DESIGN.md` --semantically_similar_to--> `Common agent guidelines for PPT-Gener`  [INFERRED] [semantically similar]
+  docs/skills.md → AGENTS.md
+- `Hand-edited PPTX overwrite guard` --conceptually_related_to--> `Common agent guidelines for PPT-Gener`  [INFERRED]
+  docs/rendering.md → AGENTS.md
+- `License URL and preserved license file per skill` --shares_data_with--> `Project overview and quick start`  [INFERRED]
+  skills/dependencies.yaml → README.md
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Markdown and native presentation rendering pipeline** — agents_slides_source, docs_rendering_pandoc_ast, docs_toolchain_pipeline, docs_toolchain_libreoffice_qa [EXTRACTED 1.00]
-- **Four-stage presentation content workflow** — docs_workflow_interview, docs_workflow_brief, docs_workflow_outline, docs_workflow_slides [EXTRACTED 1.00]
-- **Shared semantic palette contract** — skills_ppt_charts_skill_rvppt_template_semantic_palette_preset_, skills_ppt_charts_skill_semantic_palette_keys_accent_band_secondary_tint_neutral_ink_section_accent_background, skills_ppt_charts_skill_hex_rgb_palette_values__rrggbb [EXTRACTED 1.00]
-- **Stage 1 to 3 planning artifacts** — skills_ppt_interview_skill_stage_1_plan_interview_md, skills_ppt_interview_skill_stage_2_plan_brief_md, skills_ppt_interview_skill_stage_3_plan_outline_md [EXTRACTED 1.00]
-- **4x crop critic loop** — skills_ppt_maker_skill_pptgen_audit___zoom_4, skills_ppt_maker_skill_critic_crops_sheet_png_and_critic_audit_json, skills_ppt_maker_skill_critic_loop_and_4x_crop_audit_log [EXTRACTED 1.00]
+- **Code, preset, and agent responsibility split** — agents_code_enforced_limits, agents_preset_decided_form, agents_agent_judged_content [EXTRACTED 1.00]
+- **Four pinned external skills** — skills_dependencies_im_not_ai, skills_dependencies_manimce_best_practices, skills_dependencies_scientific_visualization, skills_dependencies_anatomy [EXTRACTED 1.00]
+- **Four-stage presentation approval pipeline** — docs_workflow_stage_1, docs_workflow_stage_2, docs_workflow_stage_3, docs_workflow_stage_4 [EXTRACTED 1.00]
+- **ppt skill suite from planning to visuals** — skills_ppt_interview_skill_document, skills_ppt_maker_skill_document, skills_ppt_charts_skill_document, skills_ppt_animation_skill_document, skills_ppt_tutorial_skill_document [INFERRED 0.85]
+- **Skills reading deck.preset DESIGN.md before work** — skills_ppt_animation_skill_design_read_first, skills_ppt_charts_skill_design_read_first, skills_ppt_maker_skill_design_read_first, skills_ppt_interview_skill_preset_recommendation, templates_readme_template_specific_rules_in_design_md [INFERRED 0.95]
+- **Presets following the five-section DESIGN.md convention** — templates_readme_five_section_convention, templates_modern_minimal_design_character_tech_talk, templates_neo_city_design_character_dark_keynote, templates_retro_design_character_storytelling, templates_rvlab_design_character_lab_meeting [INFERRED 0.95]
 
-## Communities (32 total, 8 thin omitted)
+## Communities (48 total, 12 thin omitted)
 
 ### Community 0 - "Slide Building and Markdown"
 Cohesion: 0.06
-Nodes (59): build_anatomy_figure(), _resolved_svg_css(), standalone_svg(), add_text(), assemble(), audit(), box_of(), build() (+51 more)
+Nodes (60): add_text(), assemble(), audit(), bold_cell(), _border(), box_of(), build(), column_widths() (+52 more)
 
-### Community 1 - "Templates and Approval State"
-Cohesion: 0.07
-Nodes (22): make_task(), slides_body(), CliIntegrationTests, run_cli_smoke(), IgnoreTests, _cell(), render_contracts(), _digest() (+14 more)
-
-### Community 2 - "Stage Approval Tests"
+### Community 1 - "Stage Approval Tests"
 Cohesion: 0.11
-Nodes (4): GeneralHarnessTests, StateTests, approve(), status()
+Nodes (5): PlanTests, StateTests, write_plan(), approve(), status()
 
-### Community 3 - "Figure Planning and Production"
-Cohesion: 0.05
-Nodes (42): @resvg/resvg-js 300dpi PNG rendering, beautiful-mermaid SVG with ELK layout, Branch group feedback sequence and state diagrams, Local automatic diagrams, npm ci reproducible installation, package.json and package-lock.json dependency pinning, Chart recipes donut flow timeline matrix2x2 funnel cards, figures/make_charts.py reproducibility (+34 more)
-
-### Community 4 - "CLI Planning and Environment"
+### Community 2 - "Anatomy Bridge and Palettes"
 Cohesion: 0.08
-Nodes (16): PlanTests, main(), _task_path(), doctor(), browser(), fonts(), libreoffice(), template() (+8 more)
+Nodes (14): ChartTests, PaletteTests, build_anatomy_figure(), _channels(), _gif(), _localized(), _mix(), _resolve_vars() (+6 more)
 
-### Community 5 - "Template Integrity and Papers"
-Cohesion: 0.10
-Nodes (15): PaperTests, TemplateTests, extract_paper(), build_preset_reference(), build_reference(), content_layout(), extract_manifest(), parse() (+7 more)
-
-### Community 6 - "Node Diagram Renderers"
+### Community 4 - "Node Packages and Renderers"
 Cohesion: 0.07
 Nodes (25): dependencies, beautiful-mermaid, mathjax-full, @mermaid-js/mermaid-cli, @resvg/resvg-js, description, engines, node (+17 more)
 
-### Community 8 - "Chart Recipe Library"
-Cohesion: 0.15
+### Community 5 - "Chart Recipe Library"
+Cohesion: 0.14
 Nodes (14): _arrow(), _box(), _canvas(), cards(), demo(), donut(), _fit(), flow() (+6 more)
 
-### Community 9 - "Skill Entrypoint Integrity"
-Cohesion: 0.14
-Nodes (7): SkillEntrypointTests, SkillIntegrityTests, entrypoints(), skills(), link_stand_in(), skill_entrypoints(), skill_integrity()
+### Community 6 - "Approval State and Hashing"
+Cohesion: 0.13
+Nodes (15): _digest(), Document, _inspect(), _mapping(), _names(), _outline(), review_issues(), review_warnings() (+7 more)
 
-### Community 10 - "Shared Harness Rules"
+### Community 7 - "Template Catalog and RVLAB Design"
+Cohesion: 0.10
+Nodes (18): Slide kinds: statement, number, quote, Build, preview, audit inspection loop, Four-step new template procedure, DESIGN.md YAML token keys, Template folder structure and DESIGN.md contract, templates/examples/ local reference talks, Five-section character and conventions, templates/<id>/ folder layout (+10 more)
+
+### Community 9 - "Workflow and Revision Procedure"
+Cohesion: 0.13
+Nodes (20): Six-step agent revision procedure, Handling broad requests like 'make it cleaner', `plan/contracts.md` snapshot via `pptgen plan`, Presentation revision procedure, Change type to re-review stage table, Natural-language revision requests by page, topic, or ID, `plan/` documents and their writers, Revision IDs (R001) in `plan/revisions.md` (+12 more)
+
+### Community 10 - "Template Package Tests"
 Cohesion: 0.15
-Nodes (15): Shared agent instructions, pptgen audit: 4x crops, margins and contrast, PROGRESS.md: budget, truth model, state and 4x critic log, Claude agent entry point, anatomy_bridge creates task figure PNG and SVG from isolated workspace, Gemini agent entry point, Profile defaults: rvlab preset and standard budget, Public presenter profile example (+7 more)
+Nodes (7): TemplateTests, template(), build_reference(), extract_manifest(), parse(), sha256(), validate_package()
 
-### Community 11 - "Diagram and Graph Integrity"
+### Community 11 - "Pinned External Skills"
+Cohesion: 0.15
+Nodes (19): Skill discovery links to `skills/`, `pptgen anatomy` run in editorial workdir, Discovery entrypoints for agents, Skill composition and external skills guide, External skills table with source and scope, Pinned external skills with preserved licenses, Removed reference-only and document-format skills, Retired `rvlab-*` skills and compatibility links (+11 more)
+
+### Community 12 - "Animation Skill and Storyboard"
+Cohesion: 0.12
+Nodes (16): Optional `visual` extra: Manim, Matplotlib, SciencePlots, default_prompt for preset-matched animation, display_name: educational animation, OpenAI agent interface metadata for ppt-animation, short_description for GIF and static alternatives, Beats: state, change, explanation, hold, Iterative optimization calculation record, Animation storyboard pre-production checklist (+8 more)
+
+### Community 13 - "Visual Planning and External Figures"
+Cohesion: 0.12
+Nodes (14): Pinned PyMuPDF4LLM 0.2.9 paper extraction, Guide to sourcing external photos and paper figures, pptgen extract-paper PDF to Markdown, Caption-driven figure selection procedure, Source line, notes, and slot checks, figures/visual-sources.yaml provenance record, Web photo sourcing from official pages, Visual design and production routing guide (+6 more)
+
+### Community 14 - "Graph Check and Diagram Rendering"
 Cohesion: 0.18
 Nodes (9): main(), render(), validate_source(), GraphCheckTests, _candidates(), graph_check(), _graph_sources(), ignored() (+1 more)
 
-### Community 12 - "Vendored Skill Setup"
-Cohesion: 0.20
-Nodes (13): skills/ source with agent discovery symlinks, doctor checks environment, fonts, renderer and vendored hashes read-only, Installation and environment checks, beautiful-mermaid/resvg local diagrams need no browser or visual extra, Python 3.11–3.14, uv, Node 22+, LibreOffice and fonts, Windows developer mode and core.symlinks for skill discovery, beautiful-mermaid 1.1.3 local chart renderer, Vendored skills and discovery policy (+5 more)
-
-### Community 13 - "Pinned External Skill Manifest"
-Cohesion: 0.26
-Nodes (15): anatomy — available, brainstorming — reference_only, Pinned skill dependency manifest, im-not-ai — available, Pinned dependency provenance and per-file integrity records, manim-composer — reference_only, manimce-best-practices — available_requires_dependencies, minimax-docx — available_requires_dependencies (+7 more)
-
-### Community 15 - "Semantic Palette Tests"
-Cohesion: 0.14
-Nodes (3): ChartTests, PaletteTests, semantic_palette()
-
-### Community 16 - "Source Format and Rendering"
-Cohesion: 0.18
-Nodes (10): RVLAB design specification, Arial/Malgun Gothic with Liberation Sans/Noto Sans CJK KR fallback, 150 effective DPI minimum; generated PNG target 300 DPI, RVLAB 4:3: 10 × 7.5 inches, One-line topic and at most two-line headline, Markdown authoring and render QA, LaTeX source: editable OMML plus 300 DPI compatibility images, PPTX GIF with same-size representative PNG for PDF and previews (+2 more)
-
-### Community 17 - "Revisions and Document Schemas"
+### Community 15 - "Template Layout Builders"
 Cohesion: 0.21
-Nodes (11): contracts.md is a generated view, not a separate approval system, Presentation revision procedure, Revision impact selects earliest stage to review again, revisions.md: request IDs, changes, review scope and validation, Task document schema v1, Computed status: missing, draft, approved, stale or invalid, Stage frontmatter: schema, task ID, status, approval and upstream hashes, Stage input hashing covers sources and prior stages; Stage 4 adds figures (+3 more)
+Nodes (14): apply_layout_style(), build_preset_reference(), content_layout(), _decor(), placeholder(), _run_style(), set_background(), set_box() (+6 more)
 
-### Community 18 - "Animation Truth and Storyboards"
-Cohesion: 0.16
-Nodes (10): GIF and PNG dual artifact contract, Manim CE for transformations and equation geometry, manim-composer scene planning, manimce-best-practices implementation guidance, Matplotlib and Pillow for 2D graphs, rvlab-animation, scientific-visualization quantitative graph guidance, Storyboard beats state change explanation hold poster playback (+2 more)
-
-### Community 19 - "Audience Interview and Storyline"
-Cohesion: 0.15
-Nodes (11): Explicit approval with review_hash, ppt-interview, Stage 1 plan/interview.md, Stage 1 to 3 presentation planning, Stage 2 plan/brief.md, Stage 3 plan/outline.md, Up-front sizing and budget quick standard thorough, Continue confirmed work while awaiting answers (+3 more)
-
-### Community 21 - "Document Extraction and Toolchain"
-Cohesion: 0.23
-Nodes (11): Document processing tools and limitations, XLSX formula_check validates references without recalculating values, OCR formulas must be checked against source images, PyMuPDF4LLM: model-free extraction with AGPL/commercial dual licensing, Tool licenses are separate from skill licenses, Pandoc AST validates input and provides native text, tables and OMML, Build toolchain and limitations, extract-paper uses PyMuPDF4LLM 0.2.9 and existing PyMuPDF (+3 more)
-
-### Community 22 - "Slide Authoring and Audit"
+### Community 16 - "Document Schemas and Profile"
 Cohesion: 0.20
-Nodes (10): pptgen audit --zoom 4, anatomy PNG SVG and interactive HTML artifacts, critic-crops-sheet.png and critic-audit.json, ppt-maker, pptgen audit --zoom 4, pptgen lint and pptgen build, pptgen new --preset --budget, pptgen register-template and deck.preset (+2 more)
+Nodes (16): Common frontmatter fields for stage documents, Task document schema v1, Effective status values: missing, draft, approved, stale, invalid, `content_hash` versus `review_hash`, Input hashing of `sources/` and `figures/`, `issues` block approval, `warnings` only advise, Stage 1 `plan/interview.md` review fields, Stage 2 `plan/brief.md` message candidates (+8 more)
 
-### Community 23 - "Semantic Chart Palette"
-Cohesion: 0.26
-Nodes (11): anatomy hardware and mechanism routing, beautiful-mermaid and ELK automatic layout, Chart recipes donut flow timeline matrix2x2 funnel cards, charts.set_preset, deck.preset, diagrams.py --preset, Hex RGB palette values #RRGGBB, Minimum diagram text size 18pt (+3 more)
+### Community 17 - "Overview and Toolchain"
+Cohesion: 0.15
+Nodes (14): Pinned Python and Node dependencies, Toolchain choices and rendering constraints, Markdown to Pandoc AST to PPTX to LibreOffice QA, RVLAB master, logo, and theme preservation, 16:9 themes styled by DESIGN.md `style` blocks, `pptgen anatomy` isometric diagram build, `pptgen audit` 4x close-up critic loop, Up-front sizing with `--budget` (+6 more)
 
-### Community 24 - "Content Approval Workflow"
-Cohesion: 0.31
-Nodes (8): content_approved is separate from render QA, Stage 2 brief: selected message and storyline, Presentation production and approval workflow, Stage 1 interview: audience, purpose, evidence and constraints, Stage 3 outline: ordered claims, evidence, timing and figures, Korean polishing with AST preservation check, Stage 4: slides.md, Korean polish, content and production QA, Four-stage content approval workflow
+### Community 18 - "Doctor and Binary Detection"
+Cohesion: 0.17
+Nodes (6): doctor(), browser(), libreoffice(), chrome_binary(), libreoffice_binary(), render_pdf()
 
-### Community 25 - "Python Package Dependencies"
+### Community 20 - "Project Skills and Roles"
+Cohesion: 0.25
+Nodes (11): Task-to-skill starting point table, Project skills and their roles table, Five project skills and `pptgen` command, Per-stage questions in collaborative mode, ppt-interview skill for Stage 1~3 planning, Handoff to ppt-tutorial for follow-along, ppt-maker skill for Stage 4 writing and building, Resume via status and PROGRESS.md (+3 more)
+
+### Community 21 - "Template Registry and Tokens"
+Cohesion: 0.14
+Nodes (9): fonts(), preset_fonts(), design_path(), _fill(), load_tokens(), read_design(), register_template(), rescale() (+1 more)
+
+### Community 22 - "Skill Entrypoint Tests"
+Cohesion: 0.21
+Nodes (3): SkillEntrypointTests, entrypoints(), skill_entrypoints()
+
+### Community 23 - "Shared Harness Rules"
+Cohesion: 0.19
+Nodes (10): Agent-judged wording, structure, and emphasis, Code-enforced limits on unrenderable input and overflow, `templates/<id>/DESIGN.md` style contract, Common agent guidelines for PPT-Gener, Approval only via `pptgen approve` after user consent, `graphify-out/` as non-authoritative structure reference, Preset-decided layout, fonts, and base colors, Protected originals: `sources/`, RVLAB template, external skills (+2 more)
+
+### Community 24 - "Source Format and Rendering"
+Cohesion: 0.20
+Nodes (12): Build pipeline with LibreOffice render QA, Two-column and figure grid layouts, `slides.md` authoring syntax and render QA, Missing-figure request placeholders, GIF with representative PNG pair, Section, topic, key-sentence heading hierarchy, `lint`, `build`, `preview` commands, LaTeX math as OMML plus image fallback (+4 more)
+
+### Community 25 - "Setup and Environment Guide"
+Cohesion: 0.19
+Nodes (11): Installation and environment check guide, Initial install with `uv sync` and `npm ci`, Local diagrams via `beautiful-mermaid` and resvg, Mermaid Chrome or Chromium requirement, OS-specific tool installation table, `pptgen doctor` read-only environment check, Preset-specific font requirements, Personal `profile.yaml` copied from example (+3 more)
+
+### Community 26 - "Talk Types and Plan Documents"
+Cohesion: 0.14
+Nodes (13): brief.md message and storyline candidates, outline.md per-slide plan fields, plan/ documents: interview, brief, outline, PROGRESS, Truth Model in plan/PROGRESS.md, Talk-type section structures and slide quality, Figure request flow to researchers, Good slide conditions checklist, Post-build verification checklist (+5 more)
+
+### Community 28 - "Interview Question Guide"
+Cohesion: 0.17
+Nodes (10): Question modes: co-create, essentials, instant draft, Answer-driven follow-up branching, Audience, purpose, material, success, constraints, Interview question guide for unconfirmed intent, Bundles of three to five questions, Handling unsupported claims and hidden premises, Budget levels: quick, standard, thorough, First question bundle: mode, preset, budget (+2 more)
+
+### Community 30 - "Plan Contracts and Polish Check"
+Cohesion: 0.24
+Nodes (5): _cell(), render_contracts(), difference(), polish_check(), read_document()
+
+### Community 31 - "Charts Skill and Preset Palette"
+Cohesion: 0.20
+Nodes (8): Mermaid flowcharts with preset styling, Preset palette with non-color encoding, charts.py decorative chart recipes, ppt-charts skill for diagrams and decorative charts, figures/make_charts.py reproducible script, Preset auto-detected from task deck.preset, semantic_palette color role keys, Statement, number, quote slide kinds for rhythm
+
+### Community 32 - "Local Diagram Rendering"
+Cohesion: 0.18
+Nodes (7): beautiful-mermaid and ELK local layout, Local automatic diagram rendering guide, In-slide mermaid blocks render separately, Four-step diagram production workflow, Relation to diagram composition mapping, Local Mermaid rendering via diagrams.py, Equations in LaTeX, 16pt code, Mermaid
+
+### Community 33 - "CLI Entry and Argument Parsing"
+Cohesion: 0.38
+Nodes (4): main(), _task_path(), list_presets(), main()
+
+### Community 34 - "Korean Polish Procedure"
+Cohesion: 0.22
+Nodes (6): Korean polish before approval request, before.md snapshot of slides.md, Korean slides.md polishing procedure, humanize-korean run in .build/editorial, pptgen polish-check preservation gate, Pre-approval lint, polish, warnings
+
+### Community 35 - "Modern Minimal Design"
+Cohesion: 0.22
+Nodes (9): Avoids: paragraphs, many accents, decoration, Character: conference and tech-talk audience, Modern Minimal 16:9 design document, Figure impression: gray baseline, blue protagonist, Fits: one big message per slide, Lint limits and font sizes, Electric blue 2B59FF single-accent palette, Post-build checks: whitespace, single blue, gray text (+1 more)
+
+### Community 36 - "Neo City Design"
+Cohesion: 0.24
+Nodes (8): Character: dark-venue tech demo keynote, Neo City 16:9 dark neon design document, Dark-canvas figures with thin neon strokes, Fits: demos with fixed neon color meanings, Narrow heavy heading fonts, Neon cyan, magenta, violet on 0B1020, Post-build checks: white remnants, contrast, fonts, HUD grid lines and corner brackets
+
+### Community 37 - "Retro Editorial Design"
+Cohesion: 0.24
+Nodes (9): Avoids: neon, dense tables, sans-serif titles, Character: storytelling, history, lecture talks, Retro Editorial 16:9 design document, Paper-style figures: thick lines, cream background, Fits: narrative, timelines, case cards, quotes, Cream paper, terracotta, teal, mustard palette, Post-build checks: serif legibility and contrast, Serif fonts for Latin and Korean (+1 more)
+
+### Community 40 - "Document Extraction Tools"
+Cohesion: 0.46
+Nodes (7): Input material reading tools guide, `pptgen extract-paper` PDF to Markdown, Formula-in-image OCR candidates, Microsoft MarkItDown draft text extraction, Pandoc (pypandoc-binary) document conversion, PDF page rendering and crop fallback, Material-type to tool mapping table
+
+### Community 41 - "Python Package Dependencies"
 Cohesion: 0.25
 Nodes (8): lxml, Pillow, ppt-gener, PyMuPDF, pymupdf4llm, pypandoc-binary, python-pptx, PyYAML
 
-### Community 26 - "Animation Palette Contract"
-Cohesion: 0.47
-Nodes (4): Hex RGB palette values #RRGGBB, ppt-animation, rvppt.template.semantic_palette(preset), Semantic palette keys accent band secondary tint neutral ink section_accent background
+### Community 42 - "Skill Integrity Tests"
+Cohesion: 0.29
+Nodes (4): SkillIntegrityTests, skills(), link_stand_in(), skill_integrity()
+
+## Ambiguous Edges - Review These
+- `Local automatic diagram rendering guide` → `Equations in LaTeX, 16pt code, Mermaid`  [AMBIGUOUS]
+  templates/rvlab/DESIGN.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **81 isolated node(s):** `name`, `private`, `version`, `description`, `node` (+76 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 224 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **70 isolated node(s):** `Claude agent entry point`, `Gemini agent entry point`, `name`, `private`, `version` (+65 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 244 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Vendored skills and discovery policy` connect `Vendored Skill Setup` to `Slide Building and Markdown`, `Shared Harness Rules`, `Document Extraction and Toolchain`, `Pinned External Skill Manifest`?**
-  _High betweenness centrality (0.145) - this node is a cross-community bridge._
+- **What is the exact relationship between `Local automatic diagram rendering guide` and `Equations in LaTeX, 16pt code, Mermaid`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **Why does `Skill composition and external skills guide` connect `Pinned External Skills` to `Setup and Environment Guide`, `Anatomy Bridge and Palettes`, `Project Skills and Roles`, `Node Packages and Renderers`?**
+  _High betweenness centrality (0.167) - this node is a cross-community bridge._
 - **Are the 5 inferred relationships involving `StateError` (e.g. with `AnimationTests` and `BuildTests`) actually correct?**
   _`StateError` has 5 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `name`, `private`, `version` to the rest of the system?**
-  _81 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `Claude agent entry point`, `Gemini agent entry point`, `name` to the rest of the system?**
+  _70 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Slide Building and Markdown` be split into smaller, more focused modules?**
-  _Cohesion score 0.05605670103092784 - nodes in this community are weakly interconnected._
-- **Why does `StateError` connect `Slide Building and Markdown` to `Templates and Approval State`, `Stage Approval Tests`, `CLI Planning and Environment`, `Template Integrity and Papers`, `Slide Content Lint Tests`, `Diagram and Graph Integrity`, `Animation and Math Tests`?**
-  _High betweenness centrality (0.125) - this node is a cross-community bridge._
-- **Should `Templates and Approval State` be split into smaller, more focused modules?**
-  _Cohesion score 0.06511761331038439 - nodes in this community are weakly interconnected._
-- **Why does `Local automatic diagrams` connect `Figure Planning and Production` to `Diagram and Graph Integrity`, `Node Diagram Renderers`?**
-  _High betweenness centrality (0.096) - this node is a cross-community bridge._
+  _Cohesion score 0.05666293393057111 - nodes in this community are weakly interconnected._
+- **Why does `ppt-charts skill for diagrams and decorative charts` connect `Charts Skill and Preset Palette` to `Local Diagram Rendering`, `Modern Minimal Design`, `Neo City Design`, `Chart Recipe Library`, `Retro Editorial Design`, `Visual Planning and External Figures`, `Graph Check and Diagram Rendering`, `Project Skills and Roles`, `Setup and Environment Guide`?**
+  _High betweenness centrality (0.167) - this node is a cross-community bridge._
+- **Are the 7 inferred relationships involving `Presentation production workflow and approval rules` (e.g. with `Microsoft MarkItDown draft text extraction` and ``plan/contracts.md` snapshot via `pptgen plan``) actually correct?**
+  _`Presentation production workflow and approval rules` has 7 INFERRED edges - model-reasoned connections that need verification._
 ## Extraction audit
 
-Rebuilt 36 code files by AST and 30 project documents with two local-session semantic agents. No external LLM API was called. All semantic source documents produced nodes; cache hits: 0.
+Incremental update on 2026-10-25 from commit `d9d7a7a0` plus uncommitted working-tree changes. Re-extracted all 36 code files by AST (deterministic; untouched files reproduced the earlier graph exactly) and 30 changed project documents with two local-session semantic agents; 2 unchanged documents kept their earlier extraction and 13 deleted files were pruned. No external LLM API was called.
 
-The JSON preserves 1736 original relationships across 705 nodes. Clustering and the HTML view use a simple undirected projection with 1664 edges; reciprocal and parallel relationships therefore share one projected edge. The JSON retains the original directions and relation types.
+The JSON preserves 2091 original relationships across 849 nodes. Clustering and the HTML view use a simple undirected projection with 2018 edges; reciprocal and parallel relationships therefore share one projected edge. The JSON retains the original directions and relation types.
 
-Graphify diagnostics (raw extraction): 300 dangling-endpoint edges, 0 missing-endpoint edges, 5 self-loops, 68 same-endpoint projection collisions. Structural extraction can reference imported external symbols, which Graphify represents with external stubs when applicable.
+Graphify diagnostics (raw extraction): 307 dangling-endpoint edges, 0 missing-endpoint edges, 7 self-loops, 69 same-endpoint projection collisions. Structural extraction can reference imported external symbols, which Graphify represents with external stubs when applicable.
 
-Corpus exclusions follow `.graphifyignore`; actual tasks, templates, profile.yaml, vendored skill originals, discovery symlinks, and generated output are excluded. `.gemini/` is additionally excluded from detection to prevent discovery links from introducing duplicate vendor content. `docs/architecture.md` remains excluded by the existing policy. No task data was read or published.
+Corpus exclusions follow `.graphifyignore`; actual tasks, templates, profile.yaml, vendored skill originals, discovery symlinks, and generated output are excluded. This run additionally left out `skills/rvlab-charts/charts.py` (symlink alias of skills/ppt-charts/charts.py); `skills/rvlab-charts/diagrams.py` (symlink alias of skills/ppt-charts/diagrams.py); `skills/system/run-workflow/SKILL.md` (untracked system-injected skill, not project content). `docs/architecture.md` remains excluded by the existing policy. No task data was read or published.

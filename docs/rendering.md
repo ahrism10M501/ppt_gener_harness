@@ -1,12 +1,12 @@
 # Markdown 제작과 QA
 
-`slides.md`는 Overleaf의 `main.tex`처럼 연구자와 에이전트가 함께 고치는 원본이다. 고정 크기·레이아웃·이름 규칙은 [DESIGN](../DESIGN.md), 승인 문서 형식은 [schemas](schemas.md)를 따른다. Pandoc AST로 검증하고 Pandoc이 만든 네이티브 텍스트·표·OMML 블록을 RVLAB 고정 슬롯에 배치한다. 입력에서 좌표·크기·폰트·색·레이아웃·임의 클래스/스타일을 지정할 수 없다. 글꼴을 줄여 내용을 끼워 넣지 않는다.
+`slides.md`는 Overleaf의 `main.tex`처럼 연구자와 에이전트가 함께 고치는 원본이다. 크기·레이아웃은 프리셋 토큰(`templates/<id>/DESIGN.md`), 승인 문서 형식은 [schemas](schemas.md)를 따른다. Pandoc AST로 검증하고 Pandoc이 만든 네이티브 텍스트·표·OMML 블록을 프리셋의 슬롯에 배치한다. 입력에서 좌표·크기·폰트·레이아웃·임의 클래스는 지정할 수 없다. 글꼴을 줄여 내용을 끼워 넣지 않는다.
 
 ## 프로젝트와 표지
 
 ```bash
 cp profile.example.yaml profile.yaml   # 처음 한 번: 이름·영문 이름·소속 두 줄
-uv run rvppt new train-loop --title "학습루프개선 및 실험" --subtitle "Advanced Train Loop & Experiments" --date 2026-08-31
+uv run pptgen new train-loop --title "학습루프개선 및 실험" --subtitle "Advanced Train Loop & Experiments" --date 2026-08-31
 ```
 
 `tasks/260831-train-loop/`가 만들어진다. 표지 정보는 `slides.md` frontmatter의 `deck`에 복사되므로 발표마다 고칠 수 있다. 날짜는 따옴표로 감싼 `YYYY-MM-DD`다. 영어 발표는 `--lang en`이며 날짜 라벨과 마무리 문구가 영어가 된다.
@@ -50,13 +50,39 @@ $$\mathcal{L} = \frac{1}{N}\sum_i (y_i-\hat y_i)^2$$
 ```
 
 - `# 제목 | 부제`: 섹션 슬라이드와 목차의 `Chapter N`. 섹션이 2개 이상이면 표지 다음에 목차가 생긴다. `# Appendix`/`# 부록`은 목차에서 빠지고 `감사합니다.` 뒤에 놓인다.
-- `## 토픽`: 상단 바 제목이자 목차 항목. 한 줄 이름이며 한글 2·그 외 1로 세어 20 이하다(초과 시 오류).
+- `## 토픽`: 상단 바 제목이자 목차 항목. 한 줄 이름을 권장하며 한글 2·그 외 1로 세어 한도를 넘으면 lint가 경고한다. `##`를 생략하면 섹션 제목(없으면 발표 제목)이 상단 바에 들어간다.
 - `### 핵심 문장`: 슬라이드 한 장. 본문 첫 줄 `▪` 24pt이며 두 줄까지 들어간다. 길이는 lint가 경고하고 실제 줄 수는 build가 검사한다. 모든 본문은 `###` 아래에 쓴다.
 - `<!-- -->` 주석은 무시한다(LaTeX의 `%`).
 
-위 예시는 문법 설명이며 실험 결과가 아니다. 본문은 일반 문단·강조·짧은 코드·불릿/번호 목록·파이프 표·LaTeX를 사용한다. 불릿은 2단계(20pt·18pt)까지다. 5개를 넘거나 한 줄이 긴 불릿은 lint 경고이며, 실제로 넘치면 build가 멈춘다. 표는 헤더 포함 최대 8행·6열(18pt)이다. 병합 셀과 표 안의 그림/수식/목록은 지원하지 않는다. 텍스트 셀은 왼쪽, 숫자 셀은 오른쪽 정렬하며 헤더는 파랑·흰 글자, 세로선 없이 헤더/끝 가로선만 사용한다.
+위 예시는 문법 설명이며 실험 결과가 아니다. 본문은 일반 문단·강조·짧은 코드·불릿/번호 목록·파이프 표·LaTeX를 사용한다. 불릿은 1단 20pt, 2단 이하 18pt다. 3단 이상, 5개 초과, 긴 불릿, 프리셋 권장 크기(헤더 포함 8행·6열 등)를 넘는 표는 lint 경고이며, 실제로 넘치면 build가 멈춘다. 수식 안 `\color`·크기 명령은 쓸 수 있고 `\def`·`\newcommand`·HTML 연결 명령은 지원하지 않는다. 병합 셀과 표 안의 그림/수식/목록은 지원하지 않는다. 칸 너비는 내용 길이에 비례해 나누되 가장 긴 단어보다 좁아지지 않는다. 텍스트 셀은 왼쪽, 숫자 셀은 오른쪽 정렬이다. 행마다 얇은 구분선이 있고 짝수 행에는 옅은 줄무늬가 깔린다. 헤더 채움·글자색, 줄무늬, 선 색, 첫 열 굵게 여부는 템플릿 DESIGN.md의 `table` 블록이 정한다.
 
 `::: source`는 12pt·최대 두 줄, `::: notes`는 PPTX 발표자 노트다. 섹션 제목 아래에는 notes만 둘 수 있다. 노트 안 LaTeX는 원문 텍스트로 보존한다. 인용은 확인한 저자·연도와 링크를 본문/출처에, 전체 서지를 노트에 적는다. `[@key]`는 입력 그대로 표시하며 자동 서지 조회는 제공하지 않는다.
+
+## 슬라이드 종류
+
+핵심 문장과 불릿만 이어지면 덱이 단조로워진다. `###` 뒤에 종류를 붙이면 다른 모양의 슬라이드가 된다. 본문은 짧은 문단만 쓸 수 있고, 목록·표·그림·2단은 넣을 수 없다. 크기와 색은 템플릿 DESIGN.md의 `slide_kinds`가 정한다.
+
+```markdown
+### 데이터가 아니라 루프가 성능을 만든다 {.statement}
+
+같은 데이터로도 학습 루프를 고치면 결과가 달라진다.
+
+### 개선 후 성공률이 크게 올랐다 {.number}
+
+92%
+
+합성 예시: 100회 중 92회 성공 (기준선 61%)
+
+### 측정할 수 없으면 개선할 수 없다 {.quote}
+
+피터 드러커
+```
+
+- `{.statement}`: 핵심 문장 하나를 크게 세로 가운데에 두고 강조 막대를 붙인다. 아래 문단은 보조 설명이다.
+- `{.number}`: 핵심 문장은 평소처럼 위에 두고, 첫 문단(숫자)을 아주 크게, 나머지 문단을 설명으로 가운데에 둔다.
+- `{.quote}`: 핵심 문장을 인용문으로 크게 두고, 아래 문단을 `— 출처`로 붙인다.
+
+세 종류 모두 수식(LaTeX)은 쓰지 않고 `3.2×`처럼 일반 글자로 쓴다. `::: source`와 `::: notes`는 그대로 쓸 수 있다. 큰 글자가 영역을 넘으면 build가 멈추므로 문장을 줄인다. 그 밖의 클래스는 거부된다.
 
 ## 2단과 그림
 
@@ -81,7 +107,7 @@ $$\mathcal{L} = \frac{1}{N}\sum_i (y_i-\hat y_i)^2$$
 ![조건별 성공률](figures/success-by-condition.png "x: 조건(BC·ACT·제안), y: 성공률(%), 시행 수 표시. sources/eval.csv로 작성")
 ```
 
-Mermaid는 단순한 흐름도에만 `mermaid` 코드 fence로 쓴다. 고정 RVLAB 색·폰트·strict 모드로 렌더하며 `.mmd`·SVG·PNG를 `.build/output/generated-assets/`에 보존한다. init/frontmatter·style/classDef/linkStyle·click 지시를 거부한다.
+Mermaid는 단순한 흐름도에만 `mermaid` 코드 fence로 쓴다. 프리셋 색·폰트·strict 모드로 렌더하며 `.mmd`·SVG·PNG를 `.build/output/generated-assets/`에 보존한다. 강조가 필요하면 `style`·`classDef`를 쓸 수 있다(strict 모드라 `click`은 동작하지 않는다).
 
 ## GIF 애니메이션
 
@@ -91,7 +117,7 @@ Mermaid는 단순한 흐름도에만 `mermaid` 코드 fence로 쓴다. 고정 RV
 ![음의 기울기 방향으로 이동하는 교육용 합성 예시](figures/gradient-descent.gif)
 ```
 
-`figures/gradient-descent.png`를 같은 폴더에 함께 둔다. GIF와 PNG는 픽셀 크기가 같아야 하며, PNG는 PDF·미리보기에서 보여줄 대표 장면으로 제작자가 직접 선택한다. GIF를 자동으로 첫 프레임에 고정하지 않는다. 일반 그림과 같은 task 내부 경로·symlink 검사와 150dpi 해상도 기준을 적용한다.
+`figures/gradient-descent.png`를 같은 폴더에 함께 둔다. `pptgen anatomy --script`는 프레임 SVG에서 GIF와 대표 PNG를 한 번에 만든다([skills](skills.md)). GIF와 PNG는 픽셀 크기가 같아야 하며, PNG는 PDF·미리보기에서 보여줄 대표 장면으로 제작자가 직접 선택한다. GIF를 자동으로 첫 프레임에 고정하지 않는다. 일반 그림과 같은 task 내부 경로·symlink 검사와 150dpi 해상도 기준을 적용한다.
 
 GIF는 두 프레임 이상이어야 하고 모든 프레임에 양수 재생 시간이 있어야 한다. 디코딩 자원 한계는 64MiB, 600프레임, `가로 × 세로 × 프레임 수` 합계 3억 픽셀이다. 설명에 적합한 길이·반복·멈춤은 스킬에서 검토한다.
 
@@ -110,9 +136,9 @@ PDF·PNG 검사는 대표 정지 화면의 배치와 읽기성만 확인한다. 
 ## 명령과 결과
 
 ```bash
-uv run rvppt lint tasks/<task>      # 문법·제한·경로·그림 요청 (읽기 전용)
-uv run rvppt build tasks/<task>     # 언제든 컴파일 (Overleaf의 Recompile)
-uv run rvppt preview tasks/<task>   # 최신 검증 결과의 경로
+uv run pptgen lint tasks/<task>      # 문법·제한·경로·그림 요청 (읽기 전용)
+uv run pptgen build tasks/<task>     # 언제든 컴파일 (Overleaf의 Recompile)
+uv run pptgen preview tasks/<task>   # 최신 검증 결과의 경로
 ```
 
 ```text
@@ -128,7 +154,7 @@ tasks/260831-train-loop/
 
 build는 승인 여부와 관계없이 `slides.md`를 컴파일하고 리포트의 `content_approved`에 내용 승인 상태를 기록한다. 에이전트의 승인 절차는 [workflow](workflow.md)를 따른다. 오류는 종료 코드 2로 반환한다.
 
-빌드는 `.build/` 안 임시 폴더에서 제작·패키지 무결성·4:3/마스터/레이아웃·브랜딩 보존·그림 DPI·텍스트 측정·LibreOffice 렌더 QA를 수행한다. 실제 PDF에서 텍스트 누락/변형/잘림, 상단 바·핵심 문장·출처·캡션의 줄 수와 상자 경계를 검사한다. 성공 후에만 `.build/output/`을 교체하고 PPTX/PDF를 `slides.md` 옆에 연구실 이름 규칙(`YYYYMMDD_제목`)으로 복사한다. 제목이 바뀌면 이전 이름의 관리 산출물을 지운다.
+빌드는 `.build/` 안 임시 폴더에서 제작·패키지 무결성·프리셋 슬라이드 크기/마스터/레이아웃·브랜딩 보존·그림 DPI·텍스트 측정·LibreOffice 렌더 QA를 수행한다. 실제 PDF에서 텍스트 누락/변형/잘림, 상단 바·핵심 문장·출처·캡션의 줄 수와 상자 경계를 검사한다. 성공 후에만 `.build/output/`을 교체하고 PPTX/PDF를 `slides.md` 옆에 연구실 이름 규칙(`YYYYMMDD_제목`)으로 복사한다. 제목이 바뀌면 이전 이름의 관리 산출물을 지운다.
 
 **손으로 고친 PPTX는 덮어쓰지 않는다.** 산출 PPTX/PDF가 마지막 빌드와 다르면(PowerPoint에서 다듬은 경우) 빌드를 멈춘다. 파일 이름을 바꾸거나 옮긴 뒤 다시 빌드한다. 반복해서 고칠 내용은 `slides.md`에 반영한다. `.build/.lock`은 동시 빌드를 막으며 프로세스 강제 종료 뒤에는 실행 중인 빌드가 없는지 확인한 후 제거한다.
 

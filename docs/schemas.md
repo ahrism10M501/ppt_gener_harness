@@ -1,6 +1,6 @@
 # Task 문서 스키마 v1
 
-`plan/contracts.md`와 `plan/revisions.md`는 네 단계 외의 보조 Markdown 문서다. 승인 frontmatter를 갖지 않고 내용·상위 입력 해시에 포함되지 않는다. 관계도는 `rvppt plan`이 `status` 결과에서 생성하며 수정 기록은 에이전트가 추가한다. 이 문서들로 승인 상태를 변경할 수 없다. [수정 절차](revisions.md)를 따른다.
+`plan/contracts.md`·`plan/revisions.md`·`plan/PROGRESS.md`는 네 단계 외의 보조 Markdown 문서다. 승인 frontmatter를 갖지 않고 내용·상위 입력 해시에 포함되지 않는다. 관계도는 `pptgen plan`이 `status` 결과에서 생성하며 수정 기록과 작업 기록(PROGRESS)은 에이전트가 추가한다. 이 문서들로 승인 상태를 변경할 수 없다. [수정 절차](revisions.md)를 따른다.
 
 네 Markdown 문서는 YAML frontmatter와 비어 있지 않은 본문을 갖는다. Stage 1~3은 task의 `plan/`에, Stage 4는 task 루트의 `slides.md`에 둔다. 아래 예시는 형식을 설명하는 합성 자료이며 실제 연구 결과가 아니다. task_id는 실제 폴더 이름으로 바꾼다. 자료의 날짜·`yes` 등 YAML에서 다른 타입으로 읽히는 값은 문자열 따옴표로 감싼다.
 
@@ -44,6 +44,14 @@ review:
     - 진행보고 10분, 실제 실험 조건 포함
 ```
 
+초보자가 혼자 따라 하는 튜토리얼이면 선택 필드 `tutorial`을 둔다. 이 필드가 있는 task만 [ppt-tutorial](../skills/ppt-tutorial/SKILL.md)과 Stage 3의 의존 순서 경고를 쓴다.
+
+```yaml
+review:
+  tutorial:
+    prerequisites: [Ubuntu 22.04, NVIDIA GPU, Python 기초, 터미널 사용]
+```
+
 핵심 근거가 없는 경우 꾸며서 채우지 않는다. 알고 있는 범위와 필요한 근거를 기록하고 blocking 항목이 해결되거나 주장 범위가 좁아질 때까지 승인하지 않는다.
 
 ## Stage 2 — plan/brief.md
@@ -74,9 +82,9 @@ review:
 
 ## Stage 3 — plan/outline.md
 
-stage는 3이다. review.slides의 필수 필드는 id·topic·headline·evidence·seconds, 선택 필드는 section·figure다. 그 밖의 필드(좌표·폰트·색·layout 등)는 거부한다. ID는 영문자로 시작하는 1~32자의 영문/숫자/밑줄/하이픈이고 중복할 수 없다. topic은 상단 바에 들어갈 짧은 이름, headline은 그 슬라이드의 핵심 문장이다([DESIGN](../DESIGN.md)의 이름 규칙). figure는 슬라이드에 필요한 시각 자료의 계획이다. seconds는 양의 정수, duration_minutes는 양의 유한 숫자다. 예상 시간 합이 발표 시간을 넘으면 status가 `warnings`로 알린다(승인은 막지 않는다).
+stage는 3이다. review.slides의 필수 필드는 id·topic·headline·evidence·seconds, 선택 필드는 section·figure다. 그 밖의 필드(메모·대안 등)는 에이전트 기록용으로 허용하며 빌드는 읽지 않는다. ID는 영문자로 시작하는 1~32자의 영문/숫자/밑줄/하이픈이고 중복할 수 없다. topic은 상단 바에 들어갈 짧은 이름, headline은 그 슬라이드의 핵심 문장이다. topic 길이 한도는 템플릿 DESIGN.md의 `limits.topic_units`(한글 2, 그 밖 1로 센다)가 정한다. figure는 슬라이드에 필요한 시각 자료의 계획이다. seconds는 양의 정수, duration_minutes는 양의 유한 숫자다. 예상 시간 합이 발표 시간을 넘으면 status가 `warnings`로 알린다(승인은 막지 않는다).
 
-`figure`는 그림의 표현·근거·재사용/생성 여부를 담는 문자열이다. 새로 만드는 그림의 세부 설계는 목차 본문이나 슬라이드 노트에 둔다([시각 설계 절차](../skills/rvlab-ppt/references/visual-planning.md)).
+`figure`는 그림의 표현·근거·재사용/생성 여부를 담는 문자열이다. 새로 만드는 그림의 세부 설계는 목차 본문이나 슬라이드 노트에 둔다([시각 설계 절차](../skills/ppt-maker/references/visual-planning.md)).
 
 ```yaml
 review:
@@ -97,11 +105,13 @@ review:
       seconds: 120
 ```
 
+Stage 1에 `tutorial`이 있으면 슬라이드에 `requires`(그 장에 필요한 것)와 `provides`(그 장이 새로 주는 것) 문자열 목록을 적을 수 있다. `tutorial.prerequisites`에도 앞 슬라이드의 `provides`에도 없는 `requires`는 status가 `warnings`로 알린다(승인은 막지 않는다). `tutorial`이 없으면 이 필드는 기록용일 뿐이다.
+
 레이아웃은 slides.md의 내용에서 정해지므로 목차에 적지 않는다. 표지·목차·마무리는 빌드가 만들므로 목차에 넣지 않는다. 근거 필드는 비어 있지 않아야 하지만 스키마 검사는 근거의 사실성·파일 존재·시간 추정의 타당성을 자동 판정하지 않는다. 에이전트와 사용자 검토가 필요하다.
 
 ## Stage 4 — slides.md
 
-stage는 4다. `rvppt new`가 frontmatter를 만든다. `deck`에는 표지의 제목·부제·날짜·발표자·소속을, review에는 language(ko/en)를 넣는다. 본문의 슬라이드 수와 `## 토픽` 순서가 목차의 topic과 일치해야 승인할 수 있다. 다르면 status가 `invalid`로 표시하므로 목차를 갱신해 다시 승인받는다. `### 핵심 문장`의 문구는 목차와 달라도 되며, 달라진 문장은 status의 `warnings`에 나온다. 빌드는 승인 전에도 가능하다. 코드 fence·HTML 주석 안의 제목 형태는 슬라이드로 세지 않는다.
+stage는 4다. `pptgen new`가 frontmatter를 만든다. `deck`에는 표지의 제목·부제·날짜·발표자·소속과 `preset`(템플릿 ID, 없으면 `rvlab`), `budget`(`quick`·`standard`·`thorough`, 뜻은 [ppt-interview](../skills/ppt-interview/SKILL.md#첫-질문-묶음))을, review에는 language(ko/en)를 넣는다. 빌드는 `deck.preset`으로 양식을 고른다. 본문의 슬라이드 수·`## 토픽` 순서가 목차와 다르거나 `### 핵심 문장`의 문구가 바뀌면 status의 `warnings`에 나오며 승인을 막지 않는다. 달라진 점은 Stage 4 보고에 넣는다. 빌드는 승인 전에도 가능하다. 코드 fence·HTML 주석 안의 제목 형태는 슬라이드로 세지 않는다.
 
 ```yaml
 deck:
@@ -109,6 +119,8 @@ deck:
   date: '2026-10-11'
   presenter: 홍길동 (Gildong Hong)
   affiliation: [경기대학교 창의공과대학 전자공학과 N학년, Robotics and Vision Lab Robot Team]
+  preset: rvlab
+  budget: standard
 review:
   language: ko
 ```

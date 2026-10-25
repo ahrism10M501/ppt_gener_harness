@@ -46,10 +46,8 @@ _workspace/
 # Personal cover details; profile.example.yaml is the shared template.
 /profile.yaml
 
-# Template QA sources are reproducible; layout PNGs and manifests are tracked.
-/docs/design/build/
+# Local RVLAB sample decks cited by talk-types.md; not redistributed.
 /templates/examples/
-/templates/custom/
 # The five published Graphify files are tracked; local extraction state is not.
 /graphify-out/.*
 /graphify-out/cost.json

@@ -2,38 +2,35 @@
 
 단일 양식(RVLAB 4:3)에 고정되어 있던 기존 파이프라인을 확장하여, **범용 멀티 프리셋(16:9 와이드·4:3·RVLAB·사용자 커스텀 PPTX)** 과 **[anatomy](https://skills.wheresryan.sh/anatomy) 하네스 아키텍처(사전 규모/예산 설정 · Truth-first 모델 · `PROGRESS.md` 상태 지속성 · 4x 확대 크롭 크리틱 루프 · 아이소메트릭 기구/시스템 도해)** 를 결합한 프레젠테이션 하네스입니다.
 
-기존 `rvppt` CLI와 `rvlab-*` 스킬(`preset: rvlab`)을 유지하면서, 범용 `pptgen` CLI와 `ppt-*` 스킬을 함께 제공합니다.
+명령은 `pptgen`(옛 이름 `rvppt`도 동작), 스킬은 `ppt-interview`·`ppt-maker`·`ppt-charts`·`ppt-animation`·`ppt-tutorial` 다섯 개입니다. RVLAB 양식은 `preset: rvlab`으로 씁니다. 템플릿마다 `templates/<id>/DESIGN.md` 하나에 토큰과 스타일 규약(성격·어울리는 것·그림 인상·빌드 후 점검)이 함께 있고, 스킬이 작업 전에 이 문서를 읽어 내용과 그림이 그 양식에 어울리는지 판단합니다.
 
 > **에이전트에 붙여넣기**
 > - 처음 설치: `AGENTS.md와 docs/setup.md를 읽고 셋업해줘.`
-> - 범용/와이드 발표 만들기: `tasks/<폴더>의 자료로 modern-16x9 프리셋 PPT 만들어줘.`
+> - 범용/와이드 발표 만들기: `tasks/<폴더>의 자료로 neo-city 템플릿 PPT 만들어줘.`
 > - RVLAB 연구실 발표 만들기: `tasks/<폴더>의 자료로 RVLAB PPT 만들어줘.`
 > - 발표 수정: `tasks/<폴더>의 PDF 7쪽 그림을 더 크게 해줘. 수치와 결론은 유지해줘.` ([수정 절차와 요청 예](docs/revisions.md))
 
 ## 핵심 기능 요약
 
 1. **멀티 디자인 프리셋 & 커스텀 `.pptx` 템플릿 등록 (`presets`, `register-template`)**
-   - `rvlab` (기본값, 4:3 `10×7.5 in`): 경기대학교 RVLAB 연구실 고정 양식
-   - `modern-16x9` (16:9 `13.333×7.5 in`): 컨퍼런스·테크·제품 발표용 인디고/슬레이트 와이드 양식
-   - `academic-16x9` (16:9 `13.333×7.5 in`): 학회·학위논문 디펜스용 딥 네이비 와이드 양식
-   - `executive-16x9` (16:9 `13.333×7.5 in`): 제안서·경영진 보고·피치덱용 틸/슬레이트 와이드 양식
-   - `minimal-4x3` (4:3 `10×7.5 in`): 기관 로고 없는 깔끔한 범용 4:3 양식
+   - `rvlab` (기본값, 4:3): 경기대학교 RVLAB 연구실 양식
+   - `modern-minimal` (16:9): 흰 바탕, 넓은 여백, 강조색 하나. 테크 토크·제품·일반 발표
+   - `retro` (16:9): 크림 종이, 세리프, 테라코타·머스터드·틸 띠와 액자. 이야기·역사·강의
+   - `neo-city` (16:9): 어두운 바탕, 네온 시안·마젠타, 그리드와 모서리 브래킷. 테크 데모·AI·키노트
    - 사용자 `.pptx` 등록: `uv run pptgen register-template my_theme.pptx --id my-theme`
 2. **Anatomy 스킬 통합 & 아이소메트릭 기술 도해 (`pptgen anatomy`)**
-   - [wheresryan22/anatomy](https://github.com/wheresryan22/anatomy) (MIT) 스킬을 `skills/anatomy/`에 벤더링하고, 슬라이드 삽입용 300-DPI PNG + 독립형 SVG + 인터랙티브 HTML을 한 번에 빌드합니다.
+   - [wheresryan22/anatomy](https://github.com/wheresryan22/anatomy) (MIT) 스킬을 `skills/anatomy/`에 벤더링하고, 슬라이드 삽입용 PNG + 독립형 SVG + 인터랙티브 HTML을 한 번에 빌드합니다. 색은 덱 프리셋의 바탕·잉크·강조색에서 오고, 주인공 부품만 강조색을 씁니다.
    - 예: `uv run pptgen anatomy tasks/<task> --name sensor-iso --example dial-indicator`
+   - 움직임이 필요하면 스크립트가 `frame-*.svg`를 함께 쓰게 해 GIF와 같은 크기의 대표 PNG를 만듭니다: `uv run pptgen anatomy tasks/<task> --name spin --script figures/spin.mjs --width 1200`
 3. **Anatomy 하네스 규율 이식 (`PROGRESS.md` + 4x 확대 크롭 크리틱 `pptgen audit`)**
    - **Up-front Sizing (`--budget quick|standard|thorough`)**: 작업 시작 시 발표와 시각 자료의 규모를 합의합니다.
    - **Truth-First & `plan/PROGRESS.md`**: 원자료의 수식·수치·불변 조건과 세션 간 진행 상태를 `plan/PROGRESS.md`에 기록합니다.
-   - **4x Close-Up Critic Loop (`uv run pptgen audit tasks/<task> --zoom 4`)**: 전체 썸네일만 보고 통과시키지 않고, 텍스트·수식·그림·출처 영역을 4배 확대한 크롭 시트(`critic-crops-sheet.png`)와 박스 여백·명도 대비(`critic-audit.json`)를 자동 검증합니다.
+   - **4x Close-Up Critic Loop (`uv run pptgen audit tasks/<task> --zoom 4`)**: 전체 썸네일만 보고 통과시키지 않고, 핵심 문장·수식·GIF 대표 장면·캡션·출처 영역을 4배 확대한 크롭 시트(`critic-crops-sheet.png`)와 박스 여백·명도 대비(`critic-audit.json`)를 자동 검증합니다.
 
 ## 제한 사항
 
-16:9 프리셋은 RVLAB 기반의 마스터·레이아웃 구조를 가로로 늘리고 색을 바꾼 양식입니다. 프리셋마다 별도의 레이아웃 엔진을 제공하지는 않습니다.
-
-`register-template`은 입력 PPTX를 보관하고 슬라이드 크기와 팔레트 색 3개를 가져옵니다. 색은 테마에서 먼저 찾고 부족하면 레이아웃의 직접 지정 색이나 기본값을 사용합니다. 등록한 PPTX의 레이아웃·로고·배경을 그대로 쓰지 않고 RVLAB 기반 구조로 파생 양식을 다시 만듭니다. 사용자 양식을 그대로 살리는 placeholder 매핑은 지원하지 않습니다.
-
-렌더 QA는 LibreOffice와 실제 선택된 폰트로 수행하며, Arial·맑은 고딕이 없으면 Liberation Sans·Noto Sans CJK KR을 사용합니다. PowerPoint에서의 실제 렌더링은 아직 검증하지 않았으므로 앱이나 폰트에 따라 줄바꿈과 배치가 달라질 수 있습니다.
+- `register-template`은 입력 PPTX의 크기와 색만 가져오고 레이아웃·로고·배경은 옮기지 않습니다. 자세한 내용은 [새 템플릿 추가](templates/README.md#새-템플릿-추가)에 있습니다.
+- 렌더 QA는 LibreOffice와 실제 선택된 폰트 기준이며 PowerPoint 렌더링은 아직 검증하지 않았습니다. 범위는 [렌더링 제약](docs/toolchain.md#렌더링-제약)에 있습니다.
 
 ## 빠른 시작
 
@@ -48,7 +45,7 @@ uv run pptgen presets
 uv run pptgen new train-loop \
   --title "학습루프 개선 및 실험" \
   --subtitle "Advanced Train Loop & Experiments" \
-  --preset modern-16x9 \
+  --preset modern-minimal \
   --budget standard \
   --date 2026-08-31
 
@@ -78,10 +75,10 @@ tasks/260831-train-loop/
 | --- | --- |
 | 설치·환경 점검 | [셋업](docs/setup.md) |
 | 발표 기획·내용 승인 | [워크플로우](docs/workflow.md) |
-| 그래프·도식·Anatomy·GIF 선택과 제작 연결 | [시각 설계 절차](skills/rvlab-ppt/references/visual-planning.md) |
+| 그래프·도식·Anatomy·GIF 선택과 제작 연결 | [시각 설계 절차](skills/ppt-maker/references/visual-planning.md) |
 | Markdown 작성·빌드·렌더 QA | [제작 문법](docs/rendering.md) |
 | 단계 문서의 필드·승인 해시 | [문서 스키마](docs/schemas.md) |
-| 고정 양식·디자인 토큰·프리셋 | [양식 설계](DESIGN.md) |
+| 템플릿 목록·미리보기·DESIGN.md 형식·새 템플릿 추가 | [templates/README](templates/README.md) |
 | 코드 구조·유지보수 | [구조](docs/architecture.md) |
 | 도구 선택·제약 | [도구 구성](docs/toolchain.md) |
 | 에이전트 공통 규칙 | [AGENTS.md](AGENTS.md) |
@@ -92,7 +89,7 @@ tasks/260831-train-loop/
 
 - [anatomy](https://github.com/wheresryan22/anatomy): 정밀 아이소메트릭 기술·기구·시스템 해부 도해 및 크리틱 루프 하네스. [MIT](skills/anatomy/LICENSE).
 - [im-not-ai](https://github.com/epoko77-ai/im-not-ai): 한국어 진단·윤문·검증. [MIT](skills/im-not-ai/LICENSE).
-- [gstack / office-hours](https://github.com/garrytan/gstack): 인터뷰의 근거·전제·대안 탐색 참고 자료. [MIT](skills/office-hours/LICENSE), [제3자 고지](skills/office-hours/NOTICE.md).
-- [superpowers / brainstorming](https://github.com/obra/superpowers): 의도 탐색·재진술 참고 자료. [MIT](skills/brainstorming/LICENSE).
+- [scientific-visualization](https://github.com/K-Dense-AI/scientific-agent-skills): 정량 그래프. MIT.
+- [manimce-best-practices](https://github.com/adithya-s-k/manim_skill): Manim CE 애니메이션 구현. MIT.
 
 고정 커밋과 파일 해시는 [dependencies.yaml](skills/dependencies.yaml), 실제 사용 범위와 제약은 [외부 스킬 안내](docs/skills.md)에 있습니다.

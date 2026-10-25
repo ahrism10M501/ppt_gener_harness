@@ -61,7 +61,7 @@ def graph_check(root=ROOT, record=False):
                     "suffixes": suffixes, "inputs": inputs, "outputs": {name: sha256(out / name) for name in PUBLISHED}}
         snapshot_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     if not snapshot_path.is_file():
-        raise StateError("graphify-out/snapshot.json missing; run rvppt graph-check --record after building the graph")
+        raise StateError("graphify-out/snapshot.json missing; run pptgen graph-check --record after building the graph")
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
     current = {p: sha256(root / p) for p in _candidates(root, snapshot["suffixes"], patterns)}
     recorded = snapshot["inputs"]
@@ -71,4 +71,4 @@ def graph_check(root=ROOT, record=False):
     ok = not (leaks or stale or added or removed or edited)
     return {"ok": ok, "graphify": snapshot["graphify"], "generated_at": snapshot["generated_at"], "inputs": len(recorded),
             "changed": stale, "added": added, "removed": removed, "outputs_edited": edited, "leaks": leaks,
-            "next": None if ok else "Code or docs changed since the snapshot: rebuild with the graphify skill (graphify-out/ --update), then rvppt graph-check --record"}
+            "next": None if ok else "Code or docs changed since the snapshot: rebuild with the graphify skill (graphify-out/ --update), then pptgen graph-check --record"}

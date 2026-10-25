@@ -7,7 +7,7 @@ from importlib.metadata import version
 
 import yaml
 
-from .template import ROOT, load_tokens, sha256
+from .template import ROOT, list_presets, load_tokens, sha256
 
 
 SYMLINK_FIX = "symlink checked out as a plain file; enable symlinks (Windows: Developer Mode), run git config core.symlinks true, then git checkout -- {path}"
@@ -50,6 +50,8 @@ def skill_integrity(root=ROOT):
 
 
 SKILL_ENTRYPOINTS = (".agents/skills", ".claude/skills", ".gemini/skills")
+# Git cannot carry an empty folder, so an unused Gemini entrypoint is skipped until someone fills it.
+OPTIONAL_ENTRYPOINTS = {".gemini/skills"}
 
 
 def skill_entrypoints(root=ROOT):
@@ -58,9 +60,11 @@ def skill_entrypoints(root=ROOT):
     names = {}
     for folder in SKILL_ENTRYPOINTS:
         directory = root / folder
+        entries = sorted(path for path in directory.glob("*") if not path.name.startswith("."))
+        if not entries and folder in OPTIONAL_ENTRYPOINTS:
+            continue
         if not directory.is_dir():
             problems.append(f"{folder}: missing discovery directory")
-        entries = sorted(path for path in directory.glob("*") if not path.name.startswith("."))
         names[folder] = {path.name for path in entries}
         for path in entries:
             relative = path.relative_to(root).as_posix()
@@ -111,6 +115,19 @@ def doctor():
         profile = resolve_fonts(load_tokens())
         return {script: profile[script]["resolved"] for script in ("latin", "korean")}
 
+    def preset_fonts():
+        # `fonts` covers the default preset; a deck on another preset fails its build if these are missing.
+        from .preview import resolve_fonts
+        missing = []
+        for item in list_presets()["presets"]:
+            try:
+                resolve_fonts(load_tokens(preset=item["preset_id"]))
+            except RuntimeError as error:
+                missing.append(f"{item['preset_id']}: {error}")
+        if missing:
+            raise RuntimeError("; ".join(missing) + " (docs/setup.md)")
+        return "fonts resolve for every preset"
+
     def browser():
         from .preview import chrome_binary
         found = chrome_binary()
@@ -121,14 +138,14 @@ def doctor():
     def template():
         tokens = load_tokens()
         if sha256(ROOT / tokens["source"]["path"]) != tokens["source"]["sha256"]:
-            raise RuntimeError("Original template changed; restore templates/RVLAB_PPT양식.pptx from git")
+            raise RuntimeError("Original template changed; restore templates/rvlab/RVLAB_PPT양식.pptx from git")
         if not (ROOT / tokens["reference"]).is_file():
             raise RuntimeError("Reference missing: uv run python -m rvppt.template")
         return "original and reference present"
 
     def profile():
         if not (ROOT / "profile.yaml").is_file():
-            raise RuntimeError("profile.yaml missing: cp profile.example.yaml profile.yaml (needed by rvppt new)")
+            raise RuntimeError("profile.yaml missing: cp profile.example.yaml profile.yaml (needed by pptgen new)")
         return "profile.yaml present"
 
     def skills():
@@ -155,6 +172,7 @@ def doctor():
     for name, required, test in [("python", True, python), ("pandoc", True, pandoc), ("template", True, template),
                                  ("skill_entrypoints", False, entrypoints),
                                  ("skills", True, skills), ("libreoffice", True, libreoffice), ("fonts", True, fonts),
+                                 ("preset_fonts", False, preset_fonts),
                                  ("node_renderers", True, node), ("mermaid_browser", False, browser), ("profile", False, profile),
                                  ("visual_tools", False, visual)]:
         check(name, required, test)

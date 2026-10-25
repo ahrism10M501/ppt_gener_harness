@@ -39,11 +39,11 @@ PROGRESS_LOG = """# Harness Progress & Truth Model (PROGRESS.md)
 긴 발표나 시각 자료 제작 중 세션이 나뉘더라도 이 파일과 [contracts.md](contracts.md)를 먼저 읽어 이어서 진행한다.
 
 ## 1. Sizing & Budget Tier (규모 및 예산)
-- **Deck Budget**: `standard` (`quick` = Figure급 단기 요약 / `standard` = Hero급 발표 / `thorough` = Epic급 심층 발표·정밀 도해)
-- **Design Preset**: `rvlab` (`rvlab` | `modern-16x9` | `academic-16x9` | `executive-16x9` | `minimal-4x3` 또는 등록된 커스텀 템플릿)
+- **Deck Budget**: `standard` (`quick` = 핵심 슬라이드와 기본 도식 / `standard` = 일반 발표, 구조 도식·데이터 그래프 / `thorough` = anatomy 도해·애니메이션까지)
+- **Design Preset**: `rvlab` (`rvlab` | `modern-minimal` | `retro` | `neo-city` 또는 등록한 템플릿, 목록은 `pptgen presets`)
 - **Visual Budget**:
   - Figure(정적 도식/차트): 슬라이드당 핵심 근거 1개 원칙
-  - Hero(Anatomy 아이소메트릭 도해 / 핵심 메커니즘): 발표당 1~2개 핵심 아키텍처·장비·메커니즘에 집중
+  - Anatomy(아이소메트릭 도해, `thorough`): 발표당 1~2개 핵심 아키텍처·장비·메커니즘에 집중
   - Animation(움직임/상태 전이 GIF): 정적 그림으로 설명이 불가능한 경우에만 제한적으로 사용
 
 ## 2. Truth Model (검증된 사실·수식·수치 모델)
@@ -94,8 +94,8 @@ def render_contracts(report, metadata):
     budget = deck.get("budget", "standard") if isinstance(deck, dict) else "standard"
     lines = [MARKER, "# 합의와 승인 관계도", "",
              f"Task: `{report['task_id']}` · Preset: `{preset}` · Budget: `{budget}`", "",
-             "이 파일은 생성 시점의 상태다. 수정·승인 뒤 `uv run pptgen plan tasks/" + report["task_id"] + "`(또는 `uv run rvppt plan`)로 갱신한다.",
-             "승인 판정의 원본은 각 문서의 메타데이터와 `rvppt status`다. 이 문서를 편집해도 승인되지 않는다.", "",
+             "이 파일은 생성 시점의 상태다. 수정·승인 뒤 `uv run pptgen plan tasks/" + report["task_id"] + "`로 갱신한다.",
+             "승인 판정의 원본은 각 문서의 메타데이터와 `pptgen status`다. 이 문서를 편집해도 승인되지 않는다.", "",
              f"내용 승인: **{'완료' if report['content_approved'] else '미완료'}**. 디자인·렌더 QA 및 4x 크리틱 검수는 별도다.",
              f"다음 검토: **Stage {next_stage} — `{report['next_document']}`**" if next_stage else
              "다음 작업: 빌드·렌더 QA, 4x 크리틱 검수(`audit`)와 미리보기 확인(이 문서는 QA 완료를 판정하지 않는다).", "",

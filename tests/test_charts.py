@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "skills/rvlab-charts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "skills/ppt-charts"))
 
 
 @unittest.skipUnless(importlib.util.find_spec("matplotlib"), "needs the visual extra: uv sync --extra visual")
@@ -21,7 +21,7 @@ class ChartTests(unittest.TestCase):
         self.temporary.cleanup()
 
     def test_rvlab_palette_is_unchanged_after_switching_presets(self):
-        self.charts.set_preset("modern-16x9")
+        self.charts.set_preset("modern-minimal")
         self.charts.set_preset("rvlab")
         self.assertEqual(
             [getattr(self.charts, name) for name in ("BLUE", "BAND", "SKY", "TINT", "GRAY", "INK")],
@@ -31,10 +31,10 @@ class ChartTests(unittest.TestCase):
 
     def test_chart_roles_follow_every_preset(self):
         from rvppt.template import ROOT, semantic_palette
-        for path in sorted((ROOT / "templates/presets").glob("*.yaml")):
-            with self.subTest(preset=path.stem):
-                result = self.charts.set_preset(path.stem)
-                palette = semantic_palette(path.stem)
+        for path in sorted((ROOT / "templates").glob("*/DESIGN.md")):
+            with self.subTest(preset=path.parent.name):
+                result = self.charts.set_preset(path.parent.name)
+                palette = semantic_palette(path.parent.name)
                 self.assertEqual(result["palette"], palette)
                 for name, role in {
                     "BLUE": "accent", "BAND": "band", "SKY": "secondary",

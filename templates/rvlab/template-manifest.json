@@ -1,0 +1,521 @@
+{
+  "schema_version": 1,
+  "source": {
+    "path": "templates/rvlab/RVLAB_PPT양식.pptx",
+    "sha256": "0c95f491b9638bc097a9761faf6e02d777a5da99af20f1b50c3262fea620b7e5"
+  },
+  "slide_emu": [
+    9144000,
+    6858000
+  ],
+  "slide_inches": [
+    10.0,
+    7.5
+  ],
+  "masters": 1,
+  "specimen_slides": 5,
+  "layouts": [
+    {
+      "name": "제목 슬라이드",
+      "shapes": [
+        {
+          "id": 16,
+          "name": "Google Shape;16;p7",
+          "box_emu": [
+            0,
+            2008029,
+            9144000,
+            1583848
+          ],
+          "text": ""
+        },
+        {
+          "id": 17,
+          "name": "Google Shape;17;p7",
+          "box_emu": [
+            0,
+            3586925,
+            9144001,
+            170519
+          ],
+          "text": ""
+        },
+        {
+          "id": 18,
+          "name": "Google Shape;18;p7",
+          "box_emu": [
+            415636,
+            2137438,
+            8312728,
+            836839
+          ],
+          "placeholder": {
+            "idx": 0,
+            "type": "CENTER_TITLE (3)"
+          },
+          "text": ""
+        },
+        {
+          "id": 19,
+          "name": "Google Shape;19;p7",
+          "box_emu": [
+            422910,
+            3003157,
+            8298180,
+            527577
+          ],
+          "placeholder": {
+            "idx": 1,
+            "type": "SUBTITLE (4)"
+          },
+          "text": ""
+        },
+        {
+          "id": 20,
+          "name": "Google Shape;20;p7",
+          "box_emu": [
+            6504495,
+            1,
+            2639505,
+            94268
+          ],
+          "text": ""
+        },
+        {
+          "id": 21,
+          "name": "Google Shape;21;p7",
+          "box_emu": [
+            157187,
+            5901831,
+            1315679,
+            918924
+          ]
+        },
+        {
+          "id": 22,
+          "name": "Google Shape;22;p7",
+          "box_emu": [
+            0,
+            0,
+            6504495,
+            268665
+          ],
+          "text": ""
+        },
+        {
+          "id": 23,
+          "name": "Google Shape;23;p7",
+          "box_emu": [
+            2013743,
+            3982062,
+            5130800,
+            563303
+          ],
+          "placeholder": {
+            "idx": 2,
+            "type": "BODY (2)"
+          },
+          "text": ""
+        },
+        {
+          "id": 24,
+          "name": "Google Shape;24;p7",
+          "box_emu": [
+            1671637,
+            4714958,
+            5815013,
+            816373
+          ],
+          "placeholder": {
+            "idx": 3,
+            "type": "BODY (2)"
+          },
+          "text": ""
+        },
+        {
+          "id": 25,
+          "name": "Google Shape;25;p7",
+          "box_emu": [
+            7717715,
+            5936043,
+            1152089,
+            850501
+          ]
+        },
+        {
+          "id": 26,
+          "name": "Google Shape;26;p7",
+          "box_emu": [
+            73944,
+            43254,
+            4070256,
+            190500
+          ],
+          "placeholder": {
+            "idx": 4,
+            "type": "BODY (2)"
+          },
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "1_제목 및 내용",
+      "shapes": [
+        {
+          "id": 28,
+          "name": "Google Shape;28;p8",
+          "box_emu": [
+            2165448,
+            130340,
+            6763398,
+            6597320
+          ],
+          "placeholder": {
+            "idx": 1,
+            "type": "BODY (2)"
+          },
+          "text": ""
+        },
+        {
+          "id": 29,
+          "name": "Google Shape;29;p8",
+          "box_emu": [
+            -1,
+            0,
+            1924425,
+            6858000
+          ],
+          "text": ""
+        },
+        {
+          "id": 30,
+          "name": "Google Shape;30;p8",
+          "box_emu": [
+            95313,
+            3025913,
+            1638155,
+            20321
+          ],
+          "text": ""
+        },
+        {
+          "id": 31,
+          "name": "Google Shape;31;p8",
+          "box_emu": [
+            95313,
+            3811766,
+            1638155,
+            20321
+          ],
+          "text": ""
+        },
+        {
+          "id": 32,
+          "name": "Google Shape;32;p8",
+          "box_emu": [
+            39585,
+            3167390,
+            1749611,
+            523220
+          ],
+          "text": "Contents"
+        }
+      ]
+    },
+    {
+      "name": "2_제목 및 내용",
+      "shapes": [
+        {
+          "id": 34,
+          "name": "Google Shape;34;p9",
+          "box_emu": [
+            0,
+            2639987,
+            9144000,
+            1308965
+          ],
+          "text": "\u000b"
+        },
+        {
+          "id": 35,
+          "name": "Google Shape;35;p9",
+          "box_emu": [
+            0,
+            3951490,
+            9144001,
+            170519
+          ],
+          "text": ""
+        },
+        {
+          "id": 36,
+          "name": "Google Shape;36;p9",
+          "box_emu": [
+            422910,
+            3395811,
+            8298180,
+            360342
+          ],
+          "placeholder": {
+            "idx": 1,
+            "type": "SUBTITLE (4)"
+          },
+          "text": ""
+        },
+        {
+          "id": 37,
+          "name": "Google Shape;37;p9",
+          "box_emu": [
+            415636,
+            2861201,
+            8312728,
+            519612
+          ],
+          "placeholder": {
+            "idx": 0,
+            "type": "CENTER_TITLE (3)"
+          },
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "OBJECT",
+      "shapes": [
+        {
+          "id": 39,
+          "name": "Google Shape;39;p10",
+          "box_emu": [
+            0,
+            6617261,
+            9144000,
+            244241
+          ],
+          "text": ""
+        },
+        {
+          "id": 40,
+          "name": "Google Shape;40;p10",
+          "box_emu": [
+            300789,
+            903151,
+            7886700,
+            2525849
+          ],
+          "placeholder": {
+            "idx": 1,
+            "type": "BODY (2)"
+          },
+          "text": ""
+        },
+        {
+          "id": 41,
+          "name": "Google Shape;41;p10",
+          "box_emu": [
+            778933,
+            325154,
+            8365066,
+            45719
+          ],
+          "text": ""
+        },
+        {
+          "id": 42,
+          "name": "Google Shape;42;p10",
+          "box_emu": [
+            138363,
+            47224,
+            324853,
+            601578
+          ],
+          "text": ""
+        },
+        {
+          "id": 43,
+          "name": "Google Shape;43;p10",
+          "box_emu": [
+            628650,
+            95107,
+            1697300,
+            511062
+          ],
+          "placeholder": {
+            "idx": 0,
+            "type": "TITLE (1)"
+          },
+          "text": ""
+        },
+        {
+          "id": 44,
+          "name": "Google Shape;44;p10",
+          "box_emu": [
+            3543300,
+            6626022,
+            2057400,
+            226714
+          ],
+          "placeholder": {
+            "idx": 12,
+            "type": "SLIDE_NUMBER (13)"
+          },
+          "text": "‹#›"
+        },
+        {
+          "id": 45,
+          "name": "Google Shape;45;p10",
+          "box_emu": [
+            6006855,
+            6626022,
+            3086100,
+            226714
+          ],
+          "placeholder": {
+            "idx": 11,
+            "type": "FOOTER (15)"
+          },
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "layout_fonts": [
+    "Arial",
+    "Malgun Gothic"
+  ],
+  "layout_direct_colors": [
+    "000000",
+    "002060",
+    "0070C0",
+    "053F95",
+    "5B9BD5",
+    "C0D5E9",
+    "FFFF00"
+  ],
+  "themes": {
+    "ppt/theme/theme1.xml": {
+      "dk1": [
+        {
+          "val": "000000"
+        }
+      ],
+      "lt1": [
+        {
+          "val": "FFFFFF"
+        }
+      ],
+      "dk2": [
+        {
+          "val": "0E2841"
+        }
+      ],
+      "lt2": [
+        {
+          "val": "E8E8E8"
+        }
+      ],
+      "accent1": [
+        {
+          "val": "156082"
+        }
+      ],
+      "accent2": [
+        {
+          "val": "E97132"
+        }
+      ],
+      "accent3": [
+        {
+          "val": "196B24"
+        }
+      ],
+      "accent4": [
+        {
+          "val": "0F9ED5"
+        }
+      ],
+      "accent5": [
+        {
+          "val": "A02B93"
+        }
+      ],
+      "accent6": [
+        {
+          "val": "4EA72E"
+        }
+      ],
+      "hlink": [
+        {
+          "val": "467886"
+        }
+      ],
+      "folHlink": [
+        {
+          "val": "96607D"
+        }
+      ]
+    },
+    "ppt/theme/theme2.xml": {
+      "dk1": [
+        {
+          "val": "000000"
+        }
+      ],
+      "lt1": [
+        {
+          "val": "FFFFFF"
+        }
+      ],
+      "dk2": [
+        {
+          "val": "0E2841"
+        }
+      ],
+      "lt2": [
+        {
+          "val": "E8E8E8"
+        }
+      ],
+      "accent1": [
+        {
+          "val": "156082"
+        }
+      ],
+      "accent2": [
+        {
+          "val": "E97132"
+        }
+      ],
+      "accent3": [
+        {
+          "val": "196B24"
+        }
+      ],
+      "accent4": [
+        {
+          "val": "0F9ED5"
+        }
+      ],
+      "accent5": [
+        {
+          "val": "A02B93"
+        }
+      ],
+      "accent6": [
+        {
+          "val": "4EA72E"
+        }
+      ],
+      "hlink": [
+        {
+          "val": "467886"
+        }
+      ],
+      "folHlink": [
+        {
+          "val": "96607D"
+        }
+      ]
+    }
+  }
+}
