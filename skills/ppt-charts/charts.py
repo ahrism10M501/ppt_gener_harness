@@ -21,16 +21,20 @@ FONTS = [f for f in ("Arial", "Malgun Gothic", "Liberation Sans", "Noto Sans CJK
 plt.rcParams.update({"font.family": FONTS, "font.size": 18})
 
 
+def _mix(a, b, t):
+    a, b = a.lstrip("#"), b.lstrip("#")
+    return "#" + "".join(f"{round(int(a[i:i + 2], 16) + (int(b[i:i + 2], 16) - int(a[i:i + 2], 16)) * t):02X}" for i in (0, 2, 4))
+
+
 def _tint(hex_color, factor=0.86):
     """Blend toward the slide background (not white), so dark presets keep their light text readable."""
-    s, p = hex_color.lstrip("#"), PAPER.lstrip("#")
-    return "#" + "".join(f"{round(int(s[i:i + 2], 16) + (int(p[i:i + 2], 16) - int(s[i:i + 2], 16)) * factor):02X}" for i in (0, 2, 4))
+    return _mix(hex_color, PAPER, factor)
 
 
 def set_preset(preset=None):
     """Load a preset palette. Default: deck.preset of the task whose script is running (tasks/<task>/figures/*.py), else rvlab."""
     global BLUE, BAND, SKY, TINT, GRAY, INK, PAPER, SHADES, TOKENS
-    from rvppt.template import load_tokens, semantic_palette, task_preset
+    from pptgen.template import load_tokens, semantic_palette, task_preset
     preset = preset or task_preset(Path(sys.argv[0] or "."))
     TOKENS = load_tokens(preset=preset)
     pal = semantic_palette(preset)
@@ -187,6 +191,69 @@ def cards(out, items, title_size=20):
     _save(fig, out)
 
 
+def _lines(text, w, h, size):
+    """Author line breaks (\\n) are kept; each line is still fitted, and the block must fit the height."""
+    lines = "\n".join(_fit(line, w, h, size) for line in text.split("\n"))
+    if (lines.count("\n") + 1) * size / 72 * 1.3 > h:
+        raise ValueError(f"라벨이 {w:.1f}×{h:.1f}in 상자에 {size}pt로 들어가지 않는다: {text!r}. 라벨을 줄인다.")
+    return lines
+
+
+def steps(out, items, groups=(), width=12.1):
+    """items: [(단계 이름, 설명, 시간·결과)] 3~6단 공정·절차. 번호 원이 놓인 가로 선 아래에 이름 칸과 설명 칸.
+    색은 강조색에서 band로 단계마다 짙어져 순서를 보인다(무지개 색 대신). groups: [(묶음 이름, 첫 단계, 끝 단계)] 0부터.
+    공정 개요를 표로 쓰고 싶어질 때 먼저 검토한다. 슬라이드에서 이름 17pt·설명 14pt로 보이도록 본문 폭에 맞춰 그린다."""
+    n, gap = len(items), 0.22
+    cw = (width - gap * (n - 1)) / n
+    desc_h, head_y, head_h, line_y, r = 1.7, 1.82, 0.5, 2.85, 0.3
+    height = 3.95 if groups else 3.25
+    ramp = [_mix(BLUE, PAPER, -f) if f < 0 else _mix(BLUE, BAND, f) for f in (-0.3 + 1.1 * i / max(n - 1, 1) for i in range(n))]
+    fig, ax = _canvas(width, height)
+    ax.plot([0, width], [line_y, line_y], color=INK, lw=2.5, solid_capstyle="butt", zorder=1)
+    for i, ((name, desc, note), c) in enumerate(zip(items, ramp)):
+        x = i * (cw + gap); cx = x + cw / 2
+        ax.add_patch(plt.Circle((cx, line_y), r, fc=PAPER, ec=c, lw=4, zorder=2))
+        ax.text(cx, line_y, f"{i + 1:02}", ha="center", va="center", fontsize=17, fontweight="bold", color=c, zorder=3)
+        ax.plot([cx, cx], [head_y + head_h, line_y - r], color=c, lw=2, zorder=1)
+        _box(ax, x, head_y, cw, head_h, name, fc=c, size=17, bold=True)
+        ax.add_patch(plt.Rectangle((x, 0), cw, desc_h, fc=_mix(c, PAPER, .88), ec="none"))
+        ax.text(cx, desc_h * 0.6, _lines(desc, cw - 0.3, desc_h * 0.6, 14), ha="center", va="center", fontsize=14, color=INK)
+        ax.text(cx, 0.28, note, ha="center", va="center", fontsize=16, fontweight="bold", color=c)
+    for label, first, last in groups:
+        x0, x1 = first * (cw + gap) + 0.1, last * (cw + gap) + cw - 0.1
+        ax.plot([x0, x0, x1, x1], [3.31, 3.45, 3.45, 3.31], color=GRAY, lw=1.5)
+        ax.text((x0 + x1) / 2, 3.55, label, ha="center", va="bottom", fontsize=15, fontweight="bold", color=INK)
+    _save(fig, out)
+
+
+def photo_cards(out, items, width=12.1, photo_ratio=2.0):
+    """items: [(제목, 설명, 사진 경로, 자르기 상자 또는 None)] 2~4장. 실제 쓰임·제품·재료처럼 사진이 내용인 카드.
+    사진은 늘이지 않고 칸 비율(가로:세로 = photo_ratio)에 배경색 여백으로 맞춘다. 제목 16pt·설명 14pt."""
+    from PIL import Image
+    n, gap, band, desc_h = len(items), 0.3, 0.42, 0.8
+    cw = (width - gap * (n - 1)) / n
+    ph = cw / photo_ratio
+    height = ph + band + desc_h
+    fig = plt.figure(figsize=(width, height))
+    for i, (title, desc, path, box) in enumerate(items):
+        x = i * (cw + gap)
+        im = Image.open(path).convert("RGB")
+        im = im.crop(box) if box else im
+        w, h = im.size
+        pad = Image.new("RGB", (max(w, round(h * photo_ratio)), max(h, round(w / photo_ratio))), PAPER)
+        pad.paste(im, ((pad.width - w) // 2, (pad.height - h) // 2))
+        ax = fig.add_axes([x / width, (band + desc_h) / height, cw / width, ph / height])
+        ax.imshow(pad, aspect="auto"); ax.axis("off")
+        tx = fig.add_axes([x / width, 0, cw / width, (band + desc_h) / height])
+        tx.set_xlim(0, cw); tx.set_ylim(0, band + desc_h); tx.axis("off")
+        _box(tx, 0, desc_h, cw, band, title, fc=BAND, size=16, bold=True)
+        tx.add_patch(plt.Rectangle((0, 0), cw, desc_h, fc=TINT, ec="none"))
+        tx.text(cw / 2, desc_h / 2, _lines(desc, cw - 0.3, desc_h - 0.1, 14), ha="center", va="center", fontsize=14, color=INK)
+    for ext in ("png", "svg"):  # drawn at slide width, so no tight crop that would change the card size
+        fig.savefig(f"{out}.{ext}", dpi=300, facecolor=PAPER)
+    plt.close(fig)
+
+
 def demo(d, preset="rvlab"):
     set_preset(preset)
     d = Path(d); d.mkdir(parents=True, exist_ok=True)
@@ -198,6 +265,8 @@ def demo(d, preset="rvlab"):
               [("방법 A", .25, .75), ("방법 B", .7, .8), ("방법 C", .3, .25)])
     funnel(d / "funnel", [("후보", 1000), ("1차 통과", 400), ("2차 통과", 120), ("최종", 30)])
     cards(d / "cards", [("방법 A", "빠르지만 정확도 낮음"), ("방법 B", "느리지만 안정적"), ("제안", "둘의 장점 결합")])
+    steps(d / "steps", [("준비", "자료를\n모은다", "1일"), ("학습", "모델을\n학습한다", "3일"), ("평가", "시험 세트로\n잰다", "1일"), ("보고", "결과를\n정리한다", "반나절")],
+          groups=[("합성 예시 · 1주", 0, 3)])
 
 
 if __name__ == "__main__":

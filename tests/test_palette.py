@@ -3,7 +3,7 @@ import re
 import tempfile
 import unittest
 
-from rvppt.template import ROOT, load_tokens, semantic_palette, task_preset
+from pptgen.template import ROOT, load_tokens, semantic_palette, task_preset
 
 
 class PaletteTests(unittest.TestCase):

@@ -25,8 +25,8 @@ visual = [
 ]
 
 [project.scripts]
-pptgen = "rvppt.cli:main"
-rvppt = "rvppt.cli:main"
+pptgen = "pptgen.cli:main"
+rvppt = "pptgen.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["tools/rvppt", "tools/pptgen"]
+packages = ["tools/pptgen"]

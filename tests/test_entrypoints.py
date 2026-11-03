@@ -5,8 +5,8 @@ from unittest.mock import patch
 
 import yaml
 
-from rvppt.doctor import SKILL_ENTRYPOINTS, doctor, skill_entrypoints
-from rvppt.template import ROOT
+from pptgen.doctor import SKILL_ENTRYPOINTS, doctor, skill_entrypoints
+from pptgen.template import ROOT
 
 
 class SkillEntrypointTests(unittest.TestCase):
@@ -39,7 +39,7 @@ class SkillEntrypointTests(unittest.TestCase):
         broken.symlink_to(self.root / "missing", target_is_directory=True)
         problems = skill_entrypoints(self.root)
         self.assertTrue(any(".agents/skills/example: broken discovery link" in p for p in problems))
-        with patch("rvppt.doctor.skill_entrypoints", return_value=problems):
+        with patch("pptgen.doctor.skill_entrypoints", return_value=problems):
             result = next(check for check in doctor()["checks"] if check["check"] == "skill_entrypoints")
         self.assertEqual(result["status"], "warn")
         self.assertIn("broken discovery link", result["detail"])
@@ -49,7 +49,7 @@ class SkillEntrypointTests(unittest.TestCase):
             if tokens["preset_id"] == "retro":
                 raise RuntimeError("Missing required latin font: Liberation Serif / DejaVu Serif")
             return {s: {"resolved": tokens["fonts"][s]} for s in ("latin", "korean")}
-        with patch("rvppt.preview.resolve_fonts", side_effect=fonts):
+        with patch("pptgen.preview.resolve_fonts", side_effect=fonts):
             result = doctor()
         check = next(c for c in result["checks"] if c["check"] == "preset_fonts")
         self.assertEqual(check["status"], "warn")

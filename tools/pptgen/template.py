@@ -67,7 +67,7 @@ def load_tokens(design=None, preset=None, root=ROOT):
     tokens.setdefault("preset_id", preset or tokens.get("preset_id", "rvlab"))
     width_in = float(tokens["slide"]["width_in"])
     height_in = float(tokens["slide"]["height_in"])
-    for key in ("title", "header_rule", "body"):
+    for key in ("title", "header_rule", "body", *(["cover_image"] if "cover_image" in tokens["geometry_in"] else [])):
         x, y, w, h = tokens["geometry_in"][key]
         if min(x, y) < 0 or min(w, h) <= 0 or x + w > width_in + 1e-3 or y + h > height_in + 1e-3:
             raise ValueError(f"Invalid fixed geometry: {key}")
@@ -641,7 +641,7 @@ def ensure_preset_reference(tokens):
     ref_path = ROOT / tokens["reference"]
     if tokens.get("preset_id", "rvlab") == "rvlab":
         if not ref_path.is_file():
-            raise ValueError("Reference missing: uv run python -m rvppt.template")
+            raise ValueError("Reference missing: uv run python -m pptgen.template")
     else:
         # Derived presets regenerate byte-identically in milliseconds, so every build picks up DESIGN.md edits.
         build_preset_reference(tokens, ref_path)

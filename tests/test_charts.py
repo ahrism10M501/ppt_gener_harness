@@ -30,7 +30,7 @@ class ChartTests(unittest.TestCase):
         self.assertEqual(self.charts.SHADES, ["#053F95", "#0070C0", "#5B9BD5", "#9DC3E6", "#A6A6A6"])
 
     def test_chart_roles_follow_every_preset(self):
-        from rvppt.template import ROOT, semantic_palette
+        from pptgen.template import ROOT, semantic_palette
         for path in sorted((ROOT / "templates").glob("*/DESIGN.md")):
             with self.subTest(preset=path.parent.name):
                 result = self.charts.set_preset(path.parent.name)
@@ -45,8 +45,17 @@ class ChartTests(unittest.TestCase):
     def test_demo_writes_png_and_svg(self):
         self.charts.demo(self.out)
         names = {p.stem for p in self.out.glob("*.png")}
-        self.assertEqual(names, {"donut", "flow", "flow-loop", "timeline", "matrix", "funnel", "cards"})
+        self.assertEqual(names, {"donut", "flow", "flow-loop", "timeline", "matrix", "funnel", "cards", "steps"})
         self.assertTrue(all((self.out / f"{n}.svg").exists() for n in names))
+
+    def test_photo_cards_pad_photos_and_keep_author_line_breaks(self):
+        from PIL import Image
+        photo = self.out / "photo.png"
+        Image.new("RGB", (400, 100), "#808080").save(photo)
+        self.charts.photo_cards(self.out / "cards", [("가", "첫 줄\n둘째 줄", photo, None), ("나", "설명", photo, (0, 0, 100, 100))])
+        self.assertTrue((self.out / "cards.png").exists() and (self.out / "cards.svg").exists())
+        with self.assertRaisesRegex(ValueError, "라벨을 줄인다"):
+            self.charts.steps(self.out / "s", [("가", "한\n줄\n이\n너\n무\n많\n다", "1분"), ("나", "설명", "1분")])
 
     def test_long_label_is_rejected_instead_of_overflowing(self):
         with self.assertRaisesRegex(ValueError, "라벨을 줄인다"):

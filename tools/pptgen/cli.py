@@ -122,7 +122,7 @@ def main(argv=None):
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
     except (ValueError, OSError, RuntimeError) as error:
-        print(f"rvppt: {error}", file=sys.stderr)
+        print(f"pptgen: {error}", file=sys.stderr)
         return 2
 
 

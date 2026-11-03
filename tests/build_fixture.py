@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 import pymupdf
 import yaml
 
-from rvppt.state import STAGES, approve
+from pptgen.state import STAGES, approve
 
 TABLE = "| 조건 | 합성 값 | 검증 범위 |\n|---|---:|---|\n| A | 12 | 셀 편집 |\n| B | 18 | 정렬 |\n| C | 24 | 폰트 |\n\n::: source\n출처: sources/synthetic.csv — 합성 자료\n:::"
 MATH = "인라인 수식 $x^2 + y^2$를 문장에 포함한다.\n\n$$\\mathcal{L} = \\frac{1}{N} \\sum_{i=1}^{N} (y_i - \\hat{y}_i)^2$$\n\n$N$은 합성 표본 수, $y_i$는 합성 목표값이다."

@@ -11,9 +11,9 @@ import unittest
 from PIL import Image
 import pymupdf
 
-from rvppt.papers import extract_paper
-from rvppt.state import StateError
-from rvppt.template import ROOT, sha256
+from pptgen.papers import extract_paper
+from pptgen.state import StateError
+from pptgen.template import ROOT, sha256
 
 
 class PaperTests(unittest.TestCase):
@@ -92,7 +92,7 @@ class PaperTests(unittest.TestCase):
         self.assertEqual(self.pdf.read_bytes(), b"Not a PDF")
 
     def test_cli_stdout_is_json_and_errors_preserve_output(self):
-        args = [sys.executable, "-m", "rvppt", "extract-paper", str(self.task), "sources/synthetic paper.pdf"]
+        args = [sys.executable, "-m", "pptgen", "extract-paper", str(self.task), "sources/synthetic paper.pdf"]
         first = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, timeout=30)
         self.assertEqual(first.returncode, 0, first.stderr)
         self.assertEqual(json.loads(first.stdout)["pages"], 2)

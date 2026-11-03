@@ -140,7 +140,7 @@ def doctor():
         if sha256(ROOT / tokens["source"]["path"]) != tokens["source"]["sha256"]:
             raise RuntimeError("Original template changed; restore templates/rvlab/RVLAB_PPT양식.pptx from git")
         if not (ROOT / tokens["reference"]).is_file():
-            raise RuntimeError("Reference missing: uv run python -m rvppt.template")
+            raise RuntimeError("Reference missing: uv run python -m pptgen.template")
         return "original and reference present"
 
     def profile():

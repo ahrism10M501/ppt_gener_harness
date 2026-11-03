@@ -11,10 +11,10 @@ from pptx import Presentation
 import yaml
 
 from build_fixture import make_task
-from rvppt import build, markdown, polish, project
-from rvppt.preview import resolve_fonts
-from rvppt.state import StateError, STAGES, read_document, status
-from rvppt.template import ROOT, load_tokens, sha256
+from pptgen import build, markdown, polish, project
+from pptgen.preview import resolve_fonts
+from pptgen.state import StateError, STAGES, read_document, status
+from pptgen.template import ROOT, load_tokens, sha256
 
 
 class BuildTests(unittest.TestCase):
@@ -473,6 +473,63 @@ class BuildTests(unittest.TestCase):
         second_row_height = captions[2][1] + captions[2][3] - (captions[0][1] + captions[0][3] + .24)
         self.assertAlmostEqual(first_row_height, second_row_height)
 
+    def test_deck_headlines_false_hides_headline_on_content_slides(self):
+        api, slides, tokens = markdown.parse_task(self.task)
+        cover = dict(slides[0], headlines=False)
+        profile = dict(resolve_fonts(tokens), text_top_inset_pt=4)
+        output = self.task / ".build"; output.mkdir()
+        report = build.assemble(api, [cover, self.slide(slides, "S01")], tokens, profile, self.task, output)
+        self.assertNotIn("headline", [r["role"] for r in report["records"]])
+
+    def test_no_headline_class_hides_headline_on_one_slide(self):
+        self.edit(4, lambda s: s.replace("### 합성 표의 모든 셀을 편집할 수 있다", "### 합성 표의 모든 셀을 편집할 수 있다 {.no-headline}", 1))
+        api, slides, tokens = markdown.parse_task(self.task)
+        slide = next(s for s in slides if s.get("no_headline"))
+        self.assertEqual(slide["headline"], "합성 표의 모든 셀을 편집할 수 있다")
+        profile = dict(resolve_fonts(tokens), text_top_inset_pt=4)
+        output = self.task / ".build"; output.mkdir()
+        report = build.assemble(api, [slides[0], slide], tokens, profile, self.task, output)
+        self.assertNotIn("headline", [r["role"] for r in report["records"]])
+
+    def test_appendix_divider_false_keeps_appendix_slides_after_closing(self):
+        document = read_document(self.task / STAGES[3], self.task.name, 4)
+        document.metadata["deck"]["appendix_divider"] = False
+        document.path.write_text("---\n" + yaml.safe_dump(document.metadata, allow_unicode=True, sort_keys=False) + "---\n" + document.body, encoding="utf-8")
+        _, slides, _ = markdown.parse_task(self.task)
+        self.assertEqual([s["layout"] for s in slides[-2:]], ["closing", "content"])
+
+    def test_empty_alt_image_fills_slot_without_caption(self):
+        api, slides, tokens = markdown.parse_task(self.task)
+        slide = self.slide(slides, "S08")
+        slide["slots"] = [slide["slots"][0][:1]]
+        slide["slots"][0][0] = json.loads(markdown.pandoc(["-f", "markdown", "-t", "json"], "![](%s)\n" % markdown.image_node(slide["slots"][0][0])["c"][2][0]))["blocks"][0]
+        profile = dict(resolve_fonts(tokens), text_top_inset_pt=4)
+        output = self.task / ".build"; output.mkdir()
+        report = build.assemble(api, [slide], tokens, profile, self.task, output)
+        self.assertNotIn("caption", [r["role"] for r in report["records"]])
+
+    def test_cover_image_needs_preset_slot_and_lands_on_cover(self):
+        document = read_document(self.task / STAGES[3], self.task.name, 4)
+        figure = next(p for p in (self.task / "figures").iterdir() if p.suffix == ".png")
+        document.metadata["deck"]["cover_image"] = f"figures/{figure.name}"
+        document.path.write_text("---\n" + yaml.safe_dump(document.metadata, allow_unicode=True, sort_keys=False) + "---\n" + document.body, encoding="utf-8")
+        with self.assertRaises(StateError):  # rvlab has no cover slot
+            markdown.parse_task(self.task)
+        document.metadata["deck"]["preset"] = "modern-minimal"
+        document.path.write_text("---\n" + yaml.safe_dump(document.metadata, allow_unicode=True, sort_keys=False) + "---\n" + document.body, encoding="utf-8")
+        api, slides, tokens = markdown.parse_task(self.task)
+        profile = dict(resolve_fonts(tokens), text_top_inset_pt=4)
+        output = self.task / ".build"; output.mkdir()
+        report = build.assemble(api, [slides[0]], tokens, profile, self.task, output)
+        self.assertEqual([i["slide_id"] for i in report["images"]], ["cover"])
+
+    def test_cover_date_false_hides_cover_date(self):
+        document = read_document(self.task / STAGES[3], self.task.name, 4)
+        document.metadata["deck"]["cover_date"] = False
+        document.path.write_text("---\n" + yaml.safe_dump(document.metadata, allow_unicode=True, sort_keys=False) + "---\n" + document.body, encoding="utf-8")
+        _, slides, _ = markdown.parse_task(self.task)
+        self.assertEqual(slides[0]["date_label"], "")
+
     def test_unsupported_native_math_is_reported_as_final_image_fallback(self):
         api, slides, tokens = markdown.parse_task(self.task)
         slide = self.slide(slides, "S02")
@@ -491,7 +548,7 @@ class BuildTests(unittest.TestCase):
         profile = dict(resolve_fonts(tokens), text_top_inset_pt=4)
         output = self.task / ".build"; output.mkdir()
         build.assemble(api, [slide], tokens, profile, self.task, output)
-        from rvppt.template import NS
+        from pptgen.template import NS
         presentation = Presentation(output / "presentation.pptx")
         shape = next(s for s in presentation.slides[0].shapes if s.has_text_frame and "First" in s.text)
         self.assertEqual(len(shape._element.findall("p:txBody/a:p/a:pPr/a:buAutoNum", NS)), 2)

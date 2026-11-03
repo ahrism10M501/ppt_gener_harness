@@ -8,15 +8,15 @@ import unittest
 
 import yaml
 
-from rvppt.state import STAGES
-from rvppt.template import ROOT
+from pptgen.state import STAGES
+from pptgen.template import ROOT
 from test_state import REVIEWS, SLIDES
 
 
 def run_cli_smoke():
     """Exercise the CLI in its actual repository task boundary, then clean up."""
     def command(task, *arguments, code=0):
-        result = subprocess.run([sys.executable, "-m", "rvppt", arguments[0], str(task), *arguments[1:]], cwd=ROOT, capture_output=True, text=True, timeout=30)
+        result = subprocess.run([sys.executable, "-m", "pptgen", arguments[0], str(task), *arguments[1:]], cwd=ROOT, capture_output=True, text=True, timeout=30)
         assert result.returncode == code, (result.returncode, result.stdout, result.stderr)
         return json.loads(result.stdout) if code == 0 else result.stderr
 

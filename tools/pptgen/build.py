@@ -66,7 +66,7 @@ def font_path(profile, *, korean=False, code=False, bold=False):
 def node_render(request):
     if not (ROOT / "node_modules/@resvg/resvg-js").is_dir():
         raise StateError("Node renderers are missing; run npm ci (see docs/setup.md)")
-    return json.loads(run(["node", ROOT / "tools/rvppt/render.mjs"], data=json.dumps(request), cwd=ROOT))
+    return json.loads(run(["node", ROOT / "tools/pptgen/render.mjs"], data=json.dumps(request), cwd=ROOT))
 
 
 def equation(tex, display, size, directory, profile):
@@ -572,6 +572,11 @@ def assemble(api, slides, tokens, profile, task, directory):
         slide = presentation.slides.add_slide(layouts[tokens["layouts"]["section" if layout == "closing" else layout]])
         if layout in ("cover", "toc", "section", "closing"):
             fill_template(slide, spec, tokens, page, records)
+            if layout == "cover" and spec.get("cover_image"):
+                block = {"t": "Para", "c": [{"t": "Image", "c": [["", [], []], [], [spec["cover_image"], ""]]}]}
+                path, position, _, dpi = prepare_image(block, task, assets, tokens["geometry_in"]["cover_image"], tokens, profile)
+                slide.shapes.add_picture(str(path), *[Inches(v) for v in position])
+                images.append({"slide_id": "cover", "caption": "", "effective_dpi": dpi})
         else:
             # Content slides: short topic in the original top bar, ▪ headline, then indented content.
             for ph in list(slide.placeholders):
@@ -592,11 +597,13 @@ def assemble(api, slides, tokens, profile, task, directory):
                 render_kind(slide, spec, [x0, y0, w0, bottom - y0], tokens, profile, assets, page, records)
                 slide.notes_slide.notes_text_frame.text = plain(spec["notes"]).strip()
                 continue
-            headline = {"t": "Para", "c": [{"t": "Str", "c": spec["headline"]}]}
-            headline_box = [x0, y0, w0, compose(headline, w0 - indent, tokens["sizes_pt"]["headline"], assets, profile)]
-            add_text(slide, spec["headline"], headline_box, tokens["sizes_pt"]["headline"], profile, bullets=True)
-            records.append({"page": page, "slide_id": spec["id"], "role": "headline", "box": headline_box, "expected": spec["headline"], "max_lines": tokens["limits"]["headline_lines"]})
-            top = y0 + headline_box[3] + tokens["geometry_in"]["gap"] / 2
+            top = y0
+            if slides[0].get("headlines", True) and not spec.get("no_headline"):  # deck.headlines: false or {.no-headline} keeps ### as the agent's note only
+                headline = {"t": "Para", "c": [{"t": "Str", "c": spec["headline"]}]}
+                headline_box = [x0, y0, w0, compose(headline, w0 - indent, tokens["sizes_pt"]["headline"], assets, profile)]
+                add_text(slide, spec["headline"], headline_box, tokens["sizes_pt"]["headline"], profile, bullets=True)
+                records.append({"page": page, "slide_id": spec["id"], "role": "headline", "box": headline_box, "expected": spec["headline"], "max_lines": tokens["limits"]["headline_lines"]})
+                top = y0 + headline_box[3] + tokens["geometry_in"]["gap"] / 2
             region = [x0 + indent, top, w0 - indent, y0 + h0 - top]
             count = len(spec["slots"])
             source = plain(spec["source"]).strip()
@@ -630,8 +637,10 @@ def assemble(api, slides, tokens, profile, task, directory):
                 for i, (block, height) in enumerate(zip(contents, heights)):
                     box = [x, y, w, height]
                     if i in picture_indices:
-                        image_box = [x, y, w, height - tokens["geometry_in"]["caption_height"]]
                         image = image_node(block)
+                        # ![](figures/x.png): no caption line, the picture takes the whole slot.
+                        captioned = not image or plain(image).strip() or not asset_path(task, image["c"][2][0]).exists()
+                        image_box = [x, y, w, height - (tokens["geometry_in"]["caption_height"] if captioned else 0)]
                         animation = None
                         if image and not asset_path(task, image["c"][2][0]).exists():
                             caption, dpi = plain(image).strip(), None
@@ -647,10 +656,11 @@ def assemble(api, slides, tokens, profile, task, directory):
                                 shutil.copyfile(task / animation["poster"], poster)
                                 records.append({"page": page, "slide_id": spec["id"], "role": "animation_image", "box": position,
                                                 "shape_id": picture.shape_id, "preview_image": str(poster.relative_to(directory))})
-                        caption = f"그림 {len(images) + 1}. {caption}"
-                        caption_box = [x, y + height - tokens["geometry_in"]["caption_height"], w, tokens["geometry_in"]["caption_height"]]
-                        add_text(slide, caption, caption_box, tokens["sizes_pt"]["caption"], profile, center=True)
-                        records.append({"page": page, "slide_id": spec["id"], "role": "caption", "box": caption_box, "expected": caption, "max_lines": 1})
+                        if captioned:
+                            caption = f"그림 {len(images) + 1}. {caption}"
+                            caption_box = [x, y + height - tokens["geometry_in"]["caption_height"], w, tokens["geometry_in"]["caption_height"]]
+                            add_text(slide, caption, caption_box, tokens["sizes_pt"]["caption"], profile, center=True)
+                            records.append({"page": page, "slide_id": spec["id"], "role": "caption", "box": caption_box, "expected": caption, "max_lines": 1})
                         images.append({"slide_id": spec["id"], "caption": caption, "effective_dpi": dpi,
                                        **({"animation": animation} if animation else {})})
                     else:

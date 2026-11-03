@@ -9,8 +9,8 @@ import xml.etree.ElementTree as ET
 
 from PIL import Image
 
-from rvppt.preview import resolve_fonts
-from rvppt.template import ROOT, load_tokens, semantic_palette, task_preset
+from pptgen.preview import resolve_fonts
+from pptgen.template import ROOT, load_tokens, semantic_palette, task_preset
 
 HERE = Path(__file__).resolve().parent
 

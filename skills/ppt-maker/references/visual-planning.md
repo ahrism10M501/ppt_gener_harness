@@ -22,12 +22,16 @@ Stage 3에서 슬라이드의 주장과 근거를 정할 때 읽는다. Stage 4�
 | 조건별 차이·분포·추세 | 점·선·막대 정량 그래프 | [scientific-visualization](../../scientific-visualization/SKILL.md) |
 | 절차·분기·그룹·피드백·상호작용 | 관계에 맞춘 도식 | [ppt-charts](../../ppt-charts/SKILL.md) `diagrams.py` |
 | 비율·순서·분류·대안 비교 | 도넛·타임라인·매트릭스·퍼널·카드 | [ppt-charts](../../ppt-charts/SKILL.md) `charts.py` |
+| 실험·공정의 단계 순서와 시간 | 번호가 붙은 단계 차트(표보다 먼저) | [ppt-charts](../../ppt-charts/SKILL.md) `steps` |
+| 실제 쓰임·제품·재료의 모습, 두 재료의 대비 | 사진 카드, 2단 위쪽의 작은 사진 | [외부 시각 자료](external-visuals.md), `photo_cards` |
 | 기구·센서·하드웨어·다층 시스템의 내부 구조 | 아이소메트릭 해부도 | `uv run pptgen anatomy` ([anatomy](../../anatomy/SKILL.md)) |
 | 논문의 복잡한 figure | 원본 재사용·패널 분리·확대 | [외부 시각 자료](external-visuals.md) |
 | 단계마다 멈춰 설명할 과정 | 여러 정적 상태·여러 장 | 위 도구 조합 |
 | 이동·갱신·시간 변화의 대응 | GIF와 대표 PNG | [ppt-animation](../../ppt-animation/SKILL.md) |
 
-모든 개념을 움직이게 만들지 않는다. 사용자에게 특정 표현의 의도가 있으면 반영하고, 정적 설명이 더 나은 부분은 함께 제안한다. 논문용 작은 글자·외부 테마를 발표에 그대로 옮기지 않는다. 그래프 색은 `rvppt.template.semantic_palette(<preset>)`에서 가져온다.
+응용 사례·재료 소개처럼 청중이 실물을 떠올려야 하는 슬라이드는 글 카드만 두지 말고 사진을 작게라도 넣는다. 2단 슬라이드에서 그림 칸이 비면 같은 주장을 받치는 그림을 한 칸에 위아래로 쌓아 채운다(예: 데이터 그래프 + 메커니즘 모식도).
+
+모든 개념을 움직이게 만들지 않는다. 사용자에게 특정 표현의 의도가 있으면 반영하고, 정적 설명이 더 나은 부분은 함께 제안한다. 논문용 작은 글자·외부 테마를 발표에 그대로 옮기지 않는다. 그래프 색은 `pptgen.template.semantic_palette(<preset>)`에서 가져온다.
 
 ## 3. 제작에 넘길 요약
 

@@ -217,6 +217,9 @@ def deck_info(metadata):
     budget = deck.get("budget")
     if budget is not None and budget not in BUDGET_TIERS:
         raise StateError(f"deck.budget must be one of {', '.join(BUDGET_TIERS)}")
+    for key in ("headlines", "appendix_divider", "cover_date"):
+        if not isinstance(deck.get(key, True), bool):
+            raise StateError(f"deck.{key} must be true or false")
     result = dict(deck, subtitle=subtitle, affiliation=affiliation, preset=preset.strip())
     if budget is not None:
         result["budget"] = budget
@@ -253,9 +256,11 @@ def parse_task(task):
             continue  # Author comments, like LaTeX %.
         if block["t"] == "Header":
             level, attr, inlines = block["c"]
-            kinds = attr[1]
-            if attr[2] or (kinds and (level != 3 or len(kinds) != 1 or kinds[0] not in SLIDE_KINDS)):
-                raise StateError(f"Only '### headline {{.kind}}' with one of {sorted(SLIDE_KINDS)} is supported on headings")
+            # {.no-headline} keeps ### for the TOC and status checks but leaves the line off this one slide.
+            kinds = [k for k in attr[1] if k != "no-headline"]
+            bare = len(kinds) != len(attr[1])
+            if attr[2] or (bare and level != 3) or (kinds and (level != 3 or len(kinds) != 1 or kinds[0] not in SLIDE_KINDS)):
+                raise StateError(f"Only '### headline {{.kind}}' with one of {sorted(SLIDE_KINDS)}, or {{.no-headline}}, is supported on headings")
             text = plain(inlines).strip()
             current = None
             if level == 1:
@@ -270,6 +275,8 @@ def parse_task(task):
                 current = {"layout": "content", "id": f"S{sum(s['layout'] != 'section' for s in body) + 1:02}", "section": section and section["title"], "topic": topic, "headline": text, "blocks": [], "notes": [], "source": [], "warnings": []}
                 if kinds:
                     current["kind"] = kinds[0]
+                if bare:
+                    current["no_headline"] = True
                 # Length limits are advice; build measures and render-checks the real two-line fit.
                 if len(text) > limits["headline_korean_chars" if re.search(r"[가-힣]", text) else "headline_latin_chars"]:
                     current["warnings"].append(f"Headline may exceed two lines; build checks the real fit: {text}")
@@ -288,6 +295,12 @@ def parse_task(task):
             raise StateError("Slide content must follow a '### headline' (sections allow only ::: notes)")
     if not any(s["layout"] == "content" for s in body):
         raise StateError("slides.md has no slides; add '## topic' and '### headline'")
+    if deck.get("cover_image") is not None:
+        # One small picture in the preset's fixed cover slot; presets without geometry_in.cover_image have no room for it.
+        if not isinstance(deck["cover_image"], str) or "cover_image" not in tokens["geometry_in"]:
+            raise StateError(f"deck.cover_image needs a figures/ path and a preset with geometry_in.cover_image ({deck['preset']} has none)")
+        if not asset_path(task, deck["cover_image"]).is_file():
+            raise StateError(f"Missing cover image: {deck['cover_image']}")
     for slide in body:
         if slide["layout"] == "content":
             build_slots(slide, task, tokens)
@@ -297,10 +310,12 @@ def parse_task(task):
     if sum(1 + len(topics) for _, topics in toc) > limits["toc_lines"]:
         toc = [(chapter, []) for chapter, _ in toc]  # ponytail: drop topics instead of measuring; split chapters if even this overflows.
     appendix = next((i for i, s in enumerate(body) if s["layout"] == "section" and s["title"] in APPENDIX), len(body))
-    cover = {"layout": "cover", "id": "cover", "notes": [], **deck, "date_label": labels["date"] + deck["date"].replace("-", ".")}
+    cover = {"layout": "cover", "id": "cover", "notes": [], **deck, "date_label": "" if deck.get("cover_date") is False else labels["date"] + deck["date"].replace("-", ".")}
     closing = {"layout": "closing", "id": "closing", "title": labels["closing"], "notes": []}
     contents = [{"layout": "toc", "id": "toc", "chapters": toc, "notes": []}] if len(chapters) >= 2 else []
-    return ast["pandoc-api-version"], [cover, *contents, *body[:appendix], closing, *body[appendix:]], tokens
+    # deck.appendix_divider: false drops the '# Appendix' section slide; its slides still follow the closing.
+    rest = body[appendix + (appendix < len(body) and deck.get("appendix_divider") is False):]
+    return ast["pandoc-api-version"], [cover, *contents, *body[:appendix], closing, *rest], tokens
 
 
 def build_slots(slide, task, tokens):

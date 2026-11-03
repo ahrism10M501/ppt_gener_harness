@@ -10,8 +10,8 @@ from unittest.mock import patch
 
 import yaml
 
-from rvppt import cli, state
-from rvppt.state import StateError, STAGES, approve, read_document, status
+from pptgen import cli, state
+from pptgen.state import StateError, STAGES, approve, read_document, status
 
 
 REVIEWS = {
@@ -344,7 +344,7 @@ class StateTests(unittest.TestCase):
                 (self.task / "sources/new.txt").write_text("new source")
             return original_inspect(task)
 
-        with patch("rvppt.state._inspect", side_effect=inspect):
+        with patch("pptgen.state._inspect", side_effect=inspect):
             with self.assertRaisesRegex(StateError, "inputs changed"):
                 approve(self.task, 1)
         self.assertEqual(self.snapshot(), before)
@@ -371,7 +371,7 @@ class StateTests(unittest.TestCase):
         self.assertEqual(self.document(1).content_hash, document.content_hash)
 
     def test_cli_status_approval_and_repository_boundary(self):
-        with patch("rvppt.cli.ROOT", self.root):
+        with patch("pptgen.cli.ROOT", self.root):
             output = io.StringIO()
             with redirect_stdout(output):
                 self.assertEqual(cli.main(["status", str(self.task)]), 0)

@@ -9,10 +9,10 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from lxml import etree
 from pptx import Presentation
 
-from rvppt.doctor import skill_integrity
-from rvppt.graph import graph_check, ignored
-from rvppt.preview import fit_picture
-from rvppt.template import ROOT, NS, EMU, build_reference, load_tokens, parse, sha256, slots, validate_package
+from pptgen.doctor import skill_integrity
+from pptgen.graph import graph_check, ignored
+from pptgen.preview import fit_picture
+from pptgen.template import ROOT, NS, EMU, build_reference, load_tokens, parse, sha256, slots, validate_package
 
 
 class TemplateTests(unittest.TestCase):
@@ -155,7 +155,7 @@ class GraphCheckTests(unittest.TestCase):
     def test_ignore_rules_follow_graphifyignore_semantics(self):
         patterns = ["/tasks/", "/docs/*.png", "node_modules/", "uv.lock"]
         for path, expected in {"tasks/a/slides.md": True, "docs/x.png": True, "docs/design/x.png": False,
-                               "web/node_modules/a.js": True, "uv.lock": True, "tools/rvppt/tasks.py": False, "docs/tasks.md": False}.items():
+                               "web/node_modules/a.js": True, "uv.lock": True, "tools/pptgen/tasks.py": False, "docs/tasks.md": False}.items():
             self.assertEqual(ignored(path, patterns), expected, path)
 
     def test_snapshot_detects_changes_new_inputs_and_task_leaks(self):

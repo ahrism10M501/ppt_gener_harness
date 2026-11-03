@@ -9,9 +9,9 @@ from unittest.mock import patch
 
 import yaml
 
-from rvppt import cli, project
-from rvppt.plan import write_plan
-from rvppt.state import STAGES, StateError, approve, status
+from pptgen import cli, project
+from pptgen.plan import write_plan
+from pptgen.state import STAGES, StateError, approve, status
 from test_state import REVIEWS, SLIDES
 
 
@@ -82,7 +82,7 @@ class PlanTests(unittest.TestCase):
         self.assertIn("missing YAML frontmatter", self.text())
 
     def test_cli_and_new_project_create_plan_files(self):
-        with patch("rvppt.cli.ROOT", self.root), redirect_stdout(io.StringIO()) as output:
+        with patch("pptgen.cli.ROOT", self.root), redirect_stdout(io.StringIO()) as output:
             self.assertEqual(cli.main(["plan", str(self.task)]), 0)
         self.assertEqual(json.loads(output.getvalue())["next_stage"], 1)
         profile = self.root / "profile.yaml"

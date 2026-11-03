@@ -26,8 +26,8 @@ templates/<id>/
 `reference.pptx`, `preview.*`는 생성물이다. 직접 고치지 말고 `DESIGN.md`를 고친다. rvlab 외 템플릿의 `reference.pptx`는 빌드할 때마다 DESIGN.md에서 다시 만들어지며, `preview.*`와 rvlab reference는 아래 명령으로 다시 만든다.
 
 ```bash
-uv run python -m rvppt.template                    # 모든 템플릿의 reference와 preview
-uv run python -m rvppt.template --preset retro     # 하나만
+uv run python -m pptgen.template                    # 모든 템플릿의 reference와 preview
+uv run python -m pptgen.template --preset retro     # 하나만
 ```
 
 ## DESIGN.md
@@ -40,7 +40,7 @@ uv run python -m rvppt.template --preset retro     # 하나만
 | --- | --- |
 | `preset_id`, `name`, `description` | 폴더 이름과 같은 ID, 표시 이름, 한 줄 설명 |
 | `slide` | 크기(인치)와 비율 |
-| `palette` | `primary`(강조) · `band`(묶음·짙은 면) · `secondary`(보조) · `section_accent`(표지·섹션 포인트) · `text` · `background`. 차트와 애니메이션은 `rvppt.template.semantic_palette(<id>)`로 이 색을 쓴다 |
+| `palette` | `primary`(강조) · `band`(묶음·짙은 면) · `secondary`(보조) · `section_accent`(표지·섹션 포인트) · `text` · `background`. 차트와 애니메이션은 `pptgen.template.semantic_palette(<id>)`로 이 색을 쓴다 |
 | `fonts` | `latin`·`korean`과 대체 글꼴, `code`. 선택 키 `heading_latin`·`heading_korean`은 제목용 글꼴이다. 빌드는 설치된 글꼴로 넘침을 재므로 실제로 설치된 글꼴을 쓴다 |
 | `sizes_pt`, `geometry_in`, `limits` | 본문 글자 크기, 본문 영역·간격, lint 권장 한도 |
 | `layouts`, `labels` | 레이아웃 이름 매핑(바꾸지 않는다), 날짜·마무리 문구 |
@@ -87,7 +87,7 @@ style:
 1. **폴더 만들기:** 가장 가까운 테마 폴더의 `DESIGN.md`를 `templates/<새-id>/DESIGN.md`로 복사한다. ID는 소문자·숫자·하이픈만 쓴다.
 2. **토큰 고치기:** `preset_id`, `name`, `description`, `reference: templates/<새-id>/reference.pptx`, `palette`, `fonts`, `style`을 고친다.
 3. **규약 쓰기:** 아래 본문의 성격과 규약을 새 양식에 맞게 쓴다.
-4. **확인:** `uv run python -m rvppt.template --preset <새-id>`로 reference와 preview를 만들고 `preview.png`를 본다. 합성 덱을 빌드한 뒤 `uv run pptgen audit tasks/<task> --zoom 4`로 대비·여백도 확인한다.
+4. **확인:** `uv run python -m pptgen.template --preset <새-id>`로 reference와 preview를 만들고 `preview.png`를 본다. 합성 덱을 빌드한 뒤 `uv run pptgen audit tasks/<task> --zoom 4`로 대비·여백도 확인한다.
 
 **기존 PPTX에서 시작하기:** `uv run pptgen register-template <file.pptx> --id <id>`는 원본을 `templates/<id>/source.pptx`로 보관하고, 크기와 색 3개를 가져와 `DESIGN.md`·reference·preview를 만든다. 16:9면 modern-minimal의 `style`을 바탕으로 한다. 다시 등록해도 이미 쓴 규약은 보존된다. 원본 PPTX의 레이아웃·로고·배경을 그대로 옮기지는 않으므로, `style`과 규약은 원본을 보며 직접 다듬는다.
 

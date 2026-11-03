@@ -8,8 +8,8 @@ from PIL import Image
 from pptx import Presentation
 import yaml
 
-from rvppt import anatomy_bridge, build, plan, project, template
-from rvppt.state import STAGES, approve
+from pptgen import anatomy_bridge, build, plan, project, template
+from pptgen.state import STAGES, approve
 from test_state import REVIEWS
 
 

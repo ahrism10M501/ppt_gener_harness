@@ -6,9 +6,8 @@
 
 | 경로 | 역할 |
 | --- | --- |
-| `tools/rvppt/` | Python CLI, 문서·승인 상태, PPTX 제작과 QA |
-| `tools/pptgen/` | `python -m pptgen`을 위한 범용 별칭 진입점 |
-| `tools/rvppt/render.mjs` | MathJax·Mermaid·SVG 렌더링 |
+| `tools/pptgen/` | Python CLI, 문서·승인 상태, PPTX 제작과 QA |
+| `tools/pptgen/render.mjs` | MathJax·Mermaid·SVG 렌더링 |
 | `templates/` | 보존할 원본 양식과 빌드에 쓰는 파생 reference |
 | `templates/<id>/` | 템플릿 하나: `DESIGN.md`(첫 YAML 블록이 토큰, 그 아래가 스타일 규약), 파생 `reference.pptx`(슬라이드 0장), `preview.pdf/png`(레이아웃별 예시), 그 템플릿 전용 자산. 안내는 [templates/README](../templates/README.md)(rvlab의 `plot.mplstyle`·`template-manifest.json`) |
 | `skills/` | 프로젝트 스킬과 고정 버전 외부 스킬·라이선스 |
@@ -19,7 +18,7 @@
 
 ## 실행 경로
 
-`pyproject.toml`의 `pptgen`과 `rvppt` 명령은 모두 `tools/rvppt/cli.py`의 `main`을 호출한다. `tools/pptgen/__main__.py`도 같은 구현을 호출해 `python -m pptgen`을 제공한다. task 명령은 저장소의 `tasks/` 바로 아래 폴더를 대상으로 한다.
+`pyproject.toml`의 `pptgen`과 옛 이름 `rvppt` 명령은 모두 `tools/pptgen/cli.py`의 `main`을 호출하고, `python -m pptgen`도 같은 구현이다. task 명령은 저장소의 `tasks/` 바로 아래 폴더를 대상으로 한다.
 
 - `project.py`: 프로필에서 표지 정보를 가져와 새 task를 만든다.
 - `state.py`: 네 단계 문서 스키마, 입력 해시, 승인 순서와 무효화를 검사한다.
@@ -49,7 +48,7 @@ uv run pptgen doctor
 양식을 변경해야 할 때는 `templates/rvlab/DESIGN.md`를 검토한 뒤 다음 명령으로 파생 reference와 원본 구조 manifest를 재생성한다. 원본 `templates/rvlab/RVLAB_PPT양식.pptx`는 수정하지 않는다.
 
 ```bash
-uv run python -m rvppt.template
+uv run python -m pptgen.template
 ```
 
 Graphify는 `.graphifyignore`로 모든 task·개인 프로필·외부 스킬 원문을 제외한다. 코드나 문서를 수정하면 스냅샷이 오래될 수 있다. 그래프를 재생성한 뒤에만 `uv run pptgen graph-check --record`로 입력 해시를 기록하고, `uv run pptgen graph-check`로 확인한다. 실제 코드와 입력이 그래프보다 우선이다.

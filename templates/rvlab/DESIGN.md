@@ -1,6 +1,6 @@
 # RVLAB 디자인 명세
 
-아래 첫 YAML 블록은 파생 양식 생성기와 빌드가 읽는 **고정 토큰의 본체**다. 발표 입력에 좌표·폰트·색 토큰을 복사하지 않는다. 토큰 변경은 양식 변경이며 `uv run python -m rvppt.template --preset rvlab`으로 reference·preview를 다시 만들고 테스트를 돌린다.
+아래 첫 YAML 블록은 파생 양식 생성기와 빌드가 읽는 **고정 토큰의 본체**다. 발표 입력에 좌표·폰트·색 토큰을 복사하지 않는다. 토큰 변경은 양식 변경이며 `uv run python -m pptgen.template --preset rvlab`으로 reference·preview를 다시 만들고 테스트를 돌린다.
 
 기본 `rvlab` 프리셋의 디자인 문서다. 다른 프리셋도 같은 형식으로 `templates/<id>/DESIGN.md`에 토큰과 규약을 함께 둔다. 이 프리셋에만 해당하는 스타일 규칙(색 사용, 도식 모양, 그래프 스타일, 표지·상단 바 점검)은 스킬이 아니라 이 문서에 쓴다. rvlab은 원본 PPTX의 마스터·장식을 그대로 쓰므로 `style` 블록이 없다.
 

@@ -1,6 +1,6 @@
 ---
 name: ppt-charts
-description: 이 저장소(tasks/) 발표의 흐름도·분기·그룹·피드백·상호작용 도식과 도넛·타임라인·매트릭스·퍼널·비교 카드를 발표 프리셋 팔레트에 맞춰 PNG·SVG로 만든다. 기구·시스템 해부도는 anatomy, 실험 그래프는 scientific-visualization을 쓴다.
+description: 이 저장소(tasks/) 발표의 흐름도·분기·그룹·피드백·상호작용 도식과 도넛·타임라인·매트릭스·퍼널·비교 카드·공정 단계 차트·사진 카드를 발표 프리셋 팔레트에 맞춰 PNG·SVG로 만든다. 기구·시스템 해부도는 anatomy, 실험 그래프는 scientific-visualization을 쓴다.
 ---
 
 # 도식·꾸밈 차트 (`ppt-charts`)
@@ -9,7 +9,7 @@ description: 이 저장소(tasks/) 발표의 흐름도·분기·그룹·피드�
 
 **먼저 읽기:** task `slides.md`의 `deck.preset`(없으면 `rvlab`)에 해당하는 `templates/<deck.preset>/DESIGN.md`를 읽어 컨텍스트에 올린다. 그 템플릿의 색 사용·도식 모양·그래프 스타일·빌드 후 점검은 이 문서가 정하며, 이 스킬에는 템플릿에 따라 달라지는 규약을 두지 않는다.
 
-**프리셋:** 두 도구는 출력 경로나 실행 스크립트가 속한 task의 `deck.preset`을 자동으로 쓴다(task 밖이면 `rvlab`). 다른 프리셋으로 그릴 때만 `--preset <id>`나 `charts.set_preset("<id>")`를 쓴다. 색은 `rvppt.template.semantic_palette(<id>)`에서 온다.
+**프리셋:** 두 도구는 출력 경로나 실행 스크립트가 속한 task의 `deck.preset`을 자동으로 쓴다(task 밖이면 `rvlab`). 다른 프리셋으로 그릴 때만 `--preset <id>`나 `charts.set_preset("<id>")`를 쓴다. 색은 `pptgen.template.semantic_palette(<id>)`에서 온다.
 
 팔레트 키: `accent`, `band`, `secondary`, `tint`, `neutral`, `ink`, `section_accent`, `background`.
 
@@ -35,6 +35,8 @@ uv run python skills/ppt-charts/diagrams.py render tasks/<task>/figures/pipeline
 | 두 기준의 분류·우선순위 | `matrix2x2` | 점 위치가 개념 배치임을 캡션에 밝힘 |
 | 단계별 감소·전환 | `funnel` | 실제 값이 필요 |
 | 2~4개 대안의 짧은 비교 | `cards` | 수치 비교가 많으면 표 |
+| 3~6단 공정·실험 절차와 단계별 시간 | `steps` | 공정 개요를 표로 쓰기 전에 먼저 검토. 설명은 `\n`으로 줄을 직접 나눌 수 있다 |
+| 실제 쓰임·제품·재료처럼 사진이 내용인 비교 | `photo_cards` | 사진을 늘이지 않고 여백으로 칸을 맞춘다. 출처는 `figures/visual-sources.yaml` |
 
 생성 스크립트는 task의 `figures/make_charts.py`에 두고 값의 출처를 주석으로 남긴다. 실행은 `uv run python tasks/<task>/figures/make_charts.py`이고, 전체 모양은 `uv run python skills/ppt-charts/charts.py demo /tmp/charts`로 볼 수 있다(`uv sync --extra visual` 필요).
 

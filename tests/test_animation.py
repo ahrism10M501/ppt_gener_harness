@@ -7,10 +7,10 @@ from zipfile import ZipFile
 from PIL import Image
 from pptx import Presentation
 
-from rvppt import build, markdown
-from rvppt.preview import resolve_fonts
-from rvppt.state import StateError
-from rvppt.template import load_tokens
+from pptgen import build, markdown
+from pptgen.preview import resolve_fonts
+from pptgen.state import StateError
+from pptgen.template import load_tokens
 
 
 class AnimationTests(unittest.TestCase):
